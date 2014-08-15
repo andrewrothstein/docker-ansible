@@ -16,5 +16,7 @@ RUN pip install aws
 RUN pip install awscli
 RUN pip install s3cmd
 
+ADD inventories/empty /etc/ansible/hosts 
+ADD ansible.cfg /etc/ansible/ansible.cfg
 VOLUME ["/inventories"]
 VOLUME ["/playbooks"]
