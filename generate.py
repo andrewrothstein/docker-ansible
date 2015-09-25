@@ -26,6 +26,10 @@ def commit_dockerfile(msg) :
 	print "committing..."
 	call(['git', 'add', 'Dockerfile'], shell=False)
 	call(['git', 'commit', '-m', msg], shell=False)
+
+def push(tag) :
+	checkout(tag)
+	call(['git', 'push', 'origin', tag], shell=False)
 	
 def write(params) :
 	tag = params["tag"]
@@ -35,6 +39,7 @@ def write(params) :
 	f.write(Environment().from_string(Dockerfile).render(params))
 	f.close()
 	commit_dockerfile('update to Dockerfile for {0} tag'.format(tag))
+	push(tag)
 
 def build(params) :
 	tag = params["tag"]
