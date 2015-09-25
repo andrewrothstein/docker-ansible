@@ -1,9 +1,0 @@
-
-FROM fedora:21
-MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
-
-
-RUN yum update -y && yum install -y ansible
-ADD ansible.cfg /etc/ansible/ansible.cfg
-ADD localhost /etc/ansible/hosts
-RUN ansible '*' -m ping

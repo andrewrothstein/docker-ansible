@@ -2,7 +2,6 @@
 
 import argparse
 from jinja2 import Environment
-from subprocess import call
 import multiprocessing
 
 Dockerfile = """
@@ -18,21 +17,32 @@ ADD localhost /etc/ansible/hosts
 RUN ansible '*' -m ping
 """
 
+def checkout(tag) :
+	print "checking out {0} branch...".format(tag)
+	cmd = ['git', 'checkout', '-b', tag]
+	call(cmd, shell=False)
+
+def commit_dockerfile(msg) :
+	print "committing..."
+	call(['git', 'add', 'Dockerfile'], shell=False)
+	call(['git', 'commit', '-m', msg], shell=False)
+	
 def write(params) :
 	tag = params["tag"]
-	dockerfile = "Dockerfile.{0}".format(tag)
-	print "writing {0}...".format(dockerfile)
-	f = open(dockerfile, 'w')
+	checkout(tag)
+	print "writing Dockerfile for tag {0}".format(tag)
+	f = open('Dockerfile', 'w')
 	f.write(Environment().from_string(Dockerfile).render(params))
 	f.close()
+	commit_dockerfile('update to Dockerfile for {0} tag'.format(tag))
 
 def build(params) :
 	tag = params["tag"]
+	checkout(tag)
 	container_name = 'andrewrothstein/docker-ansible'
 	print "building the {0}:{1} container...".format(container_name, tag)
 	cmd = ['docker', 'build',
 				 '-t', '{0}:{1}'.format(container_name, tag),
-				 '-f', 'Dockerfile.{0}'.format(tag),
 				 '.']
 	call(cmd, shell=False)
 	
