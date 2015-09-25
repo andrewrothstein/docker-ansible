@@ -2,7 +2,7 @@
 
 import argparse
 from jinja2 import Environment
-import multiprocessing
+from subprocess import call
 
 Dockerfile = """
 FROM {{baseimage}}
@@ -89,11 +89,10 @@ if __name__ == '__main__' :
 			"pkg_ansible_install" : apt_ansible_install
 		} ]
 
-	pool = multiprocessing.Pool()
-	
 	if (args.write) :
-		pool.map(write, configs)
+		map(write, configs)
 
 	if (args.build) :
-		pool.map(build, configs)
+		map(build, configs)
 	
+	checkout('master')
