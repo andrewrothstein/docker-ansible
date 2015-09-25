@@ -1,10 +1,7 @@
 docker-ansible
 ==============
 
-Ubuntu container with ansible installed
+a bunch of Ansible base containers for Ubuntu, CentOS, and Fedora
+generate.py is a script that uses Jinja2 to write the Dockerfiles. also has the ability to build the containers locally.
 
-build :
-docker build -t andrewrothstein/docker-ansible .
-
-run :
-docker run --rm -v ${PWD}/inventories:/inventories -ti andrewrothstein/docker-ansible ansible '*' -i /inventories/empty -M ping
+Rock and roll music, Andrew
