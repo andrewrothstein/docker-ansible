@@ -1,0 +1,11 @@
+
+FROM centos:7.1.1503
+MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
+
+
+RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+
+RUN yum update -y && yum install -y ansible
+ADD ansible.cfg /etc/ansible/ansible.cfg
+ADD localhost /etc/ansible/hosts
+RUN ansible '*' -m ping
