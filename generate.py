@@ -67,7 +67,7 @@ if __name__ == '__main__' :
 	apt_python_and_pip_install = 'apt-get install -y python python-dev python-pip'
 
 	yum_update = 'yum update -y'
-	yum_python_and_pip_install = 'yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip && yum -y groupinstall "Development tools"'
+	yum_python_and_pip_install = 'yum install -y epel-release && yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip && yum -y groupinstall "Development tools"'
 
 	configs = [
 		{ "baseimage" : "fedora:21",
