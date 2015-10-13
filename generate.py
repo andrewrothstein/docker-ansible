@@ -67,18 +67,19 @@ if __name__ == '__main__' :
 	apt_python_and_pip_install = 'apt-get install -y python python-dev python-pip'
 
 	yum_update = 'yum update -y'
-	yum_python_and_pip_install = 'yum install -y epel-release && yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip && yum -y groupinstall "Development tools"'
+	yum_fedora_python_and_pip_install = 'yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip && yum -y groupinstall "Development tools"'
+	yum_centos_python_and_pip_install = 'yum install -y epel-release && yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip && yum -y groupinstall "Development tools"'
 
 	configs = [
 		{ "baseimage" : "fedora:21",
 			"tag" : "fedora_21",
 			"pkg_update" : yum_update,
-			"python_and_pip_install" : yum_python_and_pip_install
+			"python_and_pip_install" : yum_fedora_python_and_pip_install
 		},
 		{ "baseimage" : "centos:7.1.1503",
 			"tag" : "centos_7.1.1503",
 			"pkg_update" : yum_update,
-			"python_and_pip_install" : yum_python_and_pip_install,
+			"python_and_pip_install" : yum_centos_python_and_pip_install,
 		},
 		{ "baseimage" : "ubuntu:trusty",
 			"tag" : "ubuntu_trusty",
