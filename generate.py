@@ -3,52 +3,45 @@
 import argparse
 from jinja2 import Environment
 from subprocess import call
+import os
+import shutil
 
 Dockerfile = """
 FROM {{baseimage}}
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
-{% if pkg_setup %}
-RUN {{pkg_setup}}
-{% endif %}
-RUN {{pkg_update}} && {{pkg_ansible_install}}
+RUN {{pkg_update}} && {{python_and_pip_install}} && pip install ansible
 ADD ansible.cfg /etc/ansible/ansible.cfg
 ADD localhost /etc/ansible/hosts
 RUN ansible '*' -m ping
 """
 
-def checkout(tag) :
-	print "checking out {0} branch...".format(tag)
-	cmd = ['git', 'checkout', '-b', tag]
-	call(cmd, shell=False)
+def copy_file(tag, file) :
+	shutil.copyfile(file, '{0}/{1}'.format(tag, file))
 
-def commit_dockerfile(msg) :
-	print "committing..."
-	call(['git', 'add', 'Dockerfile'], shell=False)
-	call(['git', 'commit', '-m', msg], shell=False)
+def copy_artifacts(tag) :
+	copy_file(tag, 'ansible.cfg')
+	copy_file(tag, 'localhost')
 
-def push(tag) :
-	checkout(tag)
-	call(['git', 'push', 'origin', tag], shell=False)
-	
 def write(params) :
 	tag = params["tag"]
-	checkout(tag)
-	print "writing Dockerfile for tag {0}".format(tag)
-	f = open('Dockerfile', 'w')
+	if (not os.path.isdir(tag)) :
+		os.mkdir(tag)
+	fq_dockerfile = "{0}/Dockerfile".format(tag) 
+	print "writing {0}...".format(fq_dockerfile)
+	f = open(fq_dockerfile, 'w')
 	f.write(Environment().from_string(Dockerfile).render(params))
 	f.close()
-	commit_dockerfile('update to Dockerfile for {0} tag'.format(tag))
-	push(tag)
-
+	copy_artifacts(tag)
+	
 def build(params) :
 	tag = params["tag"]
-	checkout(tag)
 	container_name = 'andrewrothstein/docker-ansible'
 	print "building the {0}:{1} container...".format(container_name, tag)
 	cmd = ['docker', 'build',
 				 '-t', '{0}:{1}'.format(container_name, tag),
-				 '.']
+				 tag]
+	os.chdir
 	call(cmd, shell=False)
 	
 if __name__ == '__main__' :
@@ -71,27 +64,26 @@ if __name__ == '__main__' :
 	args = parser.parse_args()
 	
 	apt_update = 'apt-get update -y'
-	apt_ansible_install = 'apt-get install -y ansible'
+	apt_python_and_pip_install = 'apt-get install -y python python-dev python-pip'
 
 	yum_update = 'yum update -y'
-	yum_ansible_install = 'yum install -y ansible'
+	yum_python_and_pip_install = 'yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip && yum -y groupinstall "Development tools"'
 
 	configs = [
 		{ "baseimage" : "fedora:21",
 			"tag" : "fedora_21",
 			"pkg_update" : yum_update,
-			"pkg_ansible_install" : yum_ansible_install
+			"python_and_pip_install" : yum_python_and_pip_install
 		},
 		{ "baseimage" : "centos:7.1.1503",
 			"tag" : "centos_7.1.1503",
 			"pkg_update" : yum_update,
-			"pkg_ansible_install" : yum_ansible_install,
-			"pkg_setup" : 'rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm'
+			"python_and_pip_install" : yum_python_and_pip_install,
 		},
 		{ "baseimage" : "ubuntu:trusty",
 			"tag" : "ubuntu_trusty",
 			"pkg_update" : apt_update,
-			"pkg_ansible_install" : apt_ansible_install
+			"python_and_pip_install" : apt_python_and_pip_install
 		} ]
 
 	if (args.write) :
@@ -99,5 +91,3 @@ if __name__ == '__main__' :
 
 	if (args.build) :
 		map(build, configs)
-	
-	checkout('master')
