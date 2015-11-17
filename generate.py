@@ -43,7 +43,23 @@ def build(params) :
 				 tag]
 	os.chdir
 	call(cmd, shell=False)
-	
+
+def push(registry) :
+	def pusher(params) :
+		tag = params["tag"]
+		container_name = 'andrewrothstein/docker-ansible'
+		url = "{0}/{1}:{2}".format(registry, container_name, tag)
+		print "pushing building to {0}...".format(url)
+		cmd = ['docker', 'push', url]
+		os.chdir
+		call(cmd, shell=False)
+	return pusher
+
+def pull(params) :
+	baseimg = params["baseimage"]
+	cmd = ['docker', 'pull', baseimg]
+	call(cmd, shell=False)
+
 if __name__ == '__main__' :
 
 	parser = argparse.ArgumentParser(
@@ -61,6 +77,18 @@ if __name__ == '__main__' :
 		action='store_true',
 		help='build the Docker containers'
 	)
+	parser.add_argument(
+		'-p',
+		'---push',
+		help='push to the given docker registry'
+		)
+	parser.add_argument(
+		'-f',
+		'--pull',
+		action='store_true',
+		help='pull base images'
+		)
+	
 	args = parser.parse_args()
 	
 	apt_update = 'apt-get update -y'
@@ -87,8 +115,14 @@ if __name__ == '__main__' :
 			"python_and_pip_install" : apt_python_and_pip_install
 		} ]
 
+	if (args.pull) :
+		map(pull, configs)
+	
 	if (args.write) :
 		map(write, configs)
 
 	if (args.build) :
 		map(build, configs)
+
+	if (args.push) :
+		map(push(args.push), configs)
