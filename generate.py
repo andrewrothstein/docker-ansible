@@ -113,7 +113,18 @@ if __name__ == '__main__' :
 			"tag" : "ubuntu_trusty",
 			"pkg_update" : apt_update,
 			"python_and_pip_install" : apt_python_and_pip_install
-		} ]
+		},
+		{ "baseimage" : "ubuntu:vivid",
+			"tag" : "ubuntu_vivid",
+			"pkg_update" : apt_update,
+			"python_and_pip_install" : apt_python_and_pip_install
+		},
+		{ "baseimage" : "ubuntu:wily",
+			"tag" : "ubuntu_wily",
+			"pkg_update" : apt_update,
+			"python_and_pip_install" : apt_python_and_pip_install
+		}
+	]
 
 	if (args.pull) :
 		map(pull, configs)
