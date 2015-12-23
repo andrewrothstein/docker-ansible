@@ -104,8 +104,8 @@ if __name__ == '__main__' :
 			"pkg_update" : yum_update,
 			"python_and_pip_install" : yum_fedora_python_and_pip_install
 		},
-		{ "baseimage" : "centos:7.1.1503",
-			"tag" : "centos_7.1.1503",
+		{ "baseimage" : "centos:7",
+			"tag" : "centos_7",
 			"pkg_update" : yum_update,
 			"python_and_pip_install" : yum_centos_python_and_pip_install,
 		},
