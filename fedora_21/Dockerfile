@@ -6,3 +6,4 @@ RUN yum update -y && yum install -y python python-devel python-pip bzip2 file fi
 ADD ansible.cfg /etc/ansible/ansible.cfg
 ADD localhost /etc/ansible/hosts
 RUN ansible '*' -m ping
+RUN ansible --version

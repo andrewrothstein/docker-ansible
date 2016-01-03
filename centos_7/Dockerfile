@@ -6,3 +6,4 @@ RUN yum update -y && yum install -y epel-release && yum install -y python python
 ADD ansible.cfg /etc/ansible/ansible.cfg
 ADD localhost /etc/ansible/hosts
 RUN ansible '*' -m ping
+RUN ansible --version

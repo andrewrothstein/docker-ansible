@@ -14,6 +14,7 @@ RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip &&
 ADD ansible.cfg /etc/ansible/ansible.cfg
 ADD localhost /etc/ansible/hosts
 RUN ansible '*' -m ping
+RUN ansible --version
 """
 
 def copy_file(tag, file) :
