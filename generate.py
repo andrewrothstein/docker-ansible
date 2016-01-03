@@ -93,7 +93,7 @@ if __name__ == '__main__' :
 	args = parser.parse_args()
 	
 	apt_update = 'apt-get update -y'
-	apt_python_and_pip_install = 'apt-get install -y python python-dev python-pip python-apt aptitude curl'
+	apt_python_and_pip_install = 'apt-get install -y python python-dev python-pip python-apt aptitude curl wget'
 
 	yum_update = 'yum update -y'
 	yum_fedora_python_and_pip_install = 'yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip wget curl && yum -y groupinstall "Development tools"'
