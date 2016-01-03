@@ -10,7 +10,7 @@ Dockerfile = """
 FROM {{baseimage}}
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
-RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install ansible
+RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install ansible==1.9.1
 ADD ansible.cfg /etc/ansible/ansible.cfg
 ADD localhost /etc/ansible/hosts
 RUN ansible '*' -m ping
