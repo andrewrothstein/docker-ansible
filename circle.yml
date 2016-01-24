@@ -6,15 +6,5 @@ machine:
 dependencies:
   override:
     - docker info
-    - docker build -t andrewrothstein/docker-ansible_ubuntu_trusty:latest ubuntu_trusty
-    - docker build -t andrewrothstein/docker-ansible_ubuntu_vivd:latest ubuntu_vivid
-    - docker build -t andrewrothstein/docker-ansible_ubuntu_wily:latest ubuntu_wily
-    - docker build -t andrewrothstein/docker-ansible_ubuntu_xenial:latest ubuntu_xenial
-
-test:
-  override:
-    - docker run -ti andrewrothstein/docker-ansible_ubuntu_trusty ansible localhost -m ping
-    - docker run -ti andrewrothstein/docker-ansible_ubuntu_vivd ansible localhost -m ping
-    - docker run -ti andrewrothstein/docker-ansible_ubuntu_wily ansible localhost -m ping
-    - docker run -ti andrewrothstein/docker-ansible_ubuntu_xenial ansible localhost -m ping
-
+    - ./circleci-build.sh:
+        parallel: true
