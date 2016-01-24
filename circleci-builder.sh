@@ -11,7 +11,7 @@ for os in $(find . -name Dockerfile -printf '%h\n' | sed 's/^\.\///' | sort); do
     then
 	CONTAINERNAME=$DOCKERUSER/${DOCKERCONTAINER}_$os
 	docker build -t $CONTAINERNAME $os
-	docker run -ti $CONTAINERNAME ansible localhost -m ping
+	docker run --rm -ti $CONTAINERNAME ansible localhost -m ping
     fi
     ((i=i+1))
 done
