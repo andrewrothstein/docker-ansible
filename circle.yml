@@ -6,5 +6,5 @@ machine:
 dependencies:
   override:
     - docker info
-    - ./circleci-build.sh:
+    - ./circleci-builder.sh:
         parallel: true
