@@ -109,11 +109,24 @@ if __name__ == '__main__' :
   yum_fedora_python_and_pip_install = 'yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip wget curl && yum -y groupinstall "Development tools"'
   yum_centos_python_and_pip_install = 'yum install -y epel-release && yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip wget curl && yum -y groupinstall "Development tools"'
 
+  dnf_update = 'dnf update -y'
+  dnf_python_and_pip_install = 'dnf install -y python2 python2-dnf libselinux-python python-pip'
+  
   configs = [
     { "baseimage" : "fedora:21",
       "tag" : "fedora_21",
       "pkg_update" : yum_update,
       "python_and_pip_install" : yum_fedora_python_and_pip_install
+    },
+    { "baseimage" : "fedora:22",
+      "tag" : "fedora_22",
+      "pkg_update" : dnf_update,
+      "python_and_pip_install" : dnf_python_and_pip_install
+    },
+    { "baseimage" : "fedora:23",
+      "tag" : "fedora_23",
+      "pkg_update" : dnf_update,
+      "python_and_pip_install" : dnf_python_and_pip_install
     },
     { "baseimage" : "centos:7",
       "tag" : "centos_7",
