@@ -6,10 +6,12 @@ DOCKERCONTAINER=docker-ansible
 
 i=0
 files=()
-for os in $(find . -name Dockeffile -printf '%h\n' | sort); do
+for os in $(find . -name Dockerfile -printf '%h\n' | sort); do
     if [ $(($i % $CIRCLE_NODE_TOTAL)) -eq $CIRCLE_NODE_INDEX ]
     then
-	docker build -t $DOCKERUSER/$DOCKERCONTAINER $os
+	CONTAINERNAME=$DOCKERUSER/${DOCKERCONTAINER}_$os
+	docker build -t $CONTAINERNAME $os
+	docker run -ti $CONTAINERNAME ansible localhost -m ping
     fi
     ((i=i+1))
 done
