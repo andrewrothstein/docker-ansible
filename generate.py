@@ -104,13 +104,14 @@ if __name__ == '__main__' :
 	
   apt_update = 'apt-get update -y'
   apt_python_and_pip_install = 'apt-get install -y python python-dev python-pip python-apt aptitude curl wget'
-  
+
+  rh_common_pkgs = 'bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip wget curl'
   yum_update = 'yum update -y'
-  yum_fedora_python_and_pip_install = 'yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip wget curl && yum -y groupinstall "Development tools"'
-  yum_centos_python_and_pip_install = 'yum install -y epel-release && yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip wget curl && yum -y groupinstall "Development tools"'
+  yum_fedora_python_and_pip_install = 'yum install -y python python-devel python-pip ' + rh_common_pkgs + ' && yum -y groupinstall "Development tools"'
+  yum_centos_python_and_pip_install = 'yum install -y epel-release && yum install -y python python-devel python-pip ' + rh_common_pkgs + ' && yum -y groupinstall "Development tools"'
 
   dnf_update = 'dnf update -y'
-  dnf_python_and_pip_install = 'dnf install -y python2 python2-dnf libselinux-python python-pip'
+  dnf_python_and_pip_install = 'dnf install -y python2 python2-dnf libselinux-python python-pip ' + rh_common_pkgs + ' && dnf -y groupinstall "Development tools"'
   
   configs = [
     { "baseimage" : "fedora:21",
