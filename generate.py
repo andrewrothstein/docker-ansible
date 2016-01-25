@@ -12,7 +12,7 @@ FROM {{baseimage}}
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible
-RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install ansible==1.9.1
+RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install ansible==2.0.0.2
 RUN ansible --version
 
 # configure ansible to target the localhost -- inside the container
