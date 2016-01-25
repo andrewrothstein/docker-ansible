@@ -135,7 +135,7 @@ if __name__ == '__main__' :
   )
 
   dnf_update = update('dnf')
-  f22_pkgs = ['python2', 'python2-devel', 'libselinux-python', 'python-pip'
+  f22_pkgs = ['python2', 'python2-devel', 'libselinux-python', 'python-pip',
 	      'make', 'automake', 'gcc', 'gcc-c++', 'redhat-rpm-config']
   f22_python_and_pip_install = join(
     [ install('dnf', f22_pkgs + rh_common_pkgs),
