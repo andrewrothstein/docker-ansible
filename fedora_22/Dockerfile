@@ -3,7 +3,7 @@ FROM fedora:22
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible
-RUN dnf update -y && dnf install -y python2 python2-dnf libselinux-python python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip wget curl && dnf -y groupinstall "Development tools" && pip install --upgrade pip && pip install ansible==1.9.1
+RUN dnf update -y && dnf install -y python2 python2-devel libselinux-python python-pipmake automake gcc gcc-c++ redhat-rpm-config bzip2 file findutils git gzip mercurial procps subversion sudo tar unzip zip wget curl && dnf -y groupinstall "Development tools" && pip install --upgrade pip && pip install ansible==1.9.1
 RUN ansible --version
 
 # configure ansible to target the localhost -- inside the container

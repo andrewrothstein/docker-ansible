@@ -5,6 +5,7 @@ from jinja2 import Environment
 from subprocess import call
 import os
 import shutil
+from string import join
 
 Dockerfile = """
 FROM {{baseimage}}
@@ -52,7 +53,7 @@ def build(params) :
   print "building the {0}:{1} container...".format(container_name, tag)
   cmd = ['docker', 'build', '-t', '{0}:{1}'.format(container_name, tag), tag]
   os.chdir
-  call(cmd, shell=False)
+  return call(cmd, shell=False)
 
 def push(registry) :
   def pusher(params) :
@@ -62,14 +63,14 @@ def push(registry) :
     print "pushing building to {0}...".format(url)
     cmd = ['docker', 'push', url]
     os.chdir
-    call(cmd, shell=False)
+    return call(cmd, shell=False)
   return pusher
 
 def pull(params) :
   baseimg = params["baseimage"]
   print "pulling {0}...".format(baseimg)
   cmd = ['docker', 'pull', baseimg]
-  call(cmd, shell=False)
+  return call(cmd, shell=False)
 
 if __name__ == '__main__' :
 
@@ -101,38 +102,84 @@ if __name__ == '__main__' :
   )
   
   args = parser.parse_args()
-	
-  apt_update = 'apt-get update -y'
-  apt_python_and_pip_install = 'apt-get install -y python python-dev python-pip python-apt aptitude curl wget'
 
-  rh_common_pkgs = 'bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip wget curl'
-  yum_update = 'yum update -y'
-  yum_fedora_python_and_pip_install = 'yum install -y python python-devel python-pip ' + rh_common_pkgs + ' && yum -y groupinstall "Development tools"'
-  yum_centos_python_and_pip_install = 'yum install -y epel-release && yum install -y python python-devel python-pip ' + rh_common_pkgs + ' && yum -y groupinstall "Development tools"'
+  def update(pkg_mgr) :
+    return join([pkg_mgr, 'update -y'], sep=' ')
 
-  dnf_update = 'dnf update -y'
-  dnf_python_and_pip_install = 'dnf install -y python2 python2-dnf libselinux-python python-pip ' + rh_common_pkgs + ' && dnf -y groupinstall "Development tools"'
+  def install(pkg_mgr, pkgs) :
+    return join([pkg_mgr, 'install -y'] + pkgs, sep=' ')
+
+  def groupinstall(pkg_mgr) :
+    return join([pkg_mgr, '-y groupinstall "Development tools"'], sep=' ')
   
+  apt_update = update('apt-get')
+  apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-apt', 'aptitude', 'curl', 'wget']
+
+  apt_python_and_pip_install = install('apt', apt_pkgs)
+
+  rh_common_pkgs = ['bzip2', 'file', 'findutils',
+		    'git', 'gzip', 'mercurial', 'procps',
+		    'subversion', 'sudo', 'tar', 'unzip',
+		    'zip', 'wget', 'curl']
+
+  f21_pkgs = ['python', 'python-devel', 'python-pip', 'debianutils', 'xz-utils']
+  centos7_pkgs = ['python', 'python-devel', 'python-pip', 'debianutils', 'xz-utils']
+
+  yum_update = update('yum')
+  f21_python_and_pip_install = join(
+    [ install('yum', f21_pkgs + rh_common_pkgs),
+      groupinstall('yum')
+    ],
+    sep=' && '
+  )
+
+  centos7_python_and_pip_install = join(
+    [ install('yum', ['epel-release']),
+      install('yum', centos7_pkgs + rh_common_pkgs),
+      groupinstall('yum')
+    ],
+    sep=' && '
+  )
+
+  dnf_update = update('dnf')
+  f22_pkgs = ['python2', 'python2-devel', 'libselinux-python', 'python-pip'
+	      'make', 'automake', 'gcc', 'gcc-c++', 'redhat-rpm-config']
+  f22_python_and_pip_install = join(
+    [ install('dnf', f22_pkgs + rh_common_pkgs),
+      groupinstall('dnf')
+    ],
+    sep=' && '
+  )
+
+  f23_pkgs = ['python2', 'python2-devel', 'python2-dnf', 'libselinux-python', 'python-pip',
+	      'make', 'automake', 'gcc', 'gcc-c++', 'redhat-rpm-config']
+  f23_python_and_pip_install = join(
+    [ install('dnf', f23_pkgs + rh_common_pkgs),
+      groupinstall('dnf')
+    ],
+    sep=' && '
+  )
+    
   configs = [
-    { "baseimage" : "fedora:21",
-      "tag" : "fedora_21",
-      "pkg_update" : yum_update,
-      "python_and_pip_install" : yum_fedora_python_and_pip_install
+    { "baseimage" : "fedora:23",
+      "tag" : "fedora_23",
+      "pkg_update" : dnf_update,
+      "python_and_pip_install" : f23_python_and_pip_install
     },
     { "baseimage" : "fedora:22",
       "tag" : "fedora_22",
       "pkg_update" : dnf_update,
-      "python_and_pip_install" : dnf_python_and_pip_install
+      "python_and_pip_install" : f22_python_and_pip_install
     },
-    { "baseimage" : "fedora:23",
-      "tag" : "fedora_23",
-      "pkg_update" : dnf_update,
-      "python_and_pip_install" : dnf_python_and_pip_install
+    { "baseimage" : "fedora:21",
+      "tag" : "fedora_21",
+      "pkg_update" : yum_update,
+      "python_and_pip_install" : f21_python_and_pip_install
     },
     { "baseimage" : "centos:7",
       "tag" : "centos_7",
       "pkg_update" : yum_update,
-      "python_and_pip_install" : yum_centos_python_and_pip_install,
+      "python_and_pip_install" : centos7_python_and_pip_install,
     },
     { "baseimage" : "ubuntu:trusty",
       "tag" : "ubuntu_trusty",

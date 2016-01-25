@@ -3,7 +3,7 @@ FROM centos:7
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible
-RUN yum update -y && yum install -y epel-release && yum install -y python python-devel python-pip bzip2 file findutils git gzip mercurial procps subversion sudo tar debianutils unzip xz-utils zip wget curl && yum -y groupinstall "Development tools" && pip install --upgrade pip && pip install ansible==1.9.1
+RUN yum update -y && yum install -y epel-release && yum install -y python python-devel python-pip debianutils xz-utils bzip2 file findutils git gzip mercurial procps subversion sudo tar unzip zip wget curl && yum -y groupinstall "Development tools" && pip install --upgrade pip && pip install ansible==1.9.1
 RUN ansible --version
 
 # configure ansible to target the localhost -- inside the container
