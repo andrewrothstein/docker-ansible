@@ -126,13 +126,6 @@ if __name__ == '__main__' :
   centos7_pkgs = ['python', 'python-devel', 'python-pip', 'debianutils', 'xz-utils']
 
   yum_update = update('yum')
-  f21_python_and_pip_install = join(
-    [ install('yum', f21_pkgs + rh_common_pkgs),
-      groupinstall('yum')
-    ],
-    sep=' && '
-  )
-
   centos7_python_and_pip_install = join(
     [ install('yum', ['epel-release']),
       install('yum', centos7_pkgs + rh_common_pkgs),
@@ -170,11 +163,6 @@ if __name__ == '__main__' :
       "tag" : "fedora_22",
       "pkg_update" : dnf_update,
       "python_and_pip_install" : f22_python_and_pip_install
-    },
-    { "baseimage" : "fedora:21",
-      "tag" : "fedora_21",
-      "pkg_update" : yum_update,
-      "python_and_pip_install" : f21_python_and_pip_install
     },
     { "baseimage" : "centos:7",
       "tag" : "centos_7",
