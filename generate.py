@@ -111,11 +111,15 @@ if __name__ == '__main__' :
 
   def groupinstall(pkg_mgr) :
     return join([pkg_mgr, '-y groupinstall "Development tools"'], sep=' ')
-  
+
   apt_update = update('apt-get')
   apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-apt', 'aptitude', 'curl', 'wget']
 
-  apt_python_and_pip_install = install('apt', apt_pkgs)
+  apt_python_and_pip_install = join(
+    [ install('apt', apt_pkgs),
+      'apt-get clean' ],
+    sep=' && '
+    )
 
   rh_common_pkgs = ['bzip2', 'file', 'findutils',
 		    'git', 'gzip', 'mercurial', 'procps',
@@ -129,7 +133,8 @@ if __name__ == '__main__' :
   centos7_python_and_pip_install = join(
     [ install('yum', ['epel-release']),
       install('yum', centos7_pkgs + rh_common_pkgs),
-      groupinstall('yum')
+      groupinstall('yum'),
+      'yum clean all'
     ],
     sep=' && '
   )
@@ -139,7 +144,8 @@ if __name__ == '__main__' :
 	      'make', 'automake', 'gcc', 'gcc-c++', 'redhat-rpm-config']
   f22_python_and_pip_install = join(
     [ install('dnf', f22_pkgs + rh_common_pkgs),
-      groupinstall('dnf')
+      groupinstall('dnf'),
+      'dnf clean all'
     ],
     sep=' && '
   )
@@ -148,7 +154,8 @@ if __name__ == '__main__' :
 	      'make', 'automake', 'gcc', 'gcc-c++', 'redhat-rpm-config']
   f23_python_and_pip_install = join(
     [ install('dnf', f23_pkgs + rh_common_pkgs),
-      groupinstall('dnf')
+      groupinstall('dnf'),
+      'dnf clean all'
     ],
     sep=' && '
   )
