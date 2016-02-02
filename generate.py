@@ -20,13 +20,6 @@ ADD ansible.cfg /etc/ansible/ansible.cfg
 ADD localhost /etc/ansible/hosts
 RUN ansible '*' -m ping
 
-# embed roles
-ONBUILD ADD requirements.yml requirements.yml
-ONBUILD RUN ansible-galaxy install -r requirements.yml
-
-# execute playbook to configure container to suit
-ONBUILD ADD playbook.yml playbook.yml
-ONBUILD RUN ansible-playbook playbook.yml
 """
 
 def copy_file(tag, file) :
