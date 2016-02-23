@@ -154,6 +154,11 @@ if __name__ == '__main__' :
   )
     
   configs = [
+    { "baseimage" : "debian:jessie",
+      "tag" : "debian_jessie",
+      "pkg_update" : apt_update,
+      "python_and_pip_install" : apt_python_and_pip_install
+    },
     { "baseimage" : "fedora:23",
       "tag" : "fedora_23",
       "pkg_update" : dnf_update,
