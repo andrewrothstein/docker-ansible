@@ -152,8 +152,15 @@ if __name__ == '__main__' :
     ],
     sep=' && '
   )
-    
+
+  apk_python_and_pip_install = 'apk add python python-dev py-pip build-base'
+  
   configs = [
+    { "baseimage" : "alpine:3.3",
+      "tag" : "alpine_33",
+      "pkg_update" : "apk update && apk upgrade",
+      "python_and_pip_install" : apk_python_and_pip_install
+    },
     { "baseimage" : "debian:jessie",
       "tag" : "debian_jessie",
       "pkg_update" : apt_update,
