@@ -106,7 +106,7 @@ if __name__ == '__main__' :
     return join([pkg_mgr, '-y groupinstall "Development tools"'], sep=' ')
 
   apt_update = update('apt-get')
-  apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-apt', 'aptitude', 'curl', 'wget']
+  apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-apt', 'aptitude', 'curl', 'wget', 'ca-certificates']
 
   apt_python_and_pip_install = join(
     [ install('apt', apt_pkgs),
@@ -117,7 +117,7 @@ if __name__ == '__main__' :
   rh_common_pkgs = ['bzip2', 'file', 'findutils',
 		    'git', 'gzip', 'mercurial', 'procps',
 		    'subversion', 'sudo', 'tar', 'unzip',
-		    'zip', 'wget', 'curl']
+		    'zip', 'wget', 'curl', 'ca-certificates']
 
   f21_pkgs = ['python', 'python-devel', 'python-pip', 'debianutils', 'xz-utils']
   centos7_pkgs = ['python', 'python-devel', 'python-pip', 'debianutils', 'xz-utils']
@@ -153,7 +153,7 @@ if __name__ == '__main__' :
     sep=' && '
   )
 
-  apk_python_and_pip_install = 'apk add python python-dev py-pip build-base'
+  apk_python_and_pip_install = 'apk add python python-dev py-pip build-base curl wget ca-certificates'
   
   configs = [
     { "baseimage" : "alpine:3.3",
