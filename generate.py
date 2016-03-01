@@ -104,7 +104,7 @@ if __name__ == '__main__' :
     return join([pkg_mgr, '-y groupinstall "Development tools"'], sep=' ')
 
   apt_update = update('apt-get')
-  apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-apt', 'aptitude', 'curl', 'wget', 'ca-certificates']
+  apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-apt', 'python-setuptools', 'aptitude', 'curl', 'wget', 'ca-certificates']
 
   apt_python_and_pip_install = join(
     [ install('apt', apt_pkgs),
@@ -154,6 +154,11 @@ if __name__ == '__main__' :
   apk_python_and_pip_install = 'apk add python python-dev py-pip build-base curl wget ca-certificates'
   
   configs = [
+    { "baseimage" : "ubuntu:xenial",
+      "tag" : "ubuntu_xenial",
+      "pkg_update" : apt_update,
+      "python_and_pip_install" : apt_python_and_pip_install
+    },
     { "baseimage" : "alpine:3.3",
       "tag" : "alpine_33",
       "pkg_update" : "apk update && apk upgrade",
@@ -191,11 +196,6 @@ if __name__ == '__main__' :
     },
     { "baseimage" : "ubuntu:wily",
       "tag" : "ubuntu_wily",
-      "pkg_update" : apt_update,
-      "python_and_pip_install" : apt_python_and_pip_install
-    },
-    { "baseimage" : "ubuntu:xenial",
-      "tag" : "ubuntu_xenial",
       "pkg_update" : apt_update,
       "python_and_pip_install" : apt_python_and_pip_install
     }
