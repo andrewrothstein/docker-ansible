@@ -12,7 +12,7 @@ FROM {{baseimage}}
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible
-RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install ansible==2.0.2.0
+RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install --upgrade ansible==2.0.2.0
 WORKDIR /etc/ansible
 # configure ansible to target the localhost -- inside the container
 ADD ansible.cfg ansible.cfg
@@ -104,7 +104,8 @@ if __name__ == '__main__' :
     return join([pkg_mgr, '-y groupinstall "Development tools"'], sep=' ')
 
   apt_update = update('apt-get')
-  apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-apt',
+  apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-setuptools',
+              'python-apt',
               'python-setuptools', 'aptitude', 'curl', 'wget',
               'ca-certificates', 'libffi-dev', 'libssl-dev']
 
@@ -120,8 +121,9 @@ if __name__ == '__main__' :
 		    'zip', 'wget', 'curl', 'ca-certificates',
                     'libffi-devel', 'openssl-devel']
 
-  f21_pkgs = ['python', 'python-devel', 'python-pip', 'debianutils', 'xz-utils']
-  centos7_pkgs = ['python', 'python-devel', 'python-pip', 'debianutils', 'xz-utils']
+  centos7_pkgs = ['python', 'python-devel',
+                  'python-pip', 'python-setuptools',
+                  'debianutils', 'xz-utils']
 
   yum_update = update('yum')
   centos7_python_and_pip_install = join(
@@ -134,8 +136,11 @@ if __name__ == '__main__' :
   )
 
   dnf_update = update('dnf')
-  f22_pkgs = ['python2', 'python2-devel', 'libselinux-python', 'python-pip',
-	      'make', 'automake', 'gcc', 'gcc-c++', 'redhat-rpm-config']
+  f22_pkgs = ['python2', 'python2-devel',
+              'libselinux-python', 'python-pip',
+              'python2-setuptools',
+	      'make', 'automake', 'gcc', 'gcc-c++',
+              'redhat-rpm-config']
   f22_python_and_pip_install = join(
     [ install('dnf', f22_pkgs + rh_common_pkgs),
       groupinstall('dnf'),
@@ -144,8 +149,11 @@ if __name__ == '__main__' :
     sep=' && '
   )
 
-  f23_pkgs = ['python2', 'python2-devel', 'python2-dnf', 'libselinux-python', 'python-pip',
-	      'make', 'automake', 'gcc', 'gcc-c++', 'redhat-rpm-config']
+  f23_pkgs = ['python2', 'python2-devel', 'python2-dnf',
+              'libselinux-python', 'python-pip',
+              'python2-setuptools',
+	      'make', 'automake', 'gcc', 'gcc-c++',
+              'redhat-rpm-config']
   f23_python_and_pip_install = join(
     [ install('dnf', f23_pkgs + rh_common_pkgs),
       groupinstall('dnf'),
@@ -161,6 +169,11 @@ if __name__ == '__main__' :
                                     sep=' ')
   
   configs = [
+    { "baseimage" : "centos:7",
+      "tag" : "centos_7",
+      "pkg_update" : yum_update,
+      "python_and_pip_install" : centos7_python_and_pip_install,
+    },
     { "baseimage" : "ubuntu:xenial",
       "tag" : "ubuntu_xenial",
       "pkg_update" : apt_update,
@@ -185,11 +198,6 @@ if __name__ == '__main__' :
       "tag" : "fedora_22",
       "pkg_update" : dnf_update,
       "python_and_pip_install" : f22_python_and_pip_install
-    },
-    { "baseimage" : "centos:7",
-      "tag" : "centos_7",
-      "pkg_update" : yum_update,
-      "python_and_pip_install" : centos7_python_and_pip_install,
     },
     { "baseimage" : "ubuntu:trusty",
       "tag" : "ubuntu_trusty",
