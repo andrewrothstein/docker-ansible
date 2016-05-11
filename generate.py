@@ -104,10 +104,12 @@ if __name__ == '__main__' :
     return join([pkg_mgr, '-y groupinstall "Development tools"'], sep=' ')
 
   apt_update = update('apt-get')
-  apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-apt', 'python-setuptools', 'aptitude', 'curl', 'wget', 'ca-certificates']
+  apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-apt',
+              'python-setuptools', 'aptitude', 'curl', 'wget',
+              'ca-certificates', 'libffi-dev', 'libssl-dev']
 
   apt_python_and_pip_install = join(
-    [ install('apt', apt_pkgs),
+    [ install('apt-get', apt_pkgs),
       'apt-get clean' ],
     sep=' && '
     )
@@ -115,7 +117,8 @@ if __name__ == '__main__' :
   rh_common_pkgs = ['bzip2', 'file', 'findutils',
 		    'git', 'gzip', 'mercurial', 'procps',
 		    'subversion', 'sudo', 'tar', 'unzip',
-		    'zip', 'wget', 'curl', 'ca-certificates']
+		    'zip', 'wget', 'curl', 'ca-certificates',
+                    'libffi-devel', 'openssl-devel']
 
   f21_pkgs = ['python', 'python-devel', 'python-pip', 'debianutils', 'xz-utils']
   centos7_pkgs = ['python', 'python-devel', 'python-pip', 'debianutils', 'xz-utils']
@@ -151,7 +154,11 @@ if __name__ == '__main__' :
     sep=' && '
   )
 
-  apk_python_and_pip_install = 'apk add python python-dev py-pip build-base curl wget ca-certificates'
+  apk_python_and_pip_install = join(['apk', 'add',
+                                     'python', 'python-dev', 'py-pip', 'build-base',
+                                     'curl', 'wget', 'ca-certificates',
+                                     'libffi-dev', 'openssl-dev'],
+                                    sep=' ')
   
   configs = [
     { "baseimage" : "ubuntu:xenial",
