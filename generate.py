@@ -12,7 +12,7 @@ FROM {{baseimage}}
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible
-RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install --upgrade ansible==2.0.2.0
+RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install --upgrade ansible==2.1.0.0
 WORKDIR /etc/ansible
 # configure ansible to target the localhost -- inside the container
 ADD ansible.cfg ansible.cfg
@@ -174,6 +174,11 @@ if __name__ == '__main__' :
       "pkg_update" : yum_update,
       "python_and_pip_install" : centos7_python_and_pip_install,
     },
+    { "baseimage" : "ubuntu:trusty",
+      "tag" : "ubuntu_trusty",
+      "pkg_update" : apt_update,
+      "python_and_pip_install" : apt_python_and_pip_install
+    },
     { "baseimage" : "ubuntu:xenial",
       "tag" : "ubuntu_xenial",
       "pkg_update" : apt_update,
@@ -193,26 +198,6 @@ if __name__ == '__main__' :
       "tag" : "fedora_23",
       "pkg_update" : dnf_update,
       "python_and_pip_install" : f23_python_and_pip_install
-    },
-    { "baseimage" : "fedora:22",
-      "tag" : "fedora_22",
-      "pkg_update" : dnf_update,
-      "python_and_pip_install" : f22_python_and_pip_install
-    },
-    { "baseimage" : "ubuntu:trusty",
-      "tag" : "ubuntu_trusty",
-      "pkg_update" : apt_update,
-      "python_and_pip_install" : apt_python_and_pip_install
-    },
-    { "baseimage" : "ubuntu:vivid",
-      "tag" : "ubuntu_vivid",
-      "pkg_update" : apt_update,
-      "python_and_pip_install" : apt_python_and_pip_install
-    },
-    { "baseimage" : "ubuntu:wily",
-      "tag" : "ubuntu_wily",
-      "pkg_update" : apt_update,
-      "python_and_pip_install" : apt_python_and_pip_install
     }
   ]
 
