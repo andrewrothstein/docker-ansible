@@ -185,7 +185,17 @@ if __name__ == '__main__' :
       "python_and_pip_install" : apt_python_and_pip_install
     },
     { "baseimage" : "alpine:3.3",
-      "tag" : "alpine_33",
+      "tag" : "alpine_3.3",
+      "pkg_update" : "apk update && apk upgrade",
+      "python_and_pip_install" : apk_python_and_pip_install
+    },
+    { "baseimage" : "alpine:3.4",
+      "tag" : "alpine_3.4",
+      "pkg_update" : "apk update && apk upgrade",
+      "python_and_pip_install" : apk_python_and_pip_install
+    },
+    { "baseimage" : "alpine:edge",
+      "tag" : "alpine_edge",
       "pkg_update" : "apk update && apk upgrade",
       "python_and_pip_install" : apk_python_and_pip_install
     },
