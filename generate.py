@@ -12,7 +12,7 @@ FROM {{baseimage}}
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible
-RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install --upgrade ansible==2.1.0.0
+RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install --upgrade setuptools && pip install --upgrade ansible==2.1.0.0
 WORKDIR /etc/ansible
 # configure ansible to target the localhost -- inside the container
 ADD ansible.cfg ansible.cfg
@@ -169,21 +169,6 @@ if __name__ == '__main__' :
                                     sep=' ')
   
   configs = [
-    { "baseimage" : "centos:7",
-      "tag" : "centos_7",
-      "pkg_update" : yum_update,
-      "python_and_pip_install" : centos7_python_and_pip_install,
-    },
-    { "baseimage" : "ubuntu:trusty",
-      "tag" : "ubuntu_trusty",
-      "pkg_update" : apt_update,
-      "python_and_pip_install" : apt_python_and_pip_install
-    },
-    { "baseimage" : "ubuntu:xenial",
-      "tag" : "ubuntu_xenial",
-      "pkg_update" : apt_update,
-      "python_and_pip_install" : apt_python_and_pip_install
-    },
     { "baseimage" : "alpine:3.3",
       "tag" : "alpine_3.3",
       "pkg_update" : "apk update && apk upgrade",
@@ -198,6 +183,21 @@ if __name__ == '__main__' :
       "tag" : "alpine_edge",
       "pkg_update" : "apk update && apk upgrade",
       "python_and_pip_install" : apk_python_and_pip_install
+    },
+    { "baseimage" : "centos:7",
+      "tag" : "centos_7",
+      "pkg_update" : yum_update,
+      "python_and_pip_install" : centos7_python_and_pip_install,
+    },
+    { "baseimage" : "ubuntu:trusty",
+      "tag" : "ubuntu_trusty",
+      "pkg_update" : apt_update,
+      "python_and_pip_install" : apt_python_and_pip_install
+    },
+    { "baseimage" : "ubuntu:xenial",
+      "tag" : "ubuntu_xenial",
+      "pkg_update" : apt_update,
+      "python_and_pip_install" : apt_python_and_pip_install
     },
     { "baseimage" : "debian:jessie",
       "tag" : "debian_jessie",
