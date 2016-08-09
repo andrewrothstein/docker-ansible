@@ -130,34 +130,21 @@ if __name__ == '__main__' :
     [ install('yum', ['epel-release']),
       install('yum', centos7_pkgs + rh_common_pkgs),
       groupinstall('yum'),
-      'yum clean all'
+      'yum clean packages'
     ],
     sep=' && '
   )
 
   dnf_update = update('dnf')
-  f22_pkgs = ['python2', 'python2-devel',
+  f_pkgs = ['python2', 'python2-devel', 'python2-dnf',
               'libselinux-python', 'python-pip',
               'python2-setuptools',
 	      'make', 'automake', 'gcc', 'gcc-c++',
               'redhat-rpm-config']
-  f22_python_and_pip_install = join(
-    [ install('dnf', f22_pkgs + rh_common_pkgs),
+  f_python_and_pip_install = join(
+    [ install('dnf', f_pkgs + rh_common_pkgs),
       groupinstall('dnf'),
-      'dnf clean all'
-    ],
-    sep=' && '
-  )
-
-  f23_pkgs = ['python2', 'python2-devel', 'python2-dnf',
-              'libselinux-python', 'python-pip',
-              'python2-setuptools',
-	      'make', 'automake', 'gcc', 'gcc-c++',
-              'redhat-rpm-config']
-  f23_python_and_pip_install = join(
-    [ install('dnf', f23_pkgs + rh_common_pkgs),
-      groupinstall('dnf'),
-      'dnf clean all'
+      'dnf clean packages'
     ],
     sep=' && '
   )
@@ -169,6 +156,16 @@ if __name__ == '__main__' :
                                     sep=' ')
   
   configs = [
+    { "baseimage" : "fedora:24",
+      "tag" : "fedora_24",
+      "pkg_update" : dnf_update,
+      "python_and_pip_install" : f_python_and_pip_install
+    },
+    { "baseimage" : "fedora:23",
+      "tag" : "fedora_23",
+      "pkg_update" : dnf_update,
+      "python_and_pip_install" : f_python_and_pip_install
+    },
     { "baseimage" : "alpine:3.3",
       "tag" : "alpine_3.3",
       "pkg_update" : "apk update && apk upgrade",
@@ -203,11 +200,6 @@ if __name__ == '__main__' :
       "tag" : "debian_jessie",
       "pkg_update" : apt_update,
       "python_and_pip_install" : apt_python_and_pip_install
-    },
-    { "baseimage" : "fedora:23",
-      "tag" : "fedora_23",
-      "pkg_update" : dnf_update,
-      "python_and_pip_install" : f23_python_and_pip_install
     }
   ]
 
