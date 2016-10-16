@@ -155,7 +155,18 @@ if __name__ == '__main__' :
                                      'libffi-dev', 'openssl-dev'],
                                     sep=' ')
   
+  apk_edge_python_and_pip_install = join(['apk', 'add',
+                                          'python', 'python-dev', 'py2-pip', 'build-base',
+                                          'curl', 'wget', 'ca-certificates',
+                                          'libffi-dev', 'openssl-dev'],
+                                         sep=' ')
+  
   configs = [
+    { "baseimage" : "alpine:edge",
+      "tag" : "alpine_edge",
+      "pkg_update" : "apk update && apk upgrade",
+      "python_and_pip_install" : apk_edge_python_and_pip_install
+    },
     { "baseimage" : "fedora:25",
       "tag" : "fedora_25",
       "pkg_update" : dnf_update,
@@ -178,11 +189,6 @@ if __name__ == '__main__' :
     },
     { "baseimage" : "alpine:3.4",
       "tag" : "alpine_3.4",
-      "pkg_update" : "apk update && apk upgrade",
-      "python_and_pip_install" : apk_python_and_pip_install
-    },
-    { "baseimage" : "alpine:edge",
-      "tag" : "alpine_edge",
       "pkg_update" : "apk update && apk upgrade",
       "python_and_pip_install" : apk_python_and_pip_install
     },
