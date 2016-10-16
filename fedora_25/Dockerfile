@@ -1,5 +1,5 @@
 
-FROM fedora:24
+FROM fedora:25
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible

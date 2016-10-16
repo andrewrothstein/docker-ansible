@@ -12,7 +12,7 @@ FROM {{baseimage}}
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible
-RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install --upgrade setuptools && pip install --upgrade ansible==2.1.1.0
+RUN {{pkg_update}} && {{python_and_pip_install}} && pip install --upgrade pip && pip install --upgrade setuptools && pip install --upgrade ansible==2.1.2.0
 WORKDIR /etc/ansible
 # configure ansible to target the localhost -- inside the container
 ADD ansible.cfg ansible.cfg
@@ -156,6 +156,11 @@ if __name__ == '__main__' :
                                     sep=' ')
   
   configs = [
+    { "baseimage" : "fedora:25",
+      "tag" : "fedora_25",
+      "pkg_update" : dnf_update,
+      "python_and_pip_install" : f_python_and_pip_install
+    },
     { "baseimage" : "fedora:24",
       "tag" : "fedora_24",
       "pkg_update" : dnf_update,
