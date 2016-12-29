@@ -4,7 +4,37 @@ machine:
     - docker
 
 dependencies:
+  pre:
+    - sudo -H pip install --upgrade pip
+    - sudo -H pip install circleci-helpers
+
+test:
   override:
-    - docker info
-    - ./circleci-builder.sh:
+    - ? | 
+          circle-matrix <<"EHD"
+            env:
+              - OS=alpine_3.3
+              - OS=alpine_3.4
+              - OS=alpine_edge
+              - OS=centos_7
+              - OS=debian_jessie
+              - OS=fedora_23
+              - OS=fedora_24
+              - OS=ubuntu_trusty
+              - OS=ubuntu_xenial
+
+            before_script:
+              - export TARGET_USER="andrewrothstein"
+              - export TARGET_APP="docker-ansible"
+              - export TARGET_CONTAINER=${TARGET_USER}/${TARGET_APP}_$OS
+              - env | sort
+
+            script:
+              - docker build -t $TARGET_CONTAINER $OS
+              - docker run --rm -it $TARGET_CONTAINER -- ansible localhost -m ping
+
+            after_script:
+              - docker images $TARGET_CONTAINER
+          EHD
+      :
         parallel: true

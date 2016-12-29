@@ -1,8 +1,17 @@
 docker-ansible
 ==============
 
-Base containers with Ansible installed. Generally trying to support CentOS, Fedora, Ubuntu, and Alpine.
+* Base containers with Ansible installed
+* Generally trying to support CentOS, Fedora, Ubuntu, and Alpine
 
-generate.py is a script that uses Jinja2 to write the Dockerfiles. also has the ability to build the containers locally.
+## Generate Dockerfiles, etc.
+```sh
+./generate.py -w
+```
 
-Rock and roll music, Andrew
+## Build images locally with...
+```sh
+./generate.py -b
+```
+
+Andrew Rothstein <andrew.rothstein@gmail.com>
