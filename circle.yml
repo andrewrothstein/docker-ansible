@@ -26,7 +26,7 @@ test:
 
             before_script:
               - export DOCKER_APP="docker-ansible"
-              - export DOCKER_CONTAINER=${DOCKER_USER}/${DOCKER_APP}_$OS
+              - export DOCKER_CONTAINER=${DOCKER_GROUP}/${DOCKER_APP}_$OS
               - env | sort
 
             script:
