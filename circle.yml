@@ -29,7 +29,7 @@ test:
               - export DOCKER_CONTAINER=${DOCKER_GROUP}/${DOCKER_APP}:$OS
 
             script:
-              - docker build -t $DOCKER_CONTAINER $OS
+              - docker build --rm=false -t $DOCKER_CONTAINER $OS
 
             after_script:
               - docker images $DOCKER_CONTAINER
