@@ -7,7 +7,7 @@ dependencies:
   pre:
     - sudo -H pip install --upgrade pip
     - sudo -H pip install circleci-helpers
-    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD $DOCKER_REGISTRY
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD -e $DOCKER_EMAIL $DOCKER_REGISTRY 
 
 test:
   override:
