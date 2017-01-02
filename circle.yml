@@ -31,7 +31,6 @@ test:
 
             script:
               - docker build -t $TARGET_CONTAINER $OS
-              - docker run --rm -it $TARGET_CONTAINER ansible localhost -m ping
 
             after_script:
               - docker images $TARGET_CONTAINER
