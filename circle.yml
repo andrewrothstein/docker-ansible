@@ -25,11 +25,11 @@ test:
               - OS=ubuntu_xenial
 
             before_script:
-              - export DOCKER_APP="docker-ansible"
               - export DOCKER_CONTAINER=${DOCKER_GROUP}/${DOCKER_APP}:$OS
+              - export DOCKER_BUILD_DIR=$OS
 
             script:
-              - docker build --rm=false -t $DOCKER_CONTAINER $OS
+              - docker build --rm=false -t $DOCKER_CONTAINER $DOCKER_BUILD_DIR
 
             after_script:
               - docker images $DOCKER_CONTAINER
