@@ -25,17 +25,17 @@ test:
               - OS=ubuntu_xenial
 
             before_script:
-              - export TARGET_APP="docker-ansible"
-              - export TARGET_CONTAINER=${TARGET_USER}/${TARGET_APP}_$OS
+              - export DOCKER_APP="docker-ansible"
+              - export DOCKER_CONTAINER=${DOCKER_USER}/${DOCKER_APP}_$OS
               - env | sort
 
             script:
-              - docker build -t $TARGET_CONTAINER $OS
+              - docker build -t $DOCKER_CONTAINER $OS
 
             after_script:
-              - docker images $TARGET_CONTAINER
-              - docker tag $TARGET_CONTAINER $DOCKER_REGISTRY/$TARGET_CONTAINER
-              - docker push $DOCKER_REGISTRY/$TARGET_CONTAINER
+              - docker images $DOCKER_CONTAINER
+              - docker tag $DOCKER_CONTAINER $DOCKER_REGISTRY/$DOCKER_CONTAINER
+              - docker push $DOCKER_REGISTRY/$DOCKER_CONTAINER
           EHD
       :
         parallel: true
