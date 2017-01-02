@@ -7,6 +7,7 @@ dependencies:
   pre:
     - sudo -H pip install --upgrade pip
     - sudo -H pip install circleci-helpers
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD $DOCKER_REGISTRY
 
 test:
   override:
@@ -24,7 +25,6 @@ test:
               - OS=ubuntu_xenial
 
             before_script:
-              - export TARGET_USER="andrewrothstein"
               - export TARGET_APP="docker-ansible"
               - export TARGET_CONTAINER=${TARGET_USER}/${TARGET_APP}_$OS
               - env | sort
@@ -34,6 +34,8 @@ test:
 
             after_script:
               - docker images $TARGET_CONTAINER
+              - docker tag $TARGET_CONTAINER $DOCKER_REGISTRY/$TARGET_CONTAINER
+              - docker push $DOCKER_REGISTRY/$TARGET_CONTAINER
           EHD
       :
         parallel: true
