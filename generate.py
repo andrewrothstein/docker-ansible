@@ -167,6 +167,11 @@ if __name__ == '__main__' :
       "pkg_update" : "apk update && apk upgrade",
       "python_and_pip_install" : apk_edge_python_and_pip_install
     },
+    { "baseimage" : "fedora:25",
+      "tag" : "fedora_25",
+      "pkg_update" : dnf_update,
+      "python_and_pip_install" : f_python_and_pip_install
+    },
     { "baseimage" : "fedora:24",
       "tag" : "fedora_24",
       "pkg_update" : dnf_update,
