@@ -162,6 +162,11 @@ if __name__ == '__main__' :
                                          sep=' ')
   
   configs = [
+    { "baseimage" : "alpine:3.5",
+      "tag" : "alpine_3.5",
+      "pkg_update" : "apk update && apk upgrade",
+      "python_and_pip_install" : apk_python_and_pip_install
+    },
     { "baseimage" : "alpine:edge",
       "tag" : "alpine_edge",
       "pkg_update" : "apk update && apk upgrade",
