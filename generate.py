@@ -43,7 +43,6 @@ def build(params) :
   container_name = 'andrewrothstein/docker-ansible'
   print "building the {0}:{1} container...".format(container_name, tag)
   cmd = ['docker', 'build', '-t', '{0}:{1}'.format(container_name, tag), tag]
-  os.chdir
   return call(cmd, shell=False)
 
 def push(registry) :
@@ -53,7 +52,6 @@ def push(registry) :
     url = "{0}/{1}:{2}".format(registry, container_name, tag)
     print "pushing building to {0}...".format(url)
     cmd = ['docker', 'push', url]
-    os.chdir
     return call(cmd, shell=False)
   return pusher
 
@@ -107,7 +105,7 @@ if __name__ == '__main__' :
   apt_pkgs = ['python', 'python-dev', 'python-pip', 'python-setuptools',
               'python-apt',
               'python-setuptools', 'aptitude', 'curl', 'wget',
-              'ca-certificates', 'libffi-dev', 'libssl-dev']
+              'ca-certificates', 'libffi-dev', 'libssl-dev', 'apt-transport-https']
 
   apt_python_and_pip_install = join(
     [ install('apt-get', apt_pkgs),
