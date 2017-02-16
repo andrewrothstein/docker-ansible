@@ -46,14 +46,14 @@ test:
 
             script:
               - echo building ${TARGET_CONTAINER} from directory ${DOCKER_BUILD_DIR}...
-              - time docker build --rm=false -t ${TARGET_CONTAINER} ${DOCKER_BUILD_DIR}
-              - time docker images ${TARGET_CONTAINER}
+              - docker build --rm=false -t ${TARGET_CONTAINER} ${DOCKER_BUILD_DIR}
+              - docker images ${TARGET_CONTAINER}
               - echo finished building ${TARGET_CONTAINER}
 
             after_script:
               - echo tagging and pushing ${FQ_TARGET_CONTAINER}...
-              - time docker tag ${TARGET_CONTAINER} ${FQ_TARGET_CONTAINER}
-              - time docker push ${FQ_TARGET_CONTAINER}
+              - docker tag ${TARGET_CONTAINER} ${FQ_TARGET_CONTAINER}
+              - docker push ${FQ_TARGET_CONTAINER}
               - echo finished tagging and pushing ${FQ_TARGET_CONTAINER}
           EHD
       :
