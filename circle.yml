@@ -1,9 +1,10 @@
 ---
 # Assumed vars and examples from CircleCI
 # CIRCLE_PROJECT_REPONAME: docker-ansible
+# CIRCLE_PROJECT_USERNAME: andrewrothstein
 
 # Registry credentials:
-# DOCKER_USER: andrewrothstein
+# DOCKER_USER: andrewrothstein (optional defaults to CIRCLE_PROJECT_USERNAME)
 # DOCKER_PASSWORD: eadd6b58-f400-11e6-898e-1f7353b79db1
 # DOCKER_EMAIL: andrew.rothstein@gmail.com
 # DOCKER_REGISTRY: quay.io
@@ -19,7 +20,7 @@ dependencies:
   pre:
     - sudo -H pip install --upgrade pip
     - sudo -H pip install circleci-helpers
-    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD -e $DOCKER_EMAIL $DOCKER_REGISTRY 
+    - docker login -u ${DOCKER_USER:-CIRCLE_PROJECT_USERNAME} -p $DOCKER_PASSWORD -e $DOCKER_EMAIL $DOCKER_REGISTRY 
 
 test:
   override:
@@ -39,11 +40,13 @@ test:
               - OS=ubuntu_xenial
 
             before_script:
-              - export TARGET_CONTAINER=${DOCKER_USER}/${CIRCLE_PROJECT_REPONAME}:${OS}
+              - export TARGET_CONTAINER=${DOCKER_USER:-CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}:${OS}
               - export DOCKER_BUILD_DIR=${OS}
 
             script:
-              - docker build --rm=false -t $TARGET_CONTAINER $DOCKER_BUILD_DIR
+              - echo building ${TARGET_CONTAINER}...
+              - echo building from ${DOCKER_BUILD_DIR}
+              - docker build --rm=false -t ${TARGET_CONTAINER} ${DOCKER_BUILD_DIR}
 
             after_script:
               - docker images $TARGET_CONTAINER
