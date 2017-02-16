@@ -43,7 +43,7 @@ test:
               - export DOCKER_BUILD_DIR=${OS}
 
             script:
-              - docker build --rm=false -t TARGET_CONTAINER $DOCKER_BUILD_DIR
+              - docker build --rm=false -t $TARGET_CONTAINER $DOCKER_BUILD_DIR
 
             after_script:
               - docker images $TARGET_CONTAINER
