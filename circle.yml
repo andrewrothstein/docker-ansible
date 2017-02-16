@@ -1,4 +1,16 @@
 ---
+# Assumed vars and examples from CircleCI
+# CIRCLE_PROJECT_REPONAME: docker-ansible
+
+# Registry credentials:
+# DOCKER_USER: andrewrothstein
+# DOCKER_PASSWORD: eadd6b58-f400-11e6-898e-1f7353b79db1
+# DOCKER_EMAIL: andrew.rothstein@gmail.com
+# DOCKER_REGISTRY: quay.io
+
+# Container building:
+# builds tagged containers named $DOCKER_REGISTRY/$DOCKER_USER/$CIRCLE_PROJECT_REPONAME:$OS
+
 machine:
   services:
     - docker
@@ -27,16 +39,16 @@ test:
               - OS=ubuntu_xenial
 
             before_script:
-              - export DOCKER_CONTAINER=${DOCKER_GROUP}/${DOCKER_APP}:$OS
-              - export DOCKER_BUILD_DIR=$OS
+              - export TARGET_CONTAINER=${DOCKER_USER}/${CIRCLE_PROJECT_REPONAME}:${OS}
+              - export DOCKER_BUILD_DIR=${OS}
 
             script:
-              - docker build --rm=false -t $DOCKER_CONTAINER $DOCKER_BUILD_DIR
+              - docker build --rm=false -t TARGET_CONTAINER $DOCKER_BUILD_DIR
 
             after_script:
-              - docker images $DOCKER_CONTAINER
-              - docker tag $DOCKER_CONTAINER $DOCKER_REGISTRY/$DOCKER_CONTAINER
-              - docker push $DOCKER_REGISTRY/$DOCKER_CONTAINER
+              - docker images $TARGET_CONTAINER
+              - docker tag $TARGET_CONTAINER $DOCKER_REGISTRY/$TARGET_CONTAINER
+              - docker push $DOCKER_REGISTRY/$TARGET_CONTAINER
           EHD
       :
         parallel: true
