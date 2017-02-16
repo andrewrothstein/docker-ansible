@@ -4,13 +4,13 @@
 # CIRCLE_PROJECT_USERNAME: andrewrothstein
 
 # Registry credentials:
-# DOCKER_USER: andrewrothstein (optional defaults to CIRCLE_PROJECT_USERNAME)
+# DOCKER_USER: andrewrothstein+robot-123
 # DOCKER_PASSWORD: eadd6b58-f400-11e6-898e-1f7353b79db1
 # DOCKER_EMAIL: andrew.rothstein@gmail.com
 # DOCKER_REGISTRY: quay.io
 
 # Container building:
-# builds tagged containers named $DOCKER_REGISTRY/$DOCKER_USER/$CIRCLE_PROJECT_REPONAME:$OS
+# builds tagged containers named $DOCKER_REGISTRY/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$OS
 
 machine:
   services:
@@ -20,7 +20,7 @@ dependencies:
   pre:
     - sudo -H pip install --upgrade pip
     - sudo -H pip install circleci-helpers
-    - docker login -u ${DOCKER_USER:-CIRCLE_PROJECT_USERNAME} -p $DOCKER_PASSWORD -e $DOCKER_EMAIL $DOCKER_REGISTRY 
+    - docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -e ${DOCKER_EMAIL} ${DOCKER_REGISTRY} 
 
 test:
   override:
@@ -40,18 +40,21 @@ test:
               - OS=ubuntu_xenial
 
             before_script:
-              - export TARGET_CONTAINER=${DOCKER_USER:-CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}:${OS}
+              - export TARGET_CONTAINER=${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}:${OS}
+              - export FQ_TARGET_CONTAINER=${DOCKER_REGISTRY}/${TARGET_CONTAINER}
               - export DOCKER_BUILD_DIR=${OS}
 
             script:
-              - echo building ${TARGET_CONTAINER}...
-              - echo building from ${DOCKER_BUILD_DIR}
-              - docker build --rm=false -t ${TARGET_CONTAINER} ${DOCKER_BUILD_DIR}
+              - echo building ${TARGET_CONTAINER} from directory ${DOCKER_BUILD_DIR}...
+              - time docker build --rm=false -t ${TARGET_CONTAINER} ${DOCKER_BUILD_DIR}
+              - time docker images ${TARGET_CONTAINER}
+              - echo finished building ${TARGET_CONTAINER}
 
             after_script:
-              - docker images $TARGET_CONTAINER
-              - docker tag $TARGET_CONTAINER $DOCKER_REGISTRY/$TARGET_CONTAINER
-              - docker push $DOCKER_REGISTRY/$TARGET_CONTAINER
+              - echo tagging and pushing ${FQ_TARGET_CONTAINER}...
+              - time docker tag ${TARGET_CONTAINER} ${FQ_TARGET_CONTAINER}
+              - time docker push ${FQ_TARGET_CONTAINER}
+              - echo finished tagging and pushing ${FQ_TARGET_CONTAINER}
           EHD
       :
         parallel: true
