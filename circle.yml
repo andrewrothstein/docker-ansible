@@ -1,17 +1,4 @@
 ---
-# Assumed vars and examples from CircleCI
-# CIRCLE_PROJECT_REPONAME: docker-ansible
-# CIRCLE_PROJECT_USERNAME: andrewrothstein
-
-# Registry credentials:
-# DOCKER_USER: andrewrothstein+robot-123
-# DOCKER_PASSWORD: eadd6b58-f400-11e6-898e-1f7353b79db1
-# DOCKER_EMAIL: andrew.rothstein@gmail.com
-# DOCKER_REGISTRY: quay.io
-
-# Container building:
-# builds tagged containers named $DOCKER_REGISTRY/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$OS
-
 machine:
   services:
     - docker
@@ -19,8 +6,7 @@ machine:
 dependencies:
   pre:
     - sudo -H pip install --upgrade pip
-    - sudo -H pip install circleci-helpers
-    - docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -e ${DOCKER_EMAIL} ${DOCKER_REGISTRY} 
+    - sudo -H pip install circleci-helpers dcb==0.0.7
 
 test:
   override:
@@ -39,22 +25,13 @@ test:
               - OS=ubuntu_trusty
               - OS=ubuntu_xenial
 
-            before_script:
-              - export TARGET_CONTAINER=${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}:${OS}
-              - export FQ_TARGET_CONTAINER=${DOCKER_REGISTRY}/${TARGET_CONTAINER}
-              - export DOCKER_BUILD_DIR=${OS}
-
             script:
-              - echo building ${TARGET_CONTAINER} from directory ${DOCKER_BUILD_DIR}...
-              - docker build --rm=false -t ${TARGET_CONTAINER} ${DOCKER_BUILD_DIR}
-              - docker images ${TARGET_CONTAINER}
-              - echo finished building ${TARGET_CONTAINER}
+              - >-
+                dcb
+                --subdirs
+                --build ${OS}
+                --push ${OS}
 
-            after_script:
-              - echo tagging and pushing ${FQ_TARGET_CONTAINER}...
-              - docker tag ${TARGET_CONTAINER} ${FQ_TARGET_CONTAINER}
-              - docker push ${FQ_TARGET_CONTAINER}
-              - echo finished tagging and pushing ${FQ_TARGET_CONTAINER}
           EHD
       :
         parallel: true
