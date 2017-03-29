@@ -14,7 +14,8 @@ RUN dnf update -y \
    python-jinja2 \
    python-paramiko \
  && pip install --upgrade pip \
- && pip install ansible==2.2.1.0
+ && pip install ansible==2.2.1.0 \
+ && dnf clean all
 
 WORKDIR /etc/ansible
 # configure ansible to target the localhost -- inside the container

@@ -16,7 +16,8 @@ RUN apk update \
  && apk del \
    build-base \
    libffi-dev \
-   openssl-dev
+   openssl-dev \
+ && rm -rf /var/cache/apk/*
 
 WORKDIR /etc/ansible
 # configure ansible to target the localhost -- inside the container
