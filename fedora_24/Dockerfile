@@ -4,11 +4,6 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 # install ansible
 RUN dnf update -y \
  && dnf install -y \
-   ca-certificates \
-   tar \
-   unzip \
-   gzip \
-   bzip2 \
    python \
    libselinux-python \
    python-dnf \

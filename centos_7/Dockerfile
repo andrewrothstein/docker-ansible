@@ -5,11 +5,6 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 RUN yum update -y \
  && yum install -y epel-release \
  && yum install -y \
-   ca-certificates \
-   tar \
-   unzip \
-   gzip \
-   bzip2 \
    python \
    python-pip \
    python-crypto \

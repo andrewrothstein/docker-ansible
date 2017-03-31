@@ -5,11 +5,6 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 RUN apk update \
  && apk upgrade \
  && apk add \
-   ca-certificates \
-   tar \
-   unzip \
-   gzip \
-   bzip2 \
    python \
    py-pip \
    py-crypto \
