@@ -12,8 +12,9 @@ RUN apk update \
    py-yaml \
    py-jinja2 \
    py-paramiko \
+   ca-certificates \
  && pip install --upgrade pip \
- && pip install ansible==2.2.1.0 \
+ && pip install ansible==2.2.2.0 \
  && rm -rf /var/cache/apk/*
 
 WORKDIR /etc/ansible

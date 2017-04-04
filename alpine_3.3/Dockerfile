@@ -11,8 +11,9 @@ RUN apk update \
    build-base \
    libffi-dev \
    openssl-dev \
+   ca-certificates \
  && pip install --upgrade pip \
- && pip install ansible==2.2.1.0 \
+ && pip install ansible==2.2.2.0 \
  && apk del \
    build-base \
    libffi-dev \
