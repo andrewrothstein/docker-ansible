@@ -12,16 +12,20 @@ addons:
     packages:
       - python-pip
 
+branches:
+  except:
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
 env:
   - OS=alpine_3.3
   - OS=alpine_3.4
   - OS=alpine_3.5
   - OS=alpine_edge
   - OS=centos_7
-  - OS=debian_jessie
   - OS=fedora_23
   - OS=fedora_24
   - OS=fedora_25
+  - OS=debian_jessie
   - OS=ubuntu_trusty
   - OS=ubuntu_xenial
     
@@ -31,9 +35,7 @@ before_install:
 script:
   - >-
     dcb
-    --upstreamgroup andrewrothstein
-    --upstreamapp docker-ansible-role
-    --pull ${OS}
-    --write ${OS}
+    --subdirs
     --build ${OS}
     --push ${OS}
+

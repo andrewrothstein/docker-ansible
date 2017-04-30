@@ -1,17 +1,7 @@
 docker-ansible
 ==============
+[![Build Status](https://travis-ci.org/andrewrothstein/docker-ansible.svg?branch=master)](https://travis-ci.org/andrewrothstein/docker-ansible)
 
-* Base containers with Ansible installed
-* Generally trying to support CentOS, Fedora, Ubuntu, and Alpine
-
-## Generate Dockerfiles, etc.
-```sh
-./generate.py -w
-```
-
-## Build images locally with...
-```sh
-./generate.py -b
-```
+Hand curated collection of base Ansible images.
 
 Andrew Rothstein <andrew.rothstein@gmail.com>
