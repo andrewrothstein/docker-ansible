@@ -13,6 +13,7 @@ RUN apk update \
    py2-jinja2 \
    py2-paramiko \
    ca-certificates \
+   gcc libtool musl-dev python2-dev make \
  && pip install --upgrade pip \
  && pip install ansible==2.3.1.0 \
  && rm -rf /var/cache/apk/*
