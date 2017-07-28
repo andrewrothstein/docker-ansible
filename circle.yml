@@ -19,6 +19,7 @@ test:
               - OS=alpine_edge
               - OS=centos_7
               - OS=debian_jessie
+              - OS=debian_stretch
               - OS=fedora_23
               - OS=fedora_24
               - OS=fedora_25
