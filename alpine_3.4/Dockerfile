@@ -5,12 +5,14 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 RUN apk update \
  && apk upgrade \
  && apk add \
+   libffi \
    python \
    py-pip \
-   py-crypto \
+   py-cryptography \
    py-cffi \
    py-yaml \
    py-jinja2 \
+   py-ecdsa \
    py-paramiko \
    ca-certificates \
  && pip install --upgrade pip \
