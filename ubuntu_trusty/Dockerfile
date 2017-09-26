@@ -7,14 +7,17 @@ RUN apt-get update -y \
  && apt-get install -y \
    aptitude \
    apt-transport-https \
+   libffi-dev \
+   libssl-dev \
    python \
+   python-dev \
    python-apt \
    python-pip \
    python-crypto \
-   python-cffi \
    python-yaml \
    python-jinja2 \
    python-paramiko \
+   python-setuptools \
    python-urllib3 \
    python-openssl \
    python-pyasn1 \
