@@ -22,7 +22,7 @@ RUN apt-get update -y \
    python-openssl \
    python-pyasn1 \
    ca-certificates \
- && pip install --upgrade pip \
+ && pip install --upgrade pip setuptools \
  && pip install ndg-httpsclient ansible==2.4.0.0 \
  && apt-get clean
 
