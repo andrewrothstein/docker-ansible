@@ -15,7 +15,7 @@ RUN apk update \
    ca-certificates \
    gcc libtool musl-dev python2-dev make \
  && pip install --upgrade pip \
- && pip install ansible==2.4.0.0 \
+ && pip install ansible==2.4.1.0 \
  && rm -rf /var/cache/apk/*
 
 WORKDIR /etc/ansible
