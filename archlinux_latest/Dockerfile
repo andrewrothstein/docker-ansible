@@ -22,7 +22,7 @@ RUN pacman -S -y \
    python2-paramiko \
    ca-certificates \
  && pip2 install --upgrade pip \
- && pip2 install ansible==2.4.1.0 \
+ && pip2 install ansible==2.4.2.0 \
  && pacman -S -c --noconfirm
 
 WORKDIR /etc/ansible
