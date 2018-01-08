@@ -27,6 +27,7 @@ test:
               - OS=fedora_24
               - OS=fedora_25
               - OS=fedora_26
+              - OS=fedora_27
               - OS=ubuntu_trusty
               - OS=ubuntu_xenial
 
