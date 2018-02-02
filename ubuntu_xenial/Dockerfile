@@ -17,7 +17,7 @@ RUN apt-get update -y \
    python-paramiko \
    ca-certificates \
  && pip install --upgrade pip \
- && pip install ansible==2.4.2.0 \
+ && pip install ansible==2.4.3.0 \
  && apt-get clean
 
 WORKDIR /etc/ansible

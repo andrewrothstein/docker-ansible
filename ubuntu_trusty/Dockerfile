@@ -23,7 +23,7 @@ RUN apt-get update -y \
    python-pyasn1 \
    ca-certificates \
  && pip install --upgrade pip setuptools \
- && pip install ndg-httpsclient ansible==2.4.2.0 \
+ && pip install ndg-httpsclient ansible==2.4.3.0 \
  && apt-get clean
 
 WORKDIR /etc/ansible
