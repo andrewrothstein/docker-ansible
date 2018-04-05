@@ -4,6 +4,7 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 # install ansible
 RUN pacman -S -y \
  && pacman -S --noconfirm \
+   python2 \
    python2-appdirs \
    python2-asn1crypto \
    python2-bcrypt \
