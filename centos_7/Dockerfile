@@ -14,7 +14,7 @@ RUN yum update -y \
    python-paramiko \
    ca-certificates \
  && pip install --upgrade pip \
- && pip install ansible==2.5.0.0 \
+ && pip install ansible==2.5.2.0 \
  && yum clean all
 
 WORKDIR /etc/ansible

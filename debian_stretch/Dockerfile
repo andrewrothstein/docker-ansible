@@ -16,7 +16,7 @@ RUN apt-get update -y \
    python-jinja2 \
    python-paramiko \
    ca-certificates \
- && pip install ansible==2.5.0.0 \
+ && pip install ansible==2.5.2.0 \
  && apt-get clean
 
 WORKDIR /etc/ansible
