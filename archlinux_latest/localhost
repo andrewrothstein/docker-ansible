@@ -1,1 +1,7 @@
-localhost ansible_python_interpreter=/usr/sbin/python2
+localhost
+
+[archlinux]
+localhost
+
+[archlinux:vars]
+ansible_python_interpreter=/usr/sbin/python2
