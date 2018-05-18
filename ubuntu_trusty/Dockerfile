@@ -18,11 +18,10 @@ RUN apt-get update -y \
    python-jinja2 \
    python-paramiko \
    python-setuptools \
-   python-urllib3 \
    python-openssl \
    python-pyasn1 \
    ca-certificates \
- && pip install --upgrade pip setuptools \
+ && pip install --upgrade pip setuptools urllib3 \
  && pip install ndg-httpsclient ansible==2.5.2.0 \
  && apt-get clean
 
