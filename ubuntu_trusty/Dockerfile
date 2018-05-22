@@ -22,7 +22,7 @@ RUN apt-get update -y \
    python-pyasn1 \
    ca-certificates \
  && pip install --upgrade pip setuptools urllib3 \
- && pip install ndg-httpsclient ansible==2.5.2.0 \
+ && pip install ndg-httpsclient ansible==2.5.3.0 \
  && apt-get clean
 
 WORKDIR /etc/ansible
