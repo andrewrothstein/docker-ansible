@@ -14,7 +14,7 @@ RUN apk update \
    py2-paramiko \
    ca-certificates \
  && pip install --upgrade pip \
- && pip install ansible==2.5.3.0 \
+ && pip install ansible==2.5.4.0 \
  && rm -rf /var/cache/apk/*
 
 WORKDIR /etc/ansible

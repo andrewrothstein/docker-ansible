@@ -13,7 +13,7 @@ RUN apk update \
    openssl-dev \
    ca-certificates \
  && pip install --upgrade pip \
- && pip install ansible==2.5.3.0 \
+ && pip install ansible==2.5.4.0 \
  && apk del \
    build-base \
    libffi-dev \
