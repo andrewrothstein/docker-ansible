@@ -4,26 +4,14 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 # install ansible
 RUN apt-get update -y \
  && apt-get upgrade -y \
- && apt-get install -y \
-   aptitude \
-   apt-transport-https \
-   libffi-dev \
-   libssl-dev \
-   python \
-   python-dev \
-   python-apt \
-   python-pip \
-   python-crypto \
-   python-yaml \
-   python-jinja2 \
-   python-paramiko \
-   python-setuptools \
-   python-openssl \
-   python-pyasn1 \
-   ca-certificates \
- && pip install --upgrade pip setuptools urllib3 \
- && pip install ndg-httpsclient ansible==2.5.4.0 \
- && apt-get clean
+ && apt-get install -y wget software-properties-common ca-certificates libffi-dev libssl-dev \
+ && add-apt-repository ppa:deadsnakes/ppa -y \
+ && apt-get update -y \
+ && apt-get install -y python3.6 \
+ && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
+ && python3.6 /usr/local/bin/get-pip.py \
+ && pip install urllib3 ansible==2.5.4.0 \
+ && apt-get clean -y
 
 WORKDIR /etc/ansible
 # configure ansible to target the localhost -- inside the container

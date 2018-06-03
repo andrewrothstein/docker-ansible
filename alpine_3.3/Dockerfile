@@ -5,15 +5,16 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 RUN apk update \
  && apk upgrade \
  && apk add \
-   python \
-   python-dev \
-   py-pip \
+   python3 \
+   python3-dev \
    build-base \
    libffi-dev \
    openssl-dev \
+   wget \
    ca-certificates \
- && pip install --upgrade pip \
- && pip install ansible==2.5.4.0 \
+ && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
+ && python3 /usr/local/bin/get-pip.py \
+ && pip install urllib3 ansible==2.5.4.0 \
  && apk del \
    build-base \
    libffi-dev \
