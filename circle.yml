@@ -30,6 +30,7 @@ test:
               - OS=fedora_27
               - OS=ubuntu_trusty
               - OS=ubuntu_xenial
+              - OS=ubuntu_bionic
 
             script:
               - >-
