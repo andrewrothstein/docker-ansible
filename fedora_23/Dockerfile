@@ -3,19 +3,10 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible
 RUN dnf update -y \
- && dnf install -y \
-   python \
-   libselinux-python \
-   python-dnf \
-   python-pip \
-   python-crypto \
-   python-cffi \
-   python-yaml \
-   python-jinja2 \
-   python-paramiko \
-   ca-certificates \
- && pip install --upgrade pip \
- && pip install ansible==2.5.4.0 \
+ && dnf install -y python wget \
+ && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
+ && python /usr/local/bin/get-pip.py \
+ && pip install urllib3 ansible==2.5.4.0 \
  && dnf clean all
 
 WORKDIR /etc/ansible

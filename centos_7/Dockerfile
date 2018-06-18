@@ -3,19 +3,12 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 # install ansible
 RUN yum update -y \
- && yum install -y epel-release \
- && yum install -y \
-   python \
-   python-pip \
-   python-crypto \
-   python-cffi \
-   python-yaml \
-   python-jinja2 \
-   python-paramiko \
-   ca-certificates \
- && pip install --upgrade pip \
- && pip install ansible==2.5.4.0 \
- && yum clean all
+ && yum install -y python wget \
+ && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
+ && python /usr/local/bin/get-pip.py \
+ && pip install urllib3 ansible==2.5.4.0 \
+ && yum clean all \
+ && rm -rf /var/cache/yum
 
 WORKDIR /etc/ansible
 # configure ansible to target the localhost -- inside the container

@@ -4,19 +4,10 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 # install ansible
 RUN apt-get update -y \
  && apt-get upgrade -y \
- && apt-get install -y \
-   aptitude \
-   apt-transport-https \
-   python2.7 \
-   python-apt \
-   python-pip \
-   python-crypto \
-   python-cffi \
-   python-yaml \
-   python-jinja2 \
-   python-paramiko \
-   ca-certificates \
- && pip install ansible==2.5.4.0 \
+ && apt-get install -y python wget \
+ && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
+ && python /usr/local/bin/get-pip.py \
+ && pip install urllib3 ansible==2.5.4.0 \
  && apt-get clean
 
 WORKDIR /etc/ansible
