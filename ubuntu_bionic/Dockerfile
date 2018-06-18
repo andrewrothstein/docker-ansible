@@ -4,12 +4,9 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 # install ansible
 RUN apt-get update -y \
  && apt-get upgrade -y \
- && apt-get install -y wget software-properties-common ca-certificates libffi-dev libssl-dev \
- && add-apt-repository ppa:deadsnakes/ppa -y \
- && apt-get update -y \
- && apt-get install -y python3.6 \
+ && apt-get install -y wget software-properties-common ca-certificates libffi-dev libssl-dev python3 python3-dev \
  && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
- && python3.6 /usr/local/bin/get-pip.py \
+ && python3 /usr/local/bin/get-pip.py \
  && pip install urllib3 ansible==2.5.4.0 \
  && apt-get clean -y
 
