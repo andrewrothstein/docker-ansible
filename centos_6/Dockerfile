@@ -19,7 +19,7 @@ RUN yum update -y \
  && cd ~ && rm -rf ~/Python-3.6.3 \
  && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
  && python3.6 /usr/local/bin/get-pip.py \
- && pip install urllib3 ansible==2.5.4.0 \
+ && pip install dnf urllib3 ansible==2.5.4.0 \
  && yum clean all
 
 WORKDIR /etc/ansible
