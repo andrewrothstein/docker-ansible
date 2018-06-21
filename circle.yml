@@ -20,7 +20,6 @@ test:
               - OS=alpine_3.7
               - OS=alpine_edge
               - OS=archlinux_latest
-              - OS=centos_6
               - OS=centos_7
               - OS=debian_jessie
               - OS=debian_stretch

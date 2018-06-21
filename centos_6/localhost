@@ -1,7 +1,0 @@
-localhost
-
-[centos]
-localhost
-
-[centos:vars]
-ansible_python_interpreter=/usr/local/bin/python2.7
