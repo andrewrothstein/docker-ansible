@@ -4,4 +4,4 @@ localhost
 localhost
 
 [centos:vars]
-ansible_python_interpreter=/usr/local/bin/python3.6
+ansible_python_interpreter=/usr/local/bin/python2.7
