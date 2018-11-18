@@ -5,6 +5,7 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 RUN apk update \
  && apk upgrade \
  && apk add \
+   shadow \
    python3 \
    python3-dev \
    build-base \
