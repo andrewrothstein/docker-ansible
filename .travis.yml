@@ -1,16 +1,12 @@
 ---
+dist: xenial
 sudo: required
 
 services:
   - docker
 
 language: python
-python: "2.7"
-
-addons:
-  apt:
-    packages:
-      - python-pip
+python: 3.5
 
 branches:
   except:
@@ -40,7 +36,7 @@ env:
   - OS=ubuntu_bionic
     
 before_install:
-  - pip install dcb==0.0.14
+  - pip install dcb==0.0.16
 
 script:
   - >-
