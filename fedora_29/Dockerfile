@@ -6,7 +6,7 @@ RUN dnf update -y \
  && dnf install -y python3 wget \
  && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
  && python3 /usr/local/bin/get-pip.py \
- && pip3 install urllib3 ansible==2.7.5 \
+ && pip3 install urllib3 ansible==2.7.7 \
  && dnf clean all
 
 WORKDIR /etc/ansible

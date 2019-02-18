@@ -7,7 +7,7 @@ RUN apt-get update -y \
  && apt-get install -y python wget \
  && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
  && python /usr/local/bin/get-pip.py \
- && pip install urllib3 ansible==2.7.5 \
+ && pip install urllib3 ansible==2.7.7 \
  && apt-get clean
 
 WORKDIR /etc/ansible
