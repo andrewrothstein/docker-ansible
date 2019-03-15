@@ -6,7 +6,7 @@ RUN yum update -y \
  && yum install -y python wget \
  && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
  && python /usr/local/bin/get-pip.py \
- && pip install urllib3 ansible==2.7.7 \
+ && pip install urllib3 ansible==2.7.9 \
  && yum clean all \
  && rm -rf /var/cache/yum
 
