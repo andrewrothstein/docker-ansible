@@ -1,0 +1,4 @@
+#/bin/sh
+ansible --version \
+    && ansible all --list-hosts \
+    && ansible localhost -m ping

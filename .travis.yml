@@ -19,6 +19,7 @@ env:
   - OS=alpine_3.6
   - OS=alpine_3.7
   - OS=alpine_3.8
+  - OS=alpine_3.9
   - OS=alpine_edge
   - OS=archlinux_latest
   - OS=centos_7
@@ -34,9 +35,6 @@ env:
   - OS=ubuntu_trusty
   - OS=ubuntu_xenial
   - OS=ubuntu_bionic
-    
-before_install:
-  - pip install dcb==0.0.16
 
 script:
   - >-
