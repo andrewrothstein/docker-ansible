@@ -4,10 +4,8 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 # install ansible
 RUN apt-get update -y \
  && apt-get upgrade -y \
- && apt-get install -y wget python \
- && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
- && python /usr/local/bin/get-pip.py \
- && pip install urllib3 ansible==2.7.10 \
+ && apt-get install -y wget python3 python3-pip \
+ && pip3 install urllib3 ansible==2.7.10 \
  && apt-get clean -y
 
 WORKDIR /etc/ansible
