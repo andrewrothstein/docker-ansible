@@ -8,7 +8,7 @@ RUN pacman -S -y \
    python-pip \
    ca-certificates \
  && pip install --upgrade pip \
- && pip install ansible==2.7.10
+ && pip install ansible==2.8.0
 
 WORKDIR /etc/ansible
 # configure ansible to target the localhost -- inside the container
