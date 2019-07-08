@@ -5,7 +5,7 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 RUN apt-get update -y \
  && apt-get upgrade -y \
  && apt-get install -y wget python3 python3-pip \
- && pip3 install urllib3 ansible==2.8.1 \
+ && pip3 install urllib3 ansible==2.8.2 \
  && apt-get clean -y
 
 WORKDIR /etc/ansible

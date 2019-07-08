@@ -4,7 +4,7 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 # install ansible
 RUN dnf update -y \
  && dnf install -y python3 python3-pip \
- && pip3 install urllib3 ansible==2.8.1 \
+ && pip3 install urllib3 ansible==2.8.2 \
  && dnf clean all
 
 WORKDIR /etc/ansible
