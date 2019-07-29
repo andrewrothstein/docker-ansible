@@ -15,7 +15,7 @@ RUN apk update \
    ca-certificates \
  && wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py \
  && python3 /usr/local/bin/get-pip.py \
- && pip install urllib3 ansible==2.8.2 \
+ && pip install urllib3 ansible==2.8.3 \
  && apk del \
    build-base \
    libffi-dev \
