@@ -33,6 +33,7 @@ env:
   - OS=fedora_30
   - OS=debian_jessie
   - OS=debian_stretch
+  - OS=debian_buster
   - OS=ubuntu_trusty
   - OS=ubuntu_xenial
   - OS=ubuntu_bionic
