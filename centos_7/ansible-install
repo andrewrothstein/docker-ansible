@@ -1,0 +1,29 @@
+#!/usr/bin/sh
+yum update -y
+yum install -y epel-release
+yum install -y python36 wget
+wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py
+python36 /usr/local/bin/get-pip.py
+pip3 install urllib3 ansible==2.8.4
+
+yum clean all
+rm -rf /var/cache/yum
+
+mkdir -p /etc/ansible
+cat >/etc/ansible/ansible.cfg <<HERE
+[defaults]
+inventory = /etc/ansible/inventories
+transport = local
+callback_whitelist = timer,profile_tasks
+HERE
+
+mkdir -p /etc/ansible/inventories
+cat >/etc/ansible/inventories/localhost <<HERE
+localhost
+
+[centos]
+localhost
+
+[centos:vars]
+ansible_python_interpreter=/usr/bin/python36
+HERE
