@@ -1,29 +1,68 @@
 #!/usr/bin/sh
-yum update -y
-yum install -y epel-release
-yum install -y python36 wget
-wget https://bootstrap.pypa.io/get-pip.py -O /usr/local/bin/get-pip.py
-python36 /usr/local/bin/get-pip.py
-pip3 install urllib3 ansible==2.8.4
 
-yum clean all
-rm -rf /var/cache/yum
+ANSIBLE_VER=2.8.4
+GETPIPPY_INSTALL_PATH=/usr/local/bin/get-pip.py
+PYTHON_INTERPRETER=/usr/bin/python36
 
-mkdir -p /etc/ansible
-cat >/etc/ansible/ansible.cfg <<HERE
+# install_pip python => python /usr/local/bin/get-pip.py
+install_pip () {
+    python_interpreter=$1
+    wget https://bootstrap.pypa.io/get-pip.py -O $GETPIPPY_INSTALL_PATH
+    $python_interpreter $GETPIPPY_INSTALL_PATH
+}
+
+# pip_install_ansible pip3 2.8.4 => pip3 install urllib3 ansible==2.8.4
+pip_install_ansible () {
+    $1 install urllib3 ansible==$2
+}
+
+install_centos_7 () {
+    python_interpreter=$1
+    ansible_ver=$2
+
+    yum update -y
+    yum install -y epel-release
+    yum install -y python36 wget
+
+    install_pip $python_interpreter
+    pip_install_ansible pip3 $ansible_ver
+
+    yum clean all
+    rm -rf /var/cache/yum
+}
+
+ping_localhost () {
+    ansible --version \
+        && ansible all --list-hosts \
+        && ansible localhost -m ping
+}
+
+write_local_cfg () {
+    mkdir -p /etc/ansible
+    cat >/etc/ansible/ansible.cfg <<HERE
 [defaults]
 inventory = /etc/ansible/inventories
 transport = local
 callback_whitelist = timer,profile_tasks
 HERE
+}
 
-mkdir -p /etc/ansible/inventories
-cat >/etc/ansible/inventories/localhost <<HERE
+write_inventories () {
+    ansible_python_interpreter=$1
+
+    mkdir -p /etc/ansible/inventories
+    cat >/etc/ansible/inventories/localhost <<HERE
 localhost
 
 [centos]
 localhost
 
 [centos:vars]
-ansible_python_interpreter=/usr/bin/python36
+ansible_python_interpreter=$ansible_python_interpreter
 HERE
+}
+
+install_centos_7 $PYTHON_INTERPRETER $ANSIBLE_VER
+write_local_cfg
+write_inventories $PYTHON_INTERPRETER
+ping_localhost
