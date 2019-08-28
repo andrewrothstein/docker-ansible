@@ -5,8 +5,7 @@ sudo: required
 services:
   - docker
 
-language: python
-python: 3.7
+language: minimal
 
 branches:
   except:
@@ -20,7 +19,6 @@ branches:
 #  - OS=alpine_3.6
 #  - OS=alpine_3.7
 #  - OS=alpine_3.8
-#  - OS=alpine_3.9
 #  - OS=alpine_edge
 #  - OS=archlinux_latest
 #  - OS=fedora_23
@@ -40,7 +38,10 @@ branches:
 
 env:
   - OS=alpine_3.10
+  - OS=alpine_3.9
   - OS=centos_7
 
 script:
-  - docker build -t quay.io/andrewrothstein/docker-ansible:$os -f Dockerfile.$os .
+  - docker build -t quay.io/andrewrothstein/docker-ansible:$OS -f Dockerfile.$OS .
+#  - docker login -u $DCB_TARGET_QUAY_IO_USER -p $DCB_TARGET_QUAY_IO_PWD
+#  - docker push quay.io/andrewrothstein/docker-ansible:$OS
