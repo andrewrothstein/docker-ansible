@@ -13,7 +13,7 @@ printf "os: %s\n" $os
 printf "dotver: %s\n" $dotver
 printf "dashver: %s\n" $dashver
 
-source ./ansible-install-lib
+. ansible-install-lib
 
 write_dockerfile $os $dotver $dashver
 docker build -t $TARGET_REGISTRY/$TARGET_GROUPNAME/$TARGET_NAME:${os}_${dotver} -f Dockerfile.${os}_${dotver} .
