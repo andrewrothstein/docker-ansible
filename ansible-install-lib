@@ -1,4 +1,6 @@
 #!/usr/bin/sh
+set -x
+
 ANSIBLE_VER=2.8.4
 
 # install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
@@ -48,6 +50,23 @@ localhost
 [$os_group_name:vars]
 ansible_python_interpreter=$ansible_python_interpreter
 HERE
+}
+
+# write_dockerfile alpine 3.9 3_9 => Dockerfile.alpine_3.9 calling install_alpine_3_9 at build time
+# write_dockerfile centos 7 7 => Dockerfile.centos_7 calling install_centos_7 at build time
+write_dockerfile () {
+    os=$1
+    dotver=$2
+    dashver=$3
+
+    cat > Dockerfile.${os}_${dotver} <<EOF
+FROM $os:$dotver
+MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
+
+ADD ansible-install-lib ansible-install-lib
+ADD install.sh install.sh
+RUN ./install.sh ${os} ${dashver}
+EOF
 }
 
 install_fq_centos_7 () {
@@ -109,10 +128,34 @@ install_centos_7 () {
     ping_localhost
 }
 
-install_alpine_3_9 () {
-    install_fq_alpine 3 9 /usr/bin/python3 $ANSIBLE_VER
-}
-
 install_alpine_3_10 () {
     install_fq_alpine 3 10 /usr/bin/python3 $ANSIBLE_VER
+}
+
+install_alpine_3_3 () {
+    install_fq_alpine 3 3 /usr/bin/python3 $ANSIBLE_VER
+}
+
+install_alpine_3_4 () {
+    install_fq_alpine 3 5 /usr/bin/python3 $ANSIBLE_VER
+}
+
+install_alpine_3_5 () {
+    install_fq_alpine 3 5 /usr/bin/python3 $ANSIBLE_VER
+}
+
+install_alpine_3_6 () {
+    install_fq_alpine 3 6 /usr/bin/python3 $ANSIBLE_VER
+}
+
+install_alpine_3_7 () {
+    install_fq_alpine 3 7 /usr/bin/python3 $ANSIBLE_VER
+}
+
+install_alpine_3_8 () {
+    install_fq_alpine 3 8 /usr/bin/python3 $ANSIBLE_VER
+}
+
+install_alpine_3_9 () {
+    install_fq_alpine 3 9 /usr/bin/python3 $ANSIBLE_VER
 }

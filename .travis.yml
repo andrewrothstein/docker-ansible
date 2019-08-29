@@ -11,15 +11,46 @@ branches:
   except:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 
+matrix:
+  include:
+  - os: alpine
+    dotver: 3.10
+    dashver: 3_10
+  - os: alpine
+    dotver: 3.1
+    dashver: 3_1
+  - os: alpine
+    dotver: 3.2
+    dashver: 3_2
+  - os: alpine
+    dotver: 3.3
+    dashver: 3_3
+  - os: alpine
+    dotver: 3.4
+    dashver: 3_4
+  - os: alpine
+    dotver: 3.5
+    dashver: 3_5
+  - os: alpine
+    dotver: 3.6
+    dashver: 3_6
+  - os: alpine
+    dotver: 3.7
+    dashver: 3_7
+  - os: alpine
+    dotver: 3.8
+    dashver: 3_8
+  - os: alpine
+    dotver: 3.9
+    dashver: 3_9
+  - os: alpine
+    dotver: edge
+    dashver: edge
+  - os: centos
+    dotver: 7
+    dashver: 7
 # not yet
 #env:
-#  - OS=alpine_3.3
-#  - OS=alpine_3.4
-#  - OS=alpine_3.5
-#  - OS=alpine_3.6
-#  - OS=alpine_3.7
-#  - OS=alpine_3.8
-#  - OS=alpine_edge
 #  - OS=archlinux_latest
 #  - OS=fedora_23
 #  - OS=fedora_24
@@ -36,12 +67,7 @@ branches:
 #  - OS=ubuntu_xenial
 #  - OS=ubuntu_bionic
 
-env:
-  - OS=alpine_3.10
-  - OS=alpine_3.9
-  - OS=centos_7
-
 script:
-  - docker build -t quay.io/andrewrothstein/docker-ansible:$OS -f Dockerfile.$OS .
+  - ./build.sh $os $dotver $dashver
 #  - docker login -u $DCB_TARGET_QUAY_IO_USER -p $DCB_TARGET_QUAY_IO_PWD
 #  - docker push quay.io/andrewrothstein/docker-ansible:$OS
