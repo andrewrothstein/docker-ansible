@@ -11,63 +11,35 @@ branches:
   except:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 
-matrix:
-  include:
-  - os: alpine
-    dotver: 3.10
-    dashver: 3_10
-  - os: alpine
-    dotver: 3.1
-    dashver: 3_1
-  - os: alpine
-    dotver: 3.2
-    dashver: 3_2
-  - os: alpine
-    dotver: 3.3
-    dashver: 3_3
-  - os: alpine
-    dotver: 3.4
-    dashver: 3_4
-  - os: alpine
-    dotver: 3.5
-    dashver: 3_5
-  - os: alpine
-    dotver: 3.6
-    dashver: 3_6
-  - os: alpine
-    dotver: 3.7
-    dashver: 3_7
-  - os: alpine
-    dotver: 3.8
-    dashver: 3_8
-  - os: alpine
-    dotver: 3.9
-    dashver: 3_9
-  - os: alpine
-    dotver: edge
-    dashver: edge
-  - os: centos
-    dotver: 7
-    dashver: 7
+env:
+  - OS=alpine DOTVER=3.10 DASHVER=3_10
+  - OS=alpine DOTVER=3.3 DASHVER=3_3
+  - OS=alpine DOTVER=3.4 DASHVER=3_4
+  - OS=alpine DOTVER=3.5 DASHVER=3_5
+  - OS=alpine DOTVER=3.6 DASHVER=3_6
+  - OS=alpine DOTVER=3.7 DASHVER=3_7
+  - OS=alpine DOTVER=3.8 DASHVER=3_8
+  - OS=alpine DOTVER=3.9 DASHVER=3_9
+  - OS=centos DOTVER=7 DASHVER=7
 # not yet
 #env:
-#  - OS=archlinux_latest
-#  - OS=fedora_23
-#  - OS=fedora_24
-#  - OS=fedora_25
-#  - OS=fedora_26
-#  - OS=fedora_27
-#  - OS=fedora_28
-#  - OS=fedora_29
-#  - OS=fedora_30
-#  - OS=debian_jessie
-#  - OS=debian_stretch
-#  - OS=debian_buster
-#  - OS=ubuntu_trusty
-#  - OS=ubuntu_xenial
-#  - OS=ubuntu_bionic
+#  - OS=archlinux DOTVER=latest DASHVER=latest
+#  - OS=fedora DOTVER=23 DASVER=23
+#  - OS=fedora DOTVER=24 DASVER=24
+#  - OS=fedora DOTVER=25 DASVER=25
+#  - OS=fedora DOTVER=26 DASVER=26
+#  - OS=fedora DOTVER=27 DASVER=27
+#  - OS=fedora DOTVER=28 DASVER=28
+#  - OS=fedora DOTVER=29 DASVER=29
+#  - OS=fedora DOTVER=20 DASVER=30
+#  - OS=debian DOTVER=jessie DASHVER=jessie
+#  - OS=debian DOTVER=stretch DASHVER=stretch
+#  - OS=debian DOTVER=buster DASHVER=buster
+#  - OS=ubuntu DOTVER=trusty DASHVER=trusty
+#  - OS=ubuntu DOTVER=xenial DASHVER=xenial
+#  - OS=ubuntu DOTVER=bionic DASHVER=bionic
 
 script:
-  - ./build.sh $os $dotver $dashver
+  - ./build.sh $OS $DOTVER $DASHVER
 #  - docker login -u $DCB_TARGET_QUAY_IO_USER -p $DCB_TARGET_QUAY_IO_PWD
 #  - docker push quay.io/andrewrothstein/docker-ansible:$OS
