@@ -13,6 +13,8 @@ printf "os: %s\n" $os
 printf "dotver: %s\n" $dotver
 printf "dashver: %s\n" $dashver
 
+ls -l
+
 . ansible-install-lib
 
 write_dockerfile $os $dotver $dashver
