@@ -13,8 +13,6 @@ branches:
 
 env:
   - OS=alpine DOTVER=3.10 DASHVER=3_10
-  - OS=alpine DOTVER=3.3 DASHVER=3_3
-  - OS=alpine DOTVER=3.4 DASHVER=3_4
   - OS=alpine DOTVER=3.5 DASHVER=3_5
   - OS=alpine DOTVER=3.6 DASHVER=3_6
   - OS=alpine DOTVER=3.7 DASHVER=3_7

@@ -131,14 +131,6 @@ install_alpine_3_10 () {
     install_fq_alpine 3 10 /usr/bin/python3 $ANSIBLE_VER
 }
 
-install_alpine_3_3 () {
-    install_fq_alpine 3 3 /usr/bin/python3 $ANSIBLE_VER
-}
-
-install_alpine_3_4 () {
-    install_fq_alpine 3 5 /usr/bin/python3 $ANSIBLE_VER
-}
-
 install_alpine_3_5 () {
     install_fq_alpine 3 5 /usr/bin/python3 $ANSIBLE_VER
 }
