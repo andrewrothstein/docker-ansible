@@ -1,6 +1,3 @@
-#!/bin/sh
-set -x
-
 ANSIBLE_VER=2.8.4
 
 # install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
@@ -59,7 +56,9 @@ write_dockerfile () {
     dotver=$2
     dashver=$3
 
-    cat > Dockerfile.${os}_${dotver} <<EOF
+    dockerfile=Dockerfile.${os}_${dotver}
+    echo writing Dockerfile: $dockerfile
+    cat > $dockerfile <<EOF
 FROM $os:$dotver
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
