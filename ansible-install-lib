@@ -68,30 +68,19 @@ RUN ./install.sh ${os} ${dashver}
 EOF
 }
 
-install_fq_centos_7 () {
-    python_interpreter=$1
-    ansible_ver=$2
-
+install_fq_pre_centos () {
     # os-install
     yum update -y
     yum install -y epel-release
     yum install -y python36 wget
+}
 
-    install_pip $python_interpreter
-    pip_install_ansible pip3 $ansible_ver
-
-    # os-uninstall
+install_fq_post_centos () {
     yum clean all
     rm -rf /var/cache/yum
 }
 
-install_fq_alpine () {
-    os_major=$1
-    os_minor=$2
-    python_intepreter=$3
-    ansible_ver=$4
-
-    # os-install
+install_fq_pre_alpine () {
     apk update
     apk upgrade
     apk add \
@@ -103,16 +92,47 @@ install_fq_alpine () {
         openssl-dev \
         wget \
         ca-certificates
+}
 
-    install_pip $python_intepreter
-    pip_install_ansible pip $ansible_ver
-
-    # os-uninstall
+install_fq_post_alpine () {
     apk del \
         build-base \
         libffi-dev \
         openssl-dev
     rm -rf /var/cache/apk/*
+}
+
+install_fq_centos () {
+    os_ver=$1
+    python_intepreter=$2
+    pip=$3
+    ansible_ver=$4
+
+    install_fq_pre_centos
+
+    install_pip $python_interpreter
+    pip_install_ansible pip3 $ansible_ver
+
+    install_fq_post_centos
+
+    write_local_cfg
+    write_inventories centos_${os_ver} $python_interpreter
+    ping_localhost
+}
+
+install_fq_alpine () {
+    os_major=$1
+    os_minor=$2
+    python_intepreter=$3
+    pip=$4
+    ansible_ver=$5
+
+    install_fq_pre_alpine
+
+    install_pip $python_intepreter
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_alpine
 
     write_local_cfg
     write_inventories alpine_${os_major}_${os_minor} $python_interpreter
@@ -120,33 +140,29 @@ install_fq_alpine () {
 }
 
 install_centos_7 () {
-    python_interpreter=/usr/bin/python36
-    install_fq_centos_7 $python_interpreter $ANSIBLE_VER
-    write_local_cfg
-    write_inventories centos_7 $python_interpreter
-    ping_localhost
+    install_fq_centos 7 /usr/bin/python36 pip3 $ANSIBLE_VER
 }
 
 install_alpine_3_10 () {
-    install_fq_alpine 3 10 /usr/bin/python3 $ANSIBLE_VER
+    install_fq_alpine 3 10 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_3_5 () {
-    install_fq_alpine 3 5 /usr/bin/python3 $ANSIBLE_VER
+    install_fq_alpine 3 5 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_3_6 () {
-    install_fq_alpine 3 6 /usr/bin/python3 $ANSIBLE_VER
+    install_fq_alpine 3 6 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_3_7 () {
-    install_fq_alpine 3 7 /usr/bin/python3 $ANSIBLE_VER
+    install_fq_alpine 3 7 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_3_8 () {
-    install_fq_alpine 3 8 /usr/bin/python3 $ANSIBLE_VER
+    install_fq_alpine 3 8 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_3_9 () {
-    install_fq_alpine 3 9 /usr/bin/python3 $ANSIBLE_VER
+    install_fq_alpine 3 9 /usr/bin/python3 pip $ANSIBLE_VER
 }
