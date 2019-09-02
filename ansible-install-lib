@@ -157,7 +157,7 @@ install_fq_fedora () {
     install_fq_post_fedora
 
     write_local_cfg
-    write_inventories fedora_${os_ver} $python_intepreter
+    write_inventories fedora_${os_ver} $python_interpreter
     ping_localhost
 }
 
@@ -173,7 +173,7 @@ install_fq_archlinux () {
     pip_install_ansible $pip $ansible_ver
 
     write_local_cfg
-    write_inventories archlinux_${os_ver} $python_intepreter
+    write_inventories archlinux_${os_ver} $python_interpreter
     ping_localhost
 }
 
@@ -192,7 +192,7 @@ install_fq_ubuntu () {
     install_fq_post_ubuntu
 
     write_local_cfg
-    write_inventories ubuntu_${os_ver} $python_intepreter
+    write_inventories ubuntu_${os_ver} $python_interpreter
     ping_localhost
 }
 
@@ -211,7 +211,7 @@ install_fq_debian () {
     install_fq_post_debian
 
     write_local_cfg
-    write_inventories debian_${os_ver} $python_intepreter
+    write_inventories debian_${os_ver} $python_interpreter
     ping_localhost
 }
 
@@ -236,13 +236,13 @@ install_fq_centos () {
 install_fq_alpine () {
     local os_major=$1
     local os_minor=$2
-    local python_intepreter=$3
+    local python_interpreter=$3
     local pip=$4
     local ansible_ver=$5
 
     install_fq_pre_alpine
 
-    install_pip $python_intepreter
+    install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_alpine
