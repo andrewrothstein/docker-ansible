@@ -102,6 +102,35 @@ install_fq_post_alpine () {
     rm -rf /var/cache/apk/*
 }
 
+install_fq_pre_ubuntu () {
+    apt-get update -y
+    apt-get upgrade -y
+    apt-get install -y wget python3
+}
+
+install_fq_post_ubuntu () {
+    apt-get clean -y
+}
+
+install_fq_ubuntu () {
+
+    os_ver=$1
+    python_interpreter=$2
+    pip=$3
+    ansible_ver=$4
+
+    install_fq_pre_ubuntu
+
+    apt-get install -y python3-pip
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_ubuntu
+
+    write_local_config
+    write_inventories ubuntu_${os_ver} $python_intepreter
+    ping_localhost
+}
+
 install_fq_centos () {
     os_ver=$1
     python_intepreter=$2
@@ -111,7 +140,7 @@ install_fq_centos () {
     install_fq_pre_centos
 
     install_pip $python_interpreter
-    pip_install_ansible pip3 $ansible_ver
+    pip_install_ansible $pip $ansible_ver
 
     install_fq_post_centos
 
@@ -137,6 +166,10 @@ install_fq_alpine () {
     write_local_cfg
     write_inventories alpine_${os_major}_${os_minor} $python_interpreter
     ping_localhost
+}
+
+install_ubuntu_bionic () {
+    install_fq_ubuntu bionic /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
 install_centos_7 () {

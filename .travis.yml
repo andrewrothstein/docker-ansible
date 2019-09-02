@@ -19,6 +19,9 @@ env:
   - OS=alpine DOTVER=3.8 DASHVER=3_8
   - OS=alpine DOTVER=3.9 DASHVER=3_9
   - OS=centos DOTVER=7 DASHVER=7
+  - OS=ubuntu DOTVER=bionic DASHVER=bionic
+  - OS=ubuntu DOTVER=xenial DASHVER=xenial
+  - OS=ubuntu DOTVER=trusty DASHVER=trusty
 # not yet
 #env:
 #  - OS=archlinux DOTVER=latest DASHVER=latest
@@ -33,9 +36,6 @@ env:
 #  - OS=debian DOTVER=jessie DASHVER=jessie
 #  - OS=debian DOTVER=stretch DASHVER=stretch
 #  - OS=debian DOTVER=buster DASHVER=buster
-#  - OS=ubuntu DOTVER=trusty DASHVER=trusty
-#  - OS=ubuntu DOTVER=xenial DASHVER=xenial
-#  - OS=ubuntu DOTVER=bionic DASHVER=bionic
 
 script:
   - ./build.sh $OS $DOTVER $DASHVER
