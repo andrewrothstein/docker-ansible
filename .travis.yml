@@ -22,14 +22,14 @@ env:
   - OS=debian DOTVER=jessie DASHVER=jessie
   - OS=debian DOTVER=stretch DASHVER=stretch
   - OS=debian DOTVER=buster DASHVER=buster
-  - OS=fedora DOTVER=23 DASVER=23
-  - OS=fedora DOTVER=24 DASVER=24
-  - OS=fedora DOTVER=25 DASVER=25
-  - OS=fedora DOTVER=26 DASVER=26
-  - OS=fedora DOTVER=27 DASVER=27
-  - OS=fedora DOTVER=28 DASVER=28
-  - OS=fedora DOTVER=29 DASVER=29
-  - OS=fedora DOTVER=20 DASVER=30
+  - OS=fedora DOTVER=23 DASHVER=23
+  - OS=fedora DOTVER=24 DASHVER=24
+  - OS=fedora DOTVER=25 DASHVER=25
+  - OS=fedora DOTVER=26 DASHVER=26
+  - OS=fedora DOTVER=27 DASHVER=27
+  - OS=fedora DOTVER=28 DASHVER=28
+  - OS=fedora DOTVER=29 DASHVER=29
+  - OS=fedora DOTVER=20 DASHVER=30
   - OS=ubuntu DOTVER=bionic DASHVER=bionic
   - OS=ubuntu DOTVER=xenial DASHVER=xenial
   - OS=archlinux DOTVER=latest DASHVER=latest
