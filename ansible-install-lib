@@ -14,6 +14,30 @@ install_pip () {
     rm $getpippy
 }
 
+install_pip_archlinux () {
+    pacman -S --noconfirm python-pip
+}
+
+install_pip_fedora () {
+    dnf install -y python3-pip
+}
+
+install_pip_ubuntu () {
+    install_pip $1
+}
+
+install_pip_debian () {
+    install_pip $1
+}
+
+install_pip_centos () {
+    install_pip $1
+}
+
+install_pip_alpine () {
+    install_pip $1
+}
+
 # pip_install_ansible pip3 2.8.4 => pip3 install urllib3 ansible==2.8.4
 pip_install_ansible () {
     $1 install --no-cache-dir urllib3 ansible==$2
@@ -134,9 +158,14 @@ install_fq_post_fedora () {
 }
 
 install_fq_pre_debian () {
+    local os_ver=$1
     apt-get update -y
     apt-get upgrade -y
-    apt-get install -y wget python3 python3-distutils
+    apt-get install -y wget python3
+    if [ "$os_ver" = "buster" ];
+    then
+        apt-get install -y python3-distutils
+    fi
 }
 
 install_fq_post_debian () {
@@ -151,7 +180,7 @@ install_fq_fedora () {
 
     install_fq_pre_fedora
 
-    dnf install -y python3-pip
+    install_pip_fedora $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_fedora
@@ -169,7 +198,7 @@ install_fq_archlinux () {
 
     install_fq_pre_archlinux
 
-    pacman -S --noconfirm python-pip
+    install_pip_archlinux $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     write_local_cfg
@@ -186,7 +215,7 @@ install_fq_ubuntu () {
 
     install_fq_pre_ubuntu
 
-    install_pip $python_interpreter
+    install_pip_ubuntu $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_ubuntu
@@ -203,9 +232,9 @@ install_fq_debian () {
     local pip=$3
     local ansible_ver=$4
 
-    install_fq_pre_debian
+    install_fq_pre_debian $os_ver
 
-    install_pip $python_interpreter
+    install_pip_debian $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_debian
@@ -223,7 +252,7 @@ install_fq_centos () {
 
     install_fq_pre_centos
 
-    install_pip $python_interpreter
+    install_pip_centos $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_centos
@@ -242,7 +271,7 @@ install_fq_alpine () {
 
     install_fq_pre_alpine
 
-    install_pip $python_interpreter
+    install_pip_alpine $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_alpine
