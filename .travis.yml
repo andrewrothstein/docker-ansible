@@ -19,23 +19,20 @@ env:
   - OS=alpine DOTVER=3.8 DASHVER=3_8
   - OS=alpine DOTVER=3.9 DASHVER=3_9
   - OS=centos DOTVER=7 DASHVER=7
+  - OS=debian DOTVER=jessie DASHVER=jessie
+  - OS=debian DOTVER=stretch DASHVER=stretch
+  - OS=debian DOTVER=buster DASHVER=buster
+  - OS=fedora DOTVER=23 DASVER=23
+  - OS=fedora DOTVER=24 DASVER=24
+  - OS=fedora DOTVER=25 DASVER=25
+  - OS=fedora DOTVER=26 DASVER=26
+  - OS=fedora DOTVER=27 DASVER=27
+  - OS=fedora DOTVER=28 DASVER=28
+  - OS=fedora DOTVER=29 DASVER=29
+  - OS=fedora DOTVER=20 DASVER=30
   - OS=ubuntu DOTVER=bionic DASHVER=bionic
   - OS=ubuntu DOTVER=xenial DASHVER=xenial
-  - OS=ubuntu DOTVER=trusty DASHVER=trusty
-# not yet
-#env:
-#  - OS=archlinux DOTVER=latest DASHVER=latest
-#  - OS=fedora DOTVER=23 DASVER=23
-#  - OS=fedora DOTVER=24 DASVER=24
-#  - OS=fedora DOTVER=25 DASVER=25
-#  - OS=fedora DOTVER=26 DASVER=26
-#  - OS=fedora DOTVER=27 DASVER=27
-#  - OS=fedora DOTVER=28 DASVER=28
-#  - OS=fedora DOTVER=29 DASVER=29
-#  - OS=fedora DOTVER=20 DASVER=30
-#  - OS=debian DOTVER=jessie DASHVER=jessie
-#  - OS=debian DOTVER=stretch DASHVER=stretch
-#  - OS=debian DOTVER=buster DASHVER=buster
+  - OS=archlinux DOTVER=latest DASHVER=latest
 
 script:
   - ./build.sh $OS $DOTVER $DASHVER
