@@ -20,8 +20,16 @@ install_pip_archlinux () {
 }
 
 install_pip_fedora () {
-    dnf install -y python3-pip
-    pip3 install --upgrade pip
+    local os_ver=$1
+    local pip=$2
+
+    if [ "$os_ver" -ge "29" ];
+    then
+        dnf install -y python3-pip
+    else
+        dnf install -y python-pip
+    fi
+    $pip install --upgrade pip
 }
 
 install_pip_ubuntu () {
@@ -156,8 +164,16 @@ install_fq_pre_archlinux () {
 }
 
 install_fq_pre_fedora () {
+    local os_ver=$1
     dnf update -y
-    dnf install -y python wget
+    dnf install -y wget
+
+    if [ "$os_ver" -ge "29" ];
+    then
+        dnf install -y python3
+    else
+        dnf install -y python
+    fi
 }
 
 install_fq_post_fedora () {
@@ -193,9 +209,9 @@ install_fq_fedora () {
     local pip=$3
     local ansible_ver=$4
 
-    install_fq_pre_fedora
+    install_fq_pre_fedora $os_ver
 
-    install_pip_fedora $python_interpreter
+    install_pip_fedora $os_ver $pip
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_fedora
@@ -317,27 +333,27 @@ install_fedora_29 () {
 }
 
 install_fedora_28 () {
-    install_fq_fedora 28 /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_fedora 28 /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_fedora_27 () {
-    install_fq_fedora 27 /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_fedora 27 /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_fedora_26 () {
-    install_fq_fedora 26 /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_fedora 26 /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_fedora_25 () {
-    install_fq_fedora 25 /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_fedora 25 /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_fedora_24 () {
-    install_fq_fedora 24 /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_fedora 24 /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_fedora_23 () {
-    install_fq_fedora 23 /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_fedora 23 /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_archlinux_latest () {
