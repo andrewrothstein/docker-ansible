@@ -16,10 +16,12 @@ install_pip () {
 
 install_pip_archlinux () {
     pacman -S --noconfirm python-pip
+    pip install --upgrade pip
 }
 
 install_pip_fedora () {
     dnf install -y python3-pip
+    pip3 install --upgrade pip
 }
 
 install_pip_ubuntu () {
@@ -166,7 +168,15 @@ install_fq_pre_debian () {
     local os_ver=$1
     apt-get update -y
     apt-get upgrade -y
-    apt-get install -y wget python3
+    apt-get install -y wget
+
+    if [ "$os_ver" = "jessie" ];
+    then
+        apt-get install -y python
+    else
+        apt-get install -y python3
+    fi
+
     if [ "$os_ver" = "buster" ];
     then
         apt-get install -y python3-distutils
@@ -287,7 +297,7 @@ install_fq_alpine () {
 }
 
 install_debian_jessie () {
-    install_fq_debian jessie /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_debian jessie /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_debian_stretch () {
@@ -332,6 +342,10 @@ install_fedora_23 () {
 
 install_archlinux_latest () {
     install_fq_archlinux latest /usr/sbin/python pip $ANSIBLE_VER
+}
+
+install_ubuntu_trusty () {
+    install_fq_ubuntu trusty /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
 install_ubuntu_bionic () {
