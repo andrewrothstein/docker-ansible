@@ -1,0 +1,413 @@
+ANSIBLE_VER=2.8.4
+
+# install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
+install_pip () {
+    local python_interpreter=$1
+    local url=https://bootstrap.pypa.io/get-pip.py
+    local getpippy=/tmp/get-pip.py
+
+    echo downloading from $url to $getpippy...
+    wget -O $getpippy $url
+
+    echo installing with $python_interpreter...
+    $python_interpreter $getpippy
+    rm $getpippy
+}
+
+install_pip_archlinux () {
+    pacman -S --noconfirm python-pip
+    pip install --upgrade pip
+}
+
+install_pip_fedora () {
+    local os_ver=$1
+    local pip=$2
+
+    if [ "$os_ver" -ge "29" ];
+    then
+        dnf install -y python3-pip
+    else
+        dnf install -y python-pip
+    fi
+    $pip install --upgrade pip
+}
+
+install_pip_ubuntu () {
+    install_pip $1
+}
+
+install_pip_debian () {
+    install_pip $1
+}
+
+install_pip_centos () {
+    install_pip $1
+}
+
+install_pip_alpine () {
+    install_pip $1
+}
+
+# pip_install_ansible pip3 2.8.4 => pip3 install urllib3 ansible==2.8.4
+pip_install_ansible () {
+    $1 install --no-cache-dir urllib3 ansible==$2
+}
+
+ping_localhost () {
+    ansible --version \
+        && ansible all --list-hosts \
+        && ansible localhost -m ping
+}
+
+write_local_cfg () {
+    mkdir -p /etc/ansible
+    cat >/etc/ansible/ansible.cfg <<HERE
+[defaults]
+inventory = /etc/ansible/inventories
+transport = local
+callback_whitelist = timer,profile_tasks
+HERE
+}
+
+write_inventories () {
+    local os_group_name=$1
+    local ansible_python_interpreter=$2
+
+    mkdir -p /etc/ansible/inventories
+    cat >/etc/ansible/inventories/localhost <<HERE
+localhost
+
+[$os_group_name]
+localhost
+
+[$os_group_name:vars]
+ansible_python_interpreter=$ansible_python_interpreter
+HERE
+}
+
+# write_dockerfile alpine 3.9 3_9 => Dockerfile.alpine_3.9 calling install_alpine_3_9 at build time
+# write_dockerfile centos 7 7 => Dockerfile.centos_7 calling install_centos_7 at build time
+write_dockerfile () {
+    local os=$1
+    local dotver=$2
+    local dashver=$3
+
+    local upstream_image_name=$os
+    if [  "$os" = "archlinux" ];
+    then
+        upstream_image_name=$os/base
+    fi
+
+    dockerfile=Dockerfile.${os}_${dotver}
+    echo writing Dockerfile: $dockerfile
+    cat > $dockerfile <<EOF
+FROM $upstream_image_name:$dotver
+MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
+
+ADD ansible-install-lib ansible-install-lib
+ADD install.sh install.sh
+RUN ./install.sh ${os} ${dashver}
+EOF
+}
+
+install_fq_pre_centos () {
+    yum update -y
+    yum install -y epel-release
+    yum install -y python36 wget
+}
+
+install_fq_post_centos () {
+    yum clean all
+    rm -rf /var/cache/yum
+}
+
+install_fq_pre_alpine () {
+    apk update
+    apk upgrade
+    apk add \
+        python3 \
+        python3-dev \
+        build-base \
+        libffi-dev \
+        openssl-dev \
+        wget \
+        ca-certificates
+}
+
+install_fq_post_alpine () {
+    apk del \
+        build-base \
+        libffi-dev \
+        openssl-dev
+    rm -rf /var/cache/apk/*
+}
+
+install_fq_pre_ubuntu () {
+    os_ver=$1
+    apt-get update -y
+    apt-get upgrade -y
+    if [ "$os_ver" = "trusty" ];
+    then
+        apt-get install -y wget python
+    else
+        apt-get install -y wget python3
+    fi
+    if [ "$os_ver" = "bionic" ];
+    then
+       apt-get install -y python3-distutils
+    fi
+}
+
+install_fq_post_ubuntu () {
+    apt-get clean -y
+}
+
+install_fq_pre_archlinux () {
+    pacman -S -y
+    pacman -S --noconfirm python ca-certificates
+}
+
+install_fq_pre_fedora () {
+    local os_ver=$1
+    dnf update -y
+    dnf install -y wget
+
+    if [ "$os_ver" -ge "29" ];
+    then
+        dnf install -y python3
+    else
+        dnf install -y python
+    fi
+}
+
+install_fq_post_fedora () {
+    dnf clean all
+}
+
+install_fq_pre_debian () {
+    local os_ver=$1
+    apt-get update -y
+    apt-get upgrade -y
+    apt-get install -y wget
+
+    if [ "$os_ver" = "jessie" ];
+    then
+        apt-get install -y python
+    else
+        apt-get install -y python3
+    fi
+
+    if [ "$os_ver" = "buster" ];
+    then
+        apt-get install -y python3-distutils
+    fi
+}
+
+install_fq_post_debian () {
+    apt-get clean
+}
+
+install_fq_fedora () {
+    local os_ver=$1
+    local python_interpreter=$2
+    local pip=$3
+    local ansible_ver=$4
+
+    install_fq_pre_fedora $os_ver
+
+    install_pip_fedora $os_ver $pip
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_fedora
+
+    write_local_cfg
+    write_inventories fedora_${os_ver} $python_interpreter
+    ping_localhost
+}
+
+install_fq_archlinux () {
+    local os_ver=$1
+    local python_interpreter=$2
+    local pip=$3
+    local ansible_ver=$4
+
+    install_fq_pre_archlinux
+
+    install_pip_archlinux $python_interpreter
+    pip_install_ansible $pip $ansible_ver
+
+    write_local_cfg
+    write_inventories archlinux_${os_ver} $python_interpreter
+    ping_localhost
+}
+
+install_fq_ubuntu () {
+
+    local os_ver=$1
+    local python_interpreter=$2
+    local pip=$3
+    local ansible_ver=$4
+
+    install_fq_pre_ubuntu $os_ver
+
+    install_pip_ubuntu $python_interpreter
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_ubuntu
+
+    write_local_cfg
+    write_inventories ubuntu_${os_ver} $python_interpreter
+    ping_localhost
+}
+
+install_fq_debian () {
+
+    local os_ver=$1
+    local python_interpreter=$2
+    local pip=$3
+    local ansible_ver=$4
+
+    install_fq_pre_debian $os_ver
+
+    install_pip_debian $python_interpreter
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_debian
+
+    write_local_cfg
+    write_inventories debian_${os_ver} $python_interpreter
+    ping_localhost
+}
+
+install_fq_centos () {
+    local os_ver=$1
+    local python_interpreter=$2
+    local pip=$3
+    local ansible_ver=$4
+
+    install_fq_pre_centos
+
+    install_pip_centos $python_interpreter
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_centos
+
+    write_local_cfg
+    write_inventories centos_${os_ver} $python_interpreter
+    ping_localhost
+}
+
+install_fq_alpine () {
+    local os_major=$1
+    local os_minor=$2
+    local python_interpreter=$3
+    local pip=$4
+    local ansible_ver=$5
+
+    install_fq_pre_alpine
+
+    install_pip_alpine $python_interpreter
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_alpine
+
+    write_local_cfg
+    write_inventories alpine_${os_major}_${os_minor} $python_interpreter
+    ping_localhost
+}
+
+install_debian_jessie () {
+    install_fq_debian jessie /usr/bin/python pip $ANSIBLE_VER
+}
+
+install_debian_stretch () {
+    install_fq_debian stretch /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
+install_debian_buster () {
+    install_fq_debian buster /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
+install_fedora_30 () {
+    install_fq_fedora 30 /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
+install_fedora_29 () {
+    install_fq_fedora 29 /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
+install_fedora_28 () {
+    install_fq_fedora 28 /usr/bin/python pip $ANSIBLE_VER
+}
+
+install_fedora_27 () {
+    install_fq_fedora 27 /usr/bin/python pip $ANSIBLE_VER
+}
+
+install_fedora_26 () {
+    install_fq_fedora 26 /usr/bin/python pip $ANSIBLE_VER
+}
+
+install_fedora_25 () {
+    install_fq_fedora 25 /usr/bin/python pip $ANSIBLE_VER
+}
+
+install_fedora_24 () {
+    install_fq_fedora 24 /usr/bin/python pip $ANSIBLE_VER
+}
+
+install_fedora_23 () {
+    install_fq_fedora 23 /usr/bin/python pip $ANSIBLE_VER
+}
+
+install_archlinux_latest () {
+    install_fq_archlinux latest /usr/sbin/python pip $ANSIBLE_VER
+}
+
+install_ubuntu_trusty () {
+    install_fq_ubuntu trusty /usr/bin/python pip $ANSIBLE_VER
+}
+
+install_ubuntu_bionic () {
+    install_fq_ubuntu bionic /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
+install_ubuntu_xenial () {
+    install_fq_ubuntu xenial /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
+install_centos_7 () {
+    install_fq_centos 7 /usr/bin/python36 pip3 $ANSIBLE_VER
+}
+
+install_alpine_3_10 () {
+    install_fq_alpine 3 10 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_3 () {
+    install_fq_alpine 3 3 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_4 () {
+    install_fq_alpine 3 4 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_5 () {
+    install_fq_alpine 3 5 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_6 () {
+    install_fq_alpine 3 6 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_7 () {
+    install_fq_alpine 3 7 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_8 () {
+    install_fq_alpine 3 8 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_9 () {
+    install_fq_alpine 3 9 /usr/bin/python3 pip $ANSIBLE_VER
+}

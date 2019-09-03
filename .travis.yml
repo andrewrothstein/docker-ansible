@@ -5,44 +5,41 @@ sudo: required
 services:
   - docker
 
-language: python
-python: 3.7
+language: minimal
 
 branches:
   except:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 
 env:
-  - OS=alpine_3.3
-  - OS=alpine_3.4
-  - OS=alpine_3.5
-  - OS=alpine_3.6
-  - OS=alpine_3.7
-  - OS=alpine_3.8
-  - OS=alpine_3.9
-  - OS=alpine_3.10
-  - OS=alpine_edge
-  - OS=archlinux_latest
-  - OS=centos_7
-  - OS=fedora_23
-  - OS=fedora_24
-  - OS=fedora_25
-  - OS=fedora_26
-  - OS=fedora_27
-  - OS=fedora_28
-  - OS=fedora_29
-  - OS=fedora_30
-  - OS=debian_jessie
-  - OS=debian_stretch
-  - OS=debian_buster
-  - OS=ubuntu_trusty
-  - OS=ubuntu_xenial
-  - OS=ubuntu_bionic
+  - OS=alpine DOTVER=3.10 DASHVER=3_10
+  - OS=alpine DOTVER=3.3 DASHVER=3_3
+  - OS=alpine DOTVER=3.4 DASHVER=3_4
+  - OS=alpine DOTVER=3.5 DASHVER=3_5
+  - OS=alpine DOTVER=3.6 DASHVER=3_6
+  - OS=alpine DOTVER=3.7 DASHVER=3_7
+  - OS=alpine DOTVER=3.8 DASHVER=3_8
+  - OS=alpine DOTVER=3.9 DASHVER=3_9
+  - OS=centos DOTVER=7 DASHVER=7
+  - OS=debian DOTVER=jessie DASHVER=jessie
+  - OS=debian DOTVER=stretch DASHVER=stretch
+  - OS=debian DOTVER=buster DASHVER=buster
+  - OS=fedora DOTVER=23 DASHVER=23
+  - OS=fedora DOTVER=24 DASHVER=24
+  - OS=fedora DOTVER=25 DASHVER=25
+  - OS=fedora DOTVER=26 DASHVER=26
+  - OS=fedora DOTVER=27 DASHVER=27
+  - OS=fedora DOTVER=28 DASHVER=28
+  - OS=fedora DOTVER=29 DASHVER=29
+  - OS=fedora DOTVER=30 DASHVER=30
+  - OS=ubuntu DOTVER=bionic DASHVER=bionic
+  - OS=ubuntu DOTVER=trusty DASHVER=trusty
+  - OS=ubuntu DOTVER=xenial DASHVER=xenial
+  - OS=archlinux DOTVER=latest DASHVER=latest
+
+before_script:
+  - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" quay.io
 
 script:
-  - >-
-    dcb
-    --subdirs
-    --buildall
-    --pushall
-    --alltags ${OS}
+  - ./build.sh $OS $DOTVER $DASHVER
+  - docker push quay.io/andrewrothstein/docker-ansible:${OS}_${DOTVER}
