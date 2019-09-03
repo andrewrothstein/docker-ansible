@@ -35,7 +35,9 @@ env:
   - OS=ubuntu DOTVER=xenial DASHVER=xenial
   - OS=archlinux DOTVER=latest DASHVER=latest
 
+before_script:
+  - docker login -u $DCB_TARGET_QUAY_IO_USER -p $DCB_TARGET_QUAY_IO_PWD
+
 script:
   - ./build.sh $OS $DOTVER $DASHVER
-#  - docker login -u $DCB_TARGET_QUAY_IO_USER -p $DCB_TARGET_QUAY_IO_PWD
-#  - docker push quay.io/andrewrothstein/docker-ansible:$OS
+  - docker push quay.io/andrewrothstein/docker-ansible:${OS}_${DOTVER}
