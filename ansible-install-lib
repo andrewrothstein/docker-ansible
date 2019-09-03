@@ -147,7 +147,12 @@ install_fq_pre_ubuntu () {
     os_ver=$1
     apt-get update -y
     apt-get upgrade -y
-    apt-get install -y wget python3
+    if [ "$os_ver" = "trusty" ];
+    then
+        apt-get install -y wget python
+    else
+        apt-get install -y wget python3
+    fi
     if [ "$os_ver" = "bionic" ];
     then
        apt-get install -y python3-distutils
@@ -361,7 +366,7 @@ install_archlinux_latest () {
 }
 
 install_ubuntu_trusty () {
-    install_fq_ubuntu trusty /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_ubuntu trusty /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_ubuntu_bionic () {
