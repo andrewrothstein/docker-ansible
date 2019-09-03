@@ -16,5 +16,9 @@ printf "dashver: %s\n" $dashver
 . ./ansible-install-lib
 
 write_dockerfile $os $dotver $dashver
-docker build -t $TARGET_REGISTRY/$TARGET_GROUPNAME/$TARGET_NAME:${os}_${dotver} -f Dockerfile.${os}_${dotver} .
-
+docker build \
+       --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY \
+       --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy \
+       -t $TARGET_REGISTRY/$TARGET_GROUPNAME/$TARGET_NAME:${os}_${dotver} \
+       -f Dockerfile.${os}_${dotver} \
+       .
