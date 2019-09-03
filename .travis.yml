@@ -36,7 +36,7 @@ env:
   - OS=archlinux DOTVER=latest DASHVER=latest
 
 before_script:
-  - docker login -u $DCB_TARGET_QUAY_IO_USER -p $DCB_TARGET_QUAY_IO_PWD
+  - docker login -u $DCB_TARGET_QUAY_IO_USER -p $DCB_TARGET_QUAY_IO_PWD quay.io
 
 script:
   - ./build.sh $OS $DOTVER $DASHVER
