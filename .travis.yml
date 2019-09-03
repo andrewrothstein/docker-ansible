@@ -29,7 +29,7 @@ env:
   - OS=fedora DOTVER=27 DASHVER=27
   - OS=fedora DOTVER=28 DASHVER=28
   - OS=fedora DOTVER=29 DASHVER=29
-  - OS=fedora DOTVER=20 DASHVER=30
+  - OS=fedora DOTVER=30 DASHVER=30
   - OS=ubuntu DOTVER=bionic DASHVER=bionic
   - OS=ubuntu DOTVER=xenial DASHVER=xenial
   - OS=archlinux DOTVER=latest DASHVER=latest
