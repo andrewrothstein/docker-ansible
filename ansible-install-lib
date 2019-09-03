@@ -125,7 +125,6 @@ install_fq_pre_alpine () {
     apk update
     apk upgrade
     apk add \
-        shadow \
         python3 \
         python3-dev \
         build-base \
@@ -383,6 +382,14 @@ install_centos_7 () {
 
 install_alpine_3_10 () {
     install_fq_alpine 3 10 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_3 () {
+    install_fq_alpine 3 3 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_4 () {
+    install_fq_alpine 3 4 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_3_5 () {
