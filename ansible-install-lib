@@ -134,9 +134,14 @@ install_fq_post_alpine () {
 }
 
 install_fq_pre_ubuntu () {
+    os_ver=$1
     apt-get update -y
     apt-get upgrade -y
     apt-get install -y wget python3
+    if [ "$os_ver" = "bionic" ];
+    then
+       apt-get install -y python3-distutils
+    fi
 }
 
 install_fq_post_ubuntu () {
@@ -213,7 +218,7 @@ install_fq_ubuntu () {
     local pip=$3
     local ansible_ver=$4
 
-    install_fq_pre_ubuntu
+    install_fq_pre_ubuntu $os_ver
 
     install_pip_ubuntu $python_interpreter
     pip_install_ansible $pip $ansible_ver
