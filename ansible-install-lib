@@ -48,9 +48,17 @@ install_pip_alpine () {
     install_pip $1
 }
 
-# pip_install_ansible pip3 2.8.4 => pip3 install urllib3 ansible==2.8.4
+pip_install () {
+    local pip=$1
+    local pkgs=$2
+    $pip install --no-cache-dir $pkgs
+}
+
+# pip_install_ansible pip3 2.8.4 => pip3 install ansible==2.8.4
 pip_install_ansible () {
-    $1 install --no-cache-dir urllib3 ansible==$2
+    local pip=$1
+    local ansible_ver=$2
+    pip_install $pip ansible==$ansible_ver
 }
 
 ping_localhost () {
@@ -110,17 +118,12 @@ RUN ./install.sh ${os} ${dashver}
 EOF
 }
 
-PYTHON_DEP_PKGS='gcc make openssl-devel bzip2-devel libffi-devel'
-
-install_fq_pre_centos () {
-    yum update -y
-    yum install -y \
-        wget tar \
-        $PYTHON_DEP_PKGS
-    local python_ver=3.7.3
+PYTHON_MIRROR=https://www.python.org/ftp/python
+install_python () {
+    local python_ver=$1
     local python_name=Python-$python_ver
     local python_tgz=${python_name}.tgz
-    wget https://www.python.org/ftp/python/$python_ver/$python_tgz
+    wget $PYTHON_MIRROR/$python_ver/$python_tgz
     tar zxvf $python_tgz
     cd $python_name
     ./configure --enable-optimizations
@@ -129,9 +132,14 @@ install_fq_pre_centos () {
     rm -rf $python_tgz $python_name
 }
 
+PYTHON_DEP_PKGS='gcc make openssl-devel bzip2-devel libffi-devel'
+
+install_fq_pre_centos () {
+    yum update -y
+    yum install -y wget python
+}
+
 install_fq_post_centos () {
-    yum remove -y \
-        $PYTHON_DEP_PKGS
     yum clean all
     rm -rf /var/cache/yum
 }
@@ -392,7 +400,7 @@ install_ubuntu_xenial () {
 }
 
 install_centos_7 () {
-    install_fq_centos 7 /usr/local/bin/python3.7 pip3 $ANSIBLE_VER
+    install_fq_centos 7 /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_alpine_3_10 () {
