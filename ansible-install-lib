@@ -93,29 +93,69 @@ ansible_python_interpreter=$ansible_python_interpreter
 HERE
 }
 
-# write_dockerfile alpine 3.9 3_9 => Dockerfile.alpine_3.9 calling install_alpine_3_9 at build time
-# write_dockerfile centos 7 7 => Dockerfile.centos_7 calling install_centos_7 at build time
 write_dockerfile () {
-    local os=$1
-    local dotver=$2
-    local dashver=$3
+    local upstream_registry=$1
+    local upstream_namespace=$2
+    local upstream_repo=$3
 
-    local upstream_image_name=$os
-    if [  "$os" = "archlinux" ];
-    then
-        upstream_image_name=$os/base
-    fi
+    local os=$4
+    local dotver=$5
+    local dashver=$6
 
     dockerfile=Dockerfile.${os}_${dotver}
     echo writing Dockerfile: $dockerfile
     cat > $dockerfile <<EOF
-FROM $upstream_image_name:$dotver
+FROM $upstream_registry/$upstream_namespace/$upstream_repo:$dotver
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 ADD ansible-install-lib ansible-install-lib
 ADD install.sh install.sh
 RUN ./install.sh ${os} ${dashver}
 EOF
+}
+
+write_dockerfile_archlinux () {
+    local dotver=$1
+    local dashver=$2
+    write_dockerfile docker.io archlinux base archlinux $dotver $dashver
+}
+
+write_dockerfile_simple () {
+    local os=$1
+    local dotver=$2
+    local dashver=$3
+    write_dockerfile docker.io library $os $os $dotver $dashver
+}
+
+write_dockerfile_alpine () {
+    write_dockerfile_simple alpine $1 $2
+}
+
+write_dockerfile_centos () {
+    write_dockerfile_simple centos $1 $2
+}
+
+write_dockerfile_debian () {
+    write_dockerfile_simple debian $1 $2
+}
+
+write_dockerfile_ubuntu () {
+    write_dockerfile_simple ubuntu $1 $2
+}
+
+write_dockerfile_fedora () {
+    write_dockerfile_simple fedora $1 $2
+}
+
+write_dockerfile_ubi () {
+    local major_ver=$1
+    local dotver=$2
+    local dashver=$3
+    write_dockerfile registry.access.redhat.com ubi${major_ver} ubi ubi${major_ver} $dotver $dashver
+}
+
+write_dockerfile_ubi8 () {
+    write_dockerfile_ubi 8 $1 $2
 }
 
 PYTHON_MIRROR=https://www.python.org/ftp/python
@@ -141,6 +181,16 @@ install_fq_pre_centos () {
 
 install_fq_post_centos () {
     yum clean all
+    rm -rf /var/cache/yum
+}
+
+install_fq_pre_ubi () {
+    yum update -y
+    yum install -y wget python36
+}
+
+install_fq_post_ubi () {
+    yum celan all
     rm -rf /var/cache/yum
 }
 
@@ -320,6 +370,23 @@ install_fq_centos () {
     ping_localhost
 }
 
+install_fq_ubi () {
+    local os_ver=$1
+    local python_interpreter=$2
+    local pip=$3
+    local ansible_ver=$4
+
+    install_fq_pre_ubi
+
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_ubi
+
+    write_local_cfg
+    write_inventories ubi_minimal_${os_ver} $python_interpreter
+    ping_localhost
+}
+
 install_fq_alpine () {
     local os_major=$1
     local os_minor=$2
@@ -433,4 +500,8 @@ install_alpine_3_8 () {
 
 install_alpine_3_9 () {
     install_fq_alpine 3 9 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_ubi8_8_0 () {
+    install_fq_ubi 8 /usr/bin/python3 pip3 $ANSIBLE_VER
 }
