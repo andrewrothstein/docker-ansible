@@ -326,6 +326,11 @@ install_fq_ubuntu () {
     install_pip_ubuntu $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
+    if [ "$os_ver" = "trusty" ];
+    then
+        pip_install $pip urllib3
+    fi
+
     install_fq_post_ubuntu
 
     write_local_cfg
