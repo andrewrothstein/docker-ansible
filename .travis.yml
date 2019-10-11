@@ -1,9 +1,11 @@
 ---
 dist: xenial
 sudo: required
-
-services:
-  - docker
+before_install:
+  - sudo add-apt-repository -y ppa:projectatomic/ppa
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq -y software-properties-common podman
+  - sudo mkdir -p /etc/containers
 
 language: minimal
 
@@ -39,8 +41,8 @@ env:
   - OS=ubi8 DOTVER=8.0 DASHVER=8_0
 
 before_script:
-  - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" quay.io
+  - podman login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" quay.io
 
 script:
   - ./build.sh $OS $DOTVER $DASHVER
-  - docker push quay.io/andrewrothstein/docker-ansible:${OS}_${DOTVER}
+  - podman push quay.io/andrewrothstein/docker-ansible:${OS}_${DOTVER}
