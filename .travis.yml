@@ -34,6 +34,8 @@ env:
   - OS=fedora DOTVER=28 DASHVER=28
   - OS=fedora DOTVER=29 DASHVER=29
   - OS=fedora DOTVER=30 DASHVER=30
+  - OS=fedora DOTVER=31 DASHVER=31
+  - OS=fedora DOTVER=32 DASHVER=32
   - OS=ubuntu DOTVER=bionic DASHVER=bionic
   - OS=ubuntu DOTVER=trusty DASHVER=trusty
   - OS=ubuntu DOTVER=xenial DASHVER=xenial

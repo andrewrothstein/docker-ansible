@@ -102,10 +102,16 @@ write_dockerfile () {
     local dotver=$5
     local dashver=$6
 
+    local fq_upstream=${upstream_registry}/${upstream_namespace}/${upstream_repo}:${dotver}
+    if [ "${upstream_namespace}" = "" ];
+    then
+        fq_upstream=${upstream_registry}/${upstream_repo}:${dotver}
+    fi
+
     dockerfile=Dockerfile.${os}_${dotver}
     echo writing Dockerfile: $dockerfile
     cat > $dockerfile <<EOF
-FROM $upstream_registry/$upstream_namespace/$upstream_repo:$dotver
+FROM $fq_upstream
 MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 ADD ansible-install-lib ansible-install-lib
@@ -114,7 +120,7 @@ RUN ./install.sh ${os} ${dashver}
 EOF
 }
 
-write_dockerfile_archlinux () {
+writewrite_dockerfile_archlinux () {
     local dotver=$1
     local dashver=$2
     write_dockerfile docker.io archlinux base archlinux $dotver $dashver
@@ -144,7 +150,14 @@ write_dockerfile_ubuntu () {
 }
 
 write_dockerfile_fedora () {
-    write_dockerfile_simple fedora $1 $2
+    local dotver=$1
+    local dashver=$2
+    if [ "$dotver" -ge "24" ];
+    then
+        write_dockerfile registry.fedoraproject.org '' fedora fedora $1 $2
+    else
+        write_dockerfile_simple fedora $dotver $dashver
+    fi
 }
 
 write_dockerfile_ubi () {
@@ -421,6 +434,14 @@ install_debian_stretch () {
 
 install_debian_buster () {
     install_fq_debian buster /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
+install_fedora_32 () {
+    install_fq_fedora 32 /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
+install_fedora_31 () {
+    install_fq_fedora 31 /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
 install_fedora_30 () {
