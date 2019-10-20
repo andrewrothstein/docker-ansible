@@ -28,6 +28,7 @@ install_pip_fedora () {
         dnf install -y python3-pip
     else
         dnf install -y python-pip
+        $pip install --upgrade pip
     fi
 }
 
