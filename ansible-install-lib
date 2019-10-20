@@ -29,7 +29,6 @@ install_pip_fedora () {
     else
         dnf install -y python-pip
     fi
-    $pip install --upgrade pip
 }
 
 install_pip_ubuntu () {
