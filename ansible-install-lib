@@ -120,7 +120,7 @@ RUN ./install.sh ${os} ${dashver}
 EOF
 }
 
-writewrite_dockerfile_archlinux () {
+write_dockerfile_archlinux () {
     local dotver=$1
     local dashver=$2
     write_dockerfile docker.io archlinux base archlinux $dotver $dashver
