@@ -1,4 +1,5 @@
 #!/bin/sh
+#set -x
 
 target_registry=${TARGET_REGISTRY:-quay.io}
 target_groupname=${TARGET_GROUPNAME:-andrewrothstein}

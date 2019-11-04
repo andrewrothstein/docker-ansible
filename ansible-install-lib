@@ -188,8 +188,15 @@ install_python () {
 PYTHON_DEP_PKGS='gcc make openssl-devel bzip2-devel libffi-devel'
 
 install_fq_pre_centos () {
+    local os_ver=$1
     yum update -y
-    yum install -y wget python
+
+    if [ "$os_ver" -gt 7 ];
+    then
+        yum install -y wget python3
+    else
+        yum install -y wget python
+    fi
 }
 
 install_fq_post_centos () {
@@ -367,7 +374,7 @@ install_fq_centos () {
     local pip=$3
     local ansible_ver=$4
 
-    install_fq_pre_centos
+    install_fq_pre_centos $os_ver
 
     install_pip_centos $python_interpreter
     pip_install_ansible $pip $ansible_ver
@@ -481,6 +488,10 @@ install_ubuntu_xenial () {
 
 install_centos_7 () {
     install_fq_centos 7 /usr/bin/python pip $ANSIBLE_VER
+}
+
+install_centos_8 () {
+    install_fq_centos 8 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_3_10 () {
