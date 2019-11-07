@@ -422,6 +422,23 @@ install_fq_alpine () {
     ping_localhost
 }
 
+install_fq_alpine_edge () {
+    local python_interpreter=$1
+    local pip=$2
+    local ansible_ver=$3
+
+    install_fq_pre_alpine
+
+    install_pip_alpine $python_interpreter
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_alpine
+
+    write_local_cfg
+    write_inventories alpine_edge $python_interpreter
+    ping_localhost
+}
+
 install_debian_jessie () {
     install_fq_debian jessie /usr/bin/python pip $ANSIBLE_VER
 }
@@ -524,6 +541,10 @@ install_alpine_3_8 () {
 
 install_alpine_3_9 () {
     install_fq_alpine 3 9 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_edge () {
+    install_fq_alpine_edge /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_ubi8_8_0 () {

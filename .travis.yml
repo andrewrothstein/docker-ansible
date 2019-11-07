@@ -22,6 +22,7 @@ env:
   - OS=alpine DOTVER=3.7 DASHVER=3_7
   - OS=alpine DOTVER=3.8 DASHVER=3_8
   - OS=alpine DOTVER=3.9 DASHVER=3_9
+  - OS=alpine DOTVER=latest DASHVER=latest
   - OS=centos DOTVER=7 DASHVER=7
   - OS=centos DOTVER=8 DASHVER=8
   - OS=debian DOTVER=jessie DASHVER=jessie
