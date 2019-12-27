@@ -14,6 +14,7 @@ branches:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 
 env:
+  - OS=alpine DOTVER=3.11 DASHVER=3_11
   - OS=alpine DOTVER=3.10 DASHVER=3_10
   - OS=alpine DOTVER=3.3 DASHVER=3_3
   - OS=alpine DOTVER=3.4 DASHVER=3_4
