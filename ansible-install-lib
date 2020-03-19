@@ -1,4 +1,4 @@
-ANSIBLE_VER=2.9.5
+ANSIBLE_VER=2.9.6
 
 # install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
 install_pip () {
@@ -552,5 +552,9 @@ install_alpine_edge () {
 }
 
 install_ubi8_8_0 () {
+    install_fq_ubi 8 /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
+install_ubi8_8_1 () {
     install_fq_ubi 8 /usr/bin/python3 pip3 $ANSIBLE_VER
 }

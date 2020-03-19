@@ -43,6 +43,7 @@ env:
   - OS=ubuntu DOTVER=xenial DASHVER=xenial
   - OS=archlinux DOTVER=latest DASHVER=latest
   - OS=ubi8 DOTVER=8.0 DASHVER=8_0
+  - OS=ubi8 DOTVER=8.1 DASHVER=8_1
 
 before_script:
   - podman login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" quay.io

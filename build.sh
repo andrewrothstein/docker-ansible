@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 #set -x
 
 target_registry=${TARGET_REGISTRY:-quay.io}
