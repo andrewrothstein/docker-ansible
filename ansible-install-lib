@@ -1,4 +1,4 @@
-ANSIBLE_VER=2.9.6
+readonly ANSIBLE_VER=2.9.6
 
 # install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
 install_pip () {
@@ -6,10 +6,13 @@ install_pip () {
     local url=https://bootstrap.pypa.io/get-pip.py
     local getpippy=/tmp/get-pip.py
 
-    echo downloading from $url to $getpippy...
-    wget -O $getpippy $url
+    if [ ! -e $getpippy ];
+    then
+        echo downloading get-pip.py from $url to $getpippy...
+        wget -O $getpippy $url
+    fi
 
-    echo installing with $python_interpreter...
+    echo installing pip with $python_interpreter...
     $python_interpreter $getpippy
     rm $getpippy
 }
@@ -30,22 +33,6 @@ install_pip_fedora () {
         dnf install -y python-pip
         $pip install --upgrade pip
     fi
-}
-
-install_pip_ubuntu () {
-    install_pip $1
-}
-
-install_pip_debian () {
-    install_pip $1
-}
-
-install_pip_centos () {
-    install_pip $1
-}
-
-install_pip_alpine () {
-    install_pip $1
 }
 
 pip_install () {
@@ -171,13 +158,17 @@ write_dockerfile_ubi8 () {
     write_dockerfile_ubi 8 $1 $2
 }
 
-PYTHON_MIRROR=https://www.python.org/ftp/python
+readonly PYTHON_MIRROR=https://www.python.org/ftp/python
+readonly PYTHON_MAJOR_VER=3
+readonly PYTHON_MINOR_VER=8
+readonly PYTHON_PATCH_VER=2
+readonly PYTHON_VER="${PYTHON_MAJOR_VER}.${PYTHON_MINOR_VER}.${PYTHON_PATCH_VER}"
+readonly PYTHON_EXE="/usr/local/bin/python${PYTHON_MAJOR_VER}.${PYTHON_MINOR_VER}"
 install_python () {
-    local python_ver=$1
-    local python_name=Python-$python_ver
+    local python_name=Python-$PYTHON_VER
     local python_tgz=${python_name}.tgz
-    wget $PYTHON_MIRROR/$python_ver/$python_tgz
-    tar zxvf $python_tgz
+    wget $PYTHON_MIRROR/$PYTHON_VER/$python_tgz
+    tar zxf $python_tgz
     cd $python_name
     ./configure --enable-optimizations
     make altinstall
@@ -185,28 +176,18 @@ install_python () {
     rm -rf $python_tgz $python_name
 }
 
-PYTHON_DEP_PKGS='gcc make openssl-devel bzip2-devel libffi-devel'
-
-install_fq_pre_centos () {
-    local os_ver=$1
+install_fq_pre_rh_python() {
+    local python_dep_pkgs='gcc make openssl-devel bzip2-devel libffi-devel'
     yum update -y
-
-    if [ "$os_ver" -gt 7 ];
-    then
-        yum install -y wget python3
-    else
-        yum install -y wget python
-    fi
+    yum install -y wget
+    yum install -y $python_dep_pkgs
+    install_python
+    yum remove -y $python_dep_pkgs
 }
 
 install_fq_post_centos () {
     yum clean all
     rm -rf /var/cache/yum
-}
-
-install_fq_pre_ubi () {
-    yum update -y
-    yum install -y wget python36
 }
 
 install_fq_post_ubi () {
@@ -339,7 +320,7 @@ install_fq_ubuntu () {
 
     install_fq_pre_ubuntu $os_ver
 
-    install_pip_ubuntu $python_interpreter
+    install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_ubuntu
@@ -358,7 +339,7 @@ install_fq_debian () {
 
     install_fq_pre_debian $os_ver
 
-    install_pip_debian $python_interpreter
+    install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_debian
@@ -374,9 +355,9 @@ install_fq_centos () {
     local pip=$3
     local ansible_ver=$4
 
-    install_fq_pre_centos $os_ver
+    install_fq_pre_rh_python
 
-    install_pip_centos $python_interpreter
+    install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_centos
@@ -392,8 +373,9 @@ install_fq_ubi () {
     local pip=$3
     local ansible_ver=$4
 
-    install_fq_pre_ubi
+    install_fq_pre_rh_python
 
+    install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_ubi
@@ -412,7 +394,7 @@ install_fq_alpine () {
 
     install_fq_pre_alpine
 
-    install_pip_alpine $python_interpreter
+    install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_alpine
@@ -429,7 +411,7 @@ install_fq_alpine_edge () {
 
     install_fq_pre_alpine
 
-    install_pip_alpine $python_interpreter
+    install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_alpine
@@ -504,11 +486,11 @@ install_ubuntu_xenial () {
 }
 
 install_centos_7 () {
-    install_fq_centos 7 /usr/bin/python pip $ANSIBLE_VER
+    install_fq_centos 7 $PYTHON_EXE pip $ANSIBLE_VER
 }
 
 install_centos_8 () {
-    install_fq_centos 8 /usr/bin/python3 pip $ANSIBLE_VER
+    install_fq_centos 8 $PYTHON_EXE pip $ANSIBLE_VER
 }
 
 install_alpine_3_10 () {
@@ -552,9 +534,9 @@ install_alpine_edge () {
 }
 
 install_ubi8_8_0 () {
-    install_fq_ubi 8 /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_ubi 8 $PYTHON_EXE pip $ANSIBLE_VER
 }
 
 install_ubi8_8_1 () {
-    install_fq_ubi 8 /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_fq_ubi 8 $PYTHON_EXE pip $ANSIBLE_VER
 }
