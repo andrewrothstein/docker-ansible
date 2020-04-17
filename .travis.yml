@@ -16,27 +16,11 @@ branches:
 env:
   - OS=alpine DOTVER=3.11 DASHVER=3_11
   - OS=alpine DOTVER=3.10 DASHVER=3_10
-  - OS=alpine DOTVER=3.3 DASHVER=3_3
-  - OS=alpine DOTVER=3.4 DASHVER=3_4
-  - OS=alpine DOTVER=3.5 DASHVER=3_5
-  - OS=alpine DOTVER=3.6 DASHVER=3_6
-  - OS=alpine DOTVER=3.7 DASHVER=3_7
-  - OS=alpine DOTVER=3.8 DASHVER=3_8
-  - OS=alpine DOTVER=3.9 DASHVER=3_9
   - OS=alpine DOTVER=edge DASHVER=edge
   - OS=centos DOTVER=7 DASHVER=7
   - OS=centos DOTVER=8 DASHVER=8
-  - OS=debian DOTVER=jessie DASHVER=jessie
-  - OS=debian DOTVER=stretch DASHVER=stretch
   - OS=debian DOTVER=buster DASHVER=buster
-  - OS=fedora DOTVER=23 DASHVER=23
-  - OS=fedora DOTVER=24 DASHVER=24
-  - OS=fedora DOTVER=25 DASHVER=25
-  - OS=fedora DOTVER=26 DASHVER=26
-  - OS=fedora DOTVER=27 DASHVER=27
-  - OS=fedora DOTVER=28 DASHVER=28
-  - OS=fedora DOTVER=29 DASHVER=29
-  - OS=fedora DOTVER=30 DASHVER=30
+  - OS=debian DOTVER=stretch DASHVER=stretch
   - OS=fedora DOTVER=31 DASHVER=31
   - OS=fedora DOTVER=32 DASHVER=32
   - OS=ubuntu DOTVER=bionic DASHVER=bionic
