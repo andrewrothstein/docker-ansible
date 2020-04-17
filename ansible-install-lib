@@ -1,4 +1,4 @@
-readonly ANSIBLE_VER=2.9.6
+readonly ANSIBLE_VER=2.9.7
 
 # install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
 install_pip () {
