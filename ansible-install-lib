@@ -253,7 +253,7 @@ install_fq_post_ubuntu () {
 
 install_fq_pre_archlinux () {
     pacman -S -y
-    pacman -S --noconfirm python ca-certificates
+    pacman -S --noconfirm python ca-certificates libffi
 }
 
 install_fq_pre_fedora () {
