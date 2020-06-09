@@ -189,29 +189,28 @@ PYTHON_DEP_PKGS='gcc make openssl-devel bzip2-devel libffi-devel'
 
 install_fq_pre_centos () {
     local os_ver=$1
-    yum update -y
 
     if [ "$os_ver" -gt 7 ];
     then
-        yum install -y wget python3
+        dnf update -y
+        dnf install -y wget python3
     else
+        yum update -y
         yum install -y wget python
     fi
 }
 
 install_fq_post_centos () {
     yum clean all
-    rm -rf /var/cache/yum
 }
 
 install_fq_pre_ubi () {
-    yum update -y
-    yum install -y wget python36
+    dnf update -y
+    dnf install -y wget python36
 }
 
 install_fq_post_ubi () {
-    yum celan all
-    rm -rf /var/cache/yum
+    dnf clean all
 }
 
 install_fq_pre_alpine () {
@@ -439,10 +438,6 @@ install_fq_alpine_edge () {
     ping_localhost
 }
 
-install_debian_jessie () {
-    install_fq_debian jessie /usr/bin/python pip $ANSIBLE_VER
-}
-
 install_debian_stretch () {
     install_fq_debian stretch /usr/bin/python3 pip3 $ANSIBLE_VER
 }
@@ -457,38 +452,6 @@ install_fedora_32 () {
 
 install_fedora_31 () {
     install_fq_fedora 31 /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_fedora_30 () {
-    install_fq_fedora 30 /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_fedora_29 () {
-    install_fq_fedora 29 /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_fedora_28 () {
-    install_fq_fedora 28 /usr/bin/python pip $ANSIBLE_VER
-}
-
-install_fedora_27 () {
-    install_fq_fedora 27 /usr/bin/python pip $ANSIBLE_VER
-}
-
-install_fedora_26 () {
-    install_fq_fedora 26 /usr/bin/python pip $ANSIBLE_VER
-}
-
-install_fedora_25 () {
-    install_fq_fedora 25 /usr/bin/python pip $ANSIBLE_VER
-}
-
-install_fedora_24 () {
-    install_fq_fedora 24 /usr/bin/python pip $ANSIBLE_VER
-}
-
-install_fedora_23 () {
-    install_fq_fedora 23 /usr/bin/python pip $ANSIBLE_VER
 }
 
 install_archlinux_latest () {
@@ -519,42 +482,26 @@ install_alpine_3_11 () {
     install_fq_alpine 3 11 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
-install_alpine_3_3 () {
-    install_fq_alpine 3 3 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_3_4 () {
-    install_fq_alpine 3 4 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_3_5 () {
-    install_fq_alpine 3 5 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_3_6 () {
-    install_fq_alpine 3 6 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_3_7 () {
-    install_fq_alpine 3 7 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_3_8 () {
-    install_fq_alpine 3 8 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_3_9 () {
-    install_fq_alpine 3 9 /usr/bin/python3 pip $ANSIBLE_VER
+install_alpine_3_12 () {
+    install_fq_alpine 3 12 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_edge () {
     install_fq_alpine_edge /usr/bin/python3 pip $ANSIBLE_VER
 }
 
-install_ubi8_8_0 () {
+install_ubi8_8 () {
     install_fq_ubi 8 /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
+install_ubi8_8_0 () {
+    install_ubi8_8
+}
+
 install_ubi8_8_1 () {
-    install_fq_ubi 8 /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_ubi8_8
+}
+
+install_ubi8_8_2 () {
+    install_ubi8_8
 }

@@ -15,6 +15,7 @@ branches:
 
 env:
   - OS=alpine DOTVER=3.11 DASHVER=3_11
+  - OS=alpine DOTVER=3.12 DASHVER=3_12
   - OS=alpine DOTVER=3.10 DASHVER=3_10
   - OS=alpine DOTVER=edge DASHVER=edge
   - OS=centos DOTVER=7 DASHVER=7
@@ -28,6 +29,7 @@ env:
   - OS=archlinux DOTVER=latest DASHVER=latest
   - OS=ubi8 DOTVER=8.0 DASHVER=8_0
   - OS=ubi8 DOTVER=8.1 DASHVER=8_1
+  - OS=ubi8 DOTVER=8.2 DASHVER=8_2
 
 before_script:
   - podman login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" quay.io
