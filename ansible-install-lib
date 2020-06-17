@@ -458,12 +458,21 @@ install_archlinux_latest () {
     install_fq_archlinux latest /usr/sbin/python pip $ANSIBLE_VER
 }
 
+install_ubuntu () {
+    local os_ver=$1
+    install_fq_ubuntu $os_ver /usr/bin/python3 pip3 $ANSIBLE_VER
+}
+
 install_ubuntu_bionic () {
-    install_fq_ubuntu bionic /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_ubuntu bionic
+}
+
+install_ubuntu_focal () {
+    install_ubuntu focal
 }
 
 install_ubuntu_xenial () {
-    install_fq_ubuntu xenial /usr/bin/python3 pip3 $ANSIBLE_VER
+    install_ubuntu xenial
 }
 
 install_centos_7 () {
