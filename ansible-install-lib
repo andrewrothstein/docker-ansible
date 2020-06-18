@@ -240,7 +240,7 @@ install_fq_pre_ubuntu () {
     apt-get upgrade -y
     apt-get install -y wget python3
 
-    if [ "$os_ver" = "bionic" ];
+    if [ "$os_ver" = "bionic" ] || [ "$os_ver" = "foal" ];
     then
        apt-get install -y python3-distutils
     fi
