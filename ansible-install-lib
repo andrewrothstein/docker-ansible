@@ -341,6 +341,9 @@ install_fq_gentoo () {
     local pip=$3
     local ansible_ver=$4
 
+    emerge-webrsync
+    # for equery
+    emerge app-portage/gentoolkit
     install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
