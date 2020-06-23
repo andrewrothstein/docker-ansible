@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 #set -x
 
 # example: ./install.sh alpine 3_10

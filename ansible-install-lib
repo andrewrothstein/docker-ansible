@@ -126,6 +126,12 @@ write_dockerfile_archlinux () {
     write_dockerfile docker.io archlinux base archlinux $dotver $dashver
 }
 
+write_dockerfile_gentoo () {
+    local dotver=$1
+    local dashver=$2
+    write_dockerfile docker.io gentoo stage3-amd64 gentoo $dotver $dashver
+}
+
 write_dockerfile_simple () {
     local os=$1
     local dotver=$2
@@ -329,6 +335,20 @@ install_fq_archlinux () {
     ping_localhost
 }
 
+install_fq_gentoo () {
+    local os_ver=$1
+    local python_interpreter=$2
+    local pip=$3
+    local ansible_ver=$4
+
+    install_pip $python_interpreter
+    pip_install_ansible $pip $ansible_ver
+
+    write_local_cfg
+    write_inventories gentoo_${os_ver} $python_interpreter
+    ping_localhost
+}
+
 install_fq_ubuntu () {
 
     local os_ver=$1
@@ -513,4 +533,8 @@ install_ubi8_8_1 () {
 
 install_ubi8_8_2 () {
     install_ubi8_8
+}
+
+install_gentoo_latest () {
+    install_fq_gentoo latest /usr/bin/python3 pip3 $ANSIBLE_VER
 }
