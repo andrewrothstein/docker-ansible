@@ -1,4 +1,4 @@
-readonly ANSIBLE_VER=2.9.9
+readonly ANSIBLE_VER=2.9.10
 
 # install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
 install_pip () {
@@ -240,7 +240,7 @@ install_fq_pre_ubuntu () {
     apt-get upgrade -y
     apt-get install -y wget python3
 
-    if [ "$os_ver" = "bionic" ] || [ "$os_ver" = "foal" ];
+    if [ "$os_ver" = "bionic" ] || [ "$os_ver" = "focal" ];
     then
        apt-get install -y python3-distutils
     fi
