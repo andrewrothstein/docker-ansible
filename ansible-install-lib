@@ -264,7 +264,7 @@ install_fq_pre_archlinux () {
 install_fq_pre_fedora () {
     local os_ver=$1
     dnf update -y
-    dnf install -y wget
+    dnf install -y wget systemd
 
     if [ "$os_ver" -ge "29" ];
     then
