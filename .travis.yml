@@ -21,7 +21,6 @@ env:
   - OS=archlinux DOTVER=latest DASHVER=latest
   - OS=centos DOTVER=7 DASHVER=7
   - OS=centos DOTVER=8 DASHVER=8
-  - OS=debian DOTVER=bookworm DASHVER=bookworm
   - OS=debian DOTVER=bullseye DASHVER=bullseye
   - OS=debian DOTVER=buster DASHVER=buster
   - OS=debian DOTVER=stretch DASHVER=stretch

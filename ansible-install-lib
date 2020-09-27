@@ -469,8 +469,8 @@ install_debian_bullseye () {
     install_fq_debian bullseye /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
-install_debian_bookworm () {
-    install_fq_debian bookworm /usr/bin/python3 pip3 $ANSIBLE_VER
+install_debian_buster () {
+    install_fq_debian buster /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
 install_fedora_32 () {
