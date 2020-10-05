@@ -287,13 +287,11 @@ install_fq_pre_debian () {
     if [ "$os_ver" = "jessie" ];
     then
         apt-get install -y python
-    else
-        apt-get install -y python3
-    fi
-
-    if [ "$os_ver" = "buster" ];
+    elif [ "$os_ver" = "stretch" ];
     then
-        apt-get install -y python3-distutils
+        apt-get install -y python3
+    else
+        apt-get install -y python3 python3-distutils
     fi
 }
 
