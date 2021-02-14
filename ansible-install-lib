@@ -1,4 +1,4 @@
-readonly ANSIBLE_VER=2.9.10
+ANSIBLE_VER=2.10.7
 
 # install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
 install_pip () {
@@ -229,14 +229,18 @@ install_fq_pre_alpine () {
         libffi-dev \
         openssl-dev \
         wget \
-        ca-certificates
+        ca-certificates \
+        rust \
+        cargo
 }
 
 install_fq_post_alpine () {
     apk del \
         build-base \
         libffi-dev \
-        openssl-dev
+        openssl-dev \
+        rust \
+        cargo
     rm -rf /var/cache/apk/*
 }
 
