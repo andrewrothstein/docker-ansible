@@ -483,12 +483,12 @@ install_debian_buster () {
     install_fq_debian buster /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
-install_fedora_32 () {
-    install_fq_fedora 32 /usr/bin/python3 pip3 $ANSIBLE_VER
+install_fedora_34 () {
+    install_fq_fedora 34 /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
-install_fedora_31 () {
-    install_fq_fedora 31 /usr/bin/python3 pip3 $ANSIBLE_VER
+install_fedora_35 () {
+    install_fq_fedora 35 /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
 install_archlinux_latest () {
@@ -512,24 +512,16 @@ install_ubuntu_xenial () {
     install_ubuntu xenial
 }
 
-install_centos_7 () {
-    install_fq_centos 7 /usr/bin/python pip $ANSIBLE_VER
-}
-
 install_centos_8 () {
     install_fq_centos 8 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
-install_alpine_3_10 () {
-    install_fq_alpine 3 10 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_3_11 () {
-    install_fq_alpine 3 11 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
 install_alpine_3_12 () {
     install_fq_alpine 3 12 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_alpine_3_13 () {
+    install_fq_alpine 3 13 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_edge () {
@@ -540,18 +532,10 @@ install_ubi8_8 () {
     install_fq_ubi 8 /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
-install_ubi8_8_0 () {
-    install_ubi8_8
-}
-
-install_ubi8_8_1 () {
-    install_ubi8_8
-}
-
 install_ubi8_8_2 () {
     install_ubi8_8
 }
 
-install_gentoo_latest () {
-    install_fq_gentoo latest /usr/bin/python3 pip3 $ANSIBLE_VER
+install_ubi8_8_3 () {
+    install_ubi8_8
 }
