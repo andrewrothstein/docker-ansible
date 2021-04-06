@@ -1,11 +1,12 @@
 ---
-dist: xenial
+dist: focal
 sudo: required
-before_install:
-  - sudo add-apt-repository -y ppa:projectatomic/ppa
+  - . /etc/os-release
+  - sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x${ID^}_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
+  - wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x${ID^}_${VERSION_ID}/Release.key -O Release.key
+  - sudo apt-key add - < Release.key
   - sudo apt-get update -qq
-  - sudo apt-get install -qq -y software-properties-common podman
-  - sudo mkdir -p /etc/containers
+  - sudo apt-get -qq -y install buildah
 
 language: minimal
 
@@ -30,9 +31,7 @@ env:
   - OS=ubuntu DOTVER=focal DASHVER=focal
   - OS=ubuntu DOTVER=xenial DASHVER=xenial
 
-before_script:
-  - podman login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" quay.io
-
 script:
+  - sudo buildah login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" quay.io
   - ./build.sh $OS $DOTVER $DASHVER
-  - podman push quay.io/andrewrothstein/docker-ansible:${OS}_${DOTVER}
+  - sudo buildah push quay.io/andrewrothstein/docker-ansible:${OS}_${DOTVER}
