@@ -15,7 +15,10 @@ install_pip () {
 }
 
 install_pip_archlinux () {
-    pacman -S --noconfirm python-pip
+    pacman \
+        -Syu \
+        --noconfirm \
+        python-pip
     pip install --upgrade pip
 }
 
@@ -261,8 +264,13 @@ install_fq_post_ubuntu () {
 }
 
 install_fq_pre_archlinux () {
-    pacman -S -y
-    pacman -S --noconfirm python ca-certificates libffi
+    pacman \
+        -Syu \
+        --noconfirm \
+        glibc \
+        python \
+        ca-certificates \
+        libffi
 }
 
 install_fq_pre_fedora () {
