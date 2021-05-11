@@ -20,14 +20,15 @@ env:
   - OS=alpine DOTVER=3.13 DASHVER=3_13
   - OS=alpine DOTVER=edge DASHVER=edge
   - OS=archlinux DOTVER=latest DASHVER=latest
+#  - OS=centos DOTVER=7 DASHVER=7
   - OS=centos DOTVER=8 DASHVER=8
   - OS=debian DOTVER=bullseye DASHVER=bullseye
   - OS=debian DOTVER=buster DASHVER=buster
   - OS=debian DOTVER=stretch DASHVER=stretch
   - OS=fedora DOTVER=34 DASHVER=34
   - OS=fedora DOTVER=35 DASHVER=35
-  - OS=ubi8 DOTVER=8.2 DASHVER=8_2
-  - OS=ubi8 DOTVER=8.3 DASHVER=8_3
+#  - OS=ubi8 DOTVER=8.2 DASHVER=8_2
+#  - OS=ubi8 DOTVER=8.3 DASHVER=8_3
   - OS=ubuntu DOTVER=bionic DASHVER=bionic
   - OS=ubuntu DOTVER=focal DASHVER=focal
   - OS=ubuntu DOTVER=xenial DASHVER=xenial
