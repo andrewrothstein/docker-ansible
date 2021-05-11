@@ -126,7 +126,7 @@ EOF
 write_dockerfile_archlinux () {
     local dotver=$1
     local dashver=$2
-    write_dockerfile docker.io archlinux base archlinux $dotver $dashver
+    write_dockerfile docker.io library archlinux archlinux $dotver $dashver
 }
 
 write_dockerfile_gentoo () {
