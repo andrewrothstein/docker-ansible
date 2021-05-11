@@ -123,12 +123,6 @@ RUN ./install.sh ${os} ${dashver}
 EOF
 }
 
-write_dockerfile_archlinux () {
-    local dotver=$1
-    local dashver=$2
-    write_dockerfile docker.io library archlinux archlinux $dotver $dashver
-}
-
 write_dockerfile_gentoo () {
     local dotver=$1
     local dashver=$2
@@ -144,6 +138,10 @@ write_dockerfile_simple () {
 
 write_dockerfile_alpine () {
     write_dockerfile_simple alpine $1 $2
+}
+
+write_dockerfile_archlinux () {
+    write_dockerfile_simple archlinux $1 $2
 }
 
 write_dockerfile_centos () {
