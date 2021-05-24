@@ -34,6 +34,7 @@ env:
 #  - OS=ubuntu DOTVER=xenial DASHVER=xenial
 
 script:
-  - sudo buildah login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" quay.io
+  - sudo buildah login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" docker.io
+  - sudo buildah login -u "$QUAY_USERNAME" -p "$QUAY_PASSWORD" quay.io
   - ./build.sh $OS $DOTVER $DASHVER
   - sudo buildah push quay.io/andrewrothstein/docker-ansible:${OS}_${DOTVER}
