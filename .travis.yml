@@ -16,8 +16,8 @@ branches:
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 
 env:
-  - OS=alpine DOTVER=3.12 DASHVER=3_12
   - OS=alpine DOTVER=3.13 DASHVER=3_13
+  - OS=alpine DOTVER=3.14 DASHVER=3_14
   - OS=alpine DOTVER=edge DASHVER=edge
   - OS=archlinux DOTVER=latest DASHVER=latest
 #  - OS=centos DOTVER=7 DASHVER=7
