@@ -31,9 +31,6 @@ jobs:
           - os: fedora
             dotver: '34'
             dashver: '34'
-          - os: fedora
-            dotver: '35'
-            dashver: '35'
           - os: ubuntu
             dotver: bionic
             dashver: bionic
