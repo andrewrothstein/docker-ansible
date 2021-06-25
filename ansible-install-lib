@@ -76,7 +76,7 @@ write_local_cfg () {
 [defaults]
 inventory = /etc/ansible/inventories
 transport = local
-callback_whitelist = timer,profile_tasks
+callback_enabled = timer,profile_tasks
 HERE
 }
 
