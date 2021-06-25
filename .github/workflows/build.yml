@@ -1,0 +1,45 @@
+---
+name: dcb
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro:
+          - os: alpine
+            dotver: '3.13'
+            dashver: '3_13'
+          - os: alpine
+            dotver: '3.14'
+            dashver: '3_14'
+          - os: alpine
+            dotver: edge
+            dashver: edge
+          - os: archlinux
+            dotver: latest
+            dashver: latest
+          - os: centos
+            dotver: 8
+            dashver: 8
+          - os: debian
+            dotver: bullseye
+            dashver: bullseye
+          - os: debian
+            dotver: buster
+            dashver: buster
+          - os: fedora
+            dotver: '34'
+            dashver: '34'
+          - os: ubuntu
+            dotver: bionic
+            dashver: bionic
+          - os: ubuntu
+            dotver: focal
+            dashver: focal
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo buildah login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
+      - run: sudo buildah login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
+      - run: ./build.sh ${{ matrix.distro.os }} ${{ matrix.distro.dotver }} ${{ matrix.distro.dashver }}
+      - run: sudo buildah push quay.io/andrewrothstein/docker-ansible:${{ matrix.distro.os}}_${{ matrix.distro.dotver }}
