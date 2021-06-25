@@ -20,9 +20,6 @@ jobs:
             dotver: latest
             dashver: latest
           - os: centos
-            dotver: '7'
-            dashver: '7'
-          - os: centos
             dotver: 8
             dashver: 8
           - os: debian
