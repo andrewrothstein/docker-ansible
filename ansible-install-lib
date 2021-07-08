@@ -64,7 +64,8 @@ pip_install_ansible () {
     pip_install $pip ansible==$ansible_ver
 }
 
-ping_localhost () {
+ansible_ping_localhost () {
+    ansible-galaxy install requirements.yml
     ansible --version \
         && ansible all --list-hosts \
         && ansible localhost -m ping
@@ -76,7 +77,7 @@ write_local_cfg () {
 [defaults]
 inventory = /etc/ansible/inventories
 transport = local
-callback_enabled = timer,profile_tasks
+callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
 HERE
 }
 
@@ -119,6 +120,7 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 
 ADD ansible-install-lib ansible-install-lib
 ADD install.sh install.sh
+ADD requirements.yml requirements.yml
 RUN ./install.sh ${os} ${dashver}
 EOF
 }
@@ -324,7 +326,7 @@ install_fq_fedora () {
 
     write_local_cfg
     write_inventories fedora_${os_ver} $python_interpreter
-    ping_localhost
+    ansible_ping_localhost
 }
 
 install_fq_archlinux () {
@@ -340,7 +342,7 @@ install_fq_archlinux () {
 
     write_local_cfg
     write_inventories archlinux_${os_ver} $python_interpreter
-    ping_localhost
+    ansible_ping_localhost
 }
 
 install_fq_gentoo () {
@@ -357,7 +359,7 @@ install_fq_gentoo () {
 
     write_local_cfg
     write_inventories gentoo_${os_ver} $python_interpreter
-    ping_localhost
+    ansible_ping_localhost
 }
 
 install_fq_ubuntu () {
@@ -376,7 +378,7 @@ install_fq_ubuntu () {
 
     write_local_cfg
     write_inventories ubuntu_${os_ver} $python_interpreter
-    ping_localhost
+    ansible_ping_localhost
 }
 
 install_fq_debian () {
@@ -395,7 +397,7 @@ install_fq_debian () {
 
     write_local_cfg
     write_inventories debian_${os_ver} $python_interpreter
-    ping_localhost
+    ansible_ping_localhost
 }
 
 install_fq_centos () {
@@ -413,7 +415,7 @@ install_fq_centos () {
 
     write_local_cfg
     write_inventories centos_${os_ver} $python_interpreter
-    ping_localhost
+    ansible_ping_localhost
 }
 
 install_fq_ubi () {
@@ -430,7 +432,7 @@ install_fq_ubi () {
 
     write_local_cfg
     write_inventories ubi_minimal_${os_ver} $python_interpreter
-    ping_localhost
+    ansible_ping_localhost
 }
 
 install_fq_alpine () {
@@ -449,7 +451,7 @@ install_fq_alpine () {
 
     write_local_cfg
     write_inventories alpine_${os_major}_${os_minor} $python_interpreter
-    ping_localhost
+    ansible_ping_localhost
 }
 
 install_fq_alpine_edge () {
@@ -466,7 +468,7 @@ install_fq_alpine_edge () {
 
     write_local_cfg
     write_inventories alpine_edge $python_interpreter
-    ping_localhost
+    ansible_ping_localhost
 }
 
 install_debian_stretch () {
