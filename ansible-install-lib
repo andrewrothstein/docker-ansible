@@ -65,7 +65,7 @@ pip_install_ansible () {
 }
 
 ansible_ping_localhost () {
-    ansible-galaxy install requirements.yml
+    ansible-galaxy install -r requirements.yml
     ansible --version \
         && ansible all --list-hosts \
         && ansible localhost -m ping
