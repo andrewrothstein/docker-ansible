@@ -217,7 +217,7 @@ install_fq_pre_centos () {
     then
         install_fq_pre_dnf
     else
-        install_fq_pre_yum
+        install_fq_pre_yum python
     fi
 }
 
@@ -234,7 +234,7 @@ install_fq_pre_fedora () {
     then
         install_fq_pre_dnf
     else
-        install_fq_pre_yum python
+        install_fq_pre_dnf python
     fi
 }
 
