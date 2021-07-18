@@ -151,9 +151,8 @@ write_dockerfile_centos () {
 }
 
 write_dockerfile_rockylinux () {
-    local os=$1
-    local dotver=$2
-    local dashver=$3
+    local dotver=$1
+    local dashver=$2
     write_dockerfile docker.io rockylinux $os $os $dotver $dashver
 }
 
