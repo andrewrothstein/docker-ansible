@@ -27,7 +27,7 @@ jobs:
             dashver: 8
           - os: rockylinux
             dotver: 8.4
-            dash_ver: 8_4
+            dashver: 8_4
           - os: debian
             dotver: bullseye
             dashver: bullseye
