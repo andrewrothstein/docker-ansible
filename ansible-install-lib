@@ -150,6 +150,12 @@ write_dockerfile_centos () {
     write_dockerfile_simple centos $1 $2
 }
 
+write_dockerfile_rockylinux () {
+    local dotver=$1
+    local dashver=$2
+    write_dockerfile docker.io rockylinux rockylinux rockylinux $dotver $dashver
+}
+
 write_dockerfile_debian () {
     write_dockerfile_simple debian $1 $2
 }
@@ -194,32 +200,69 @@ install_python () {
     rm -rf $python_tgz $python_name
 }
 
-PYTHON_DEP_PKGS='gcc make openssl-devel bzip2-devel libffi-devel'
+install_fq_pre_dnf() {
+    dnf update -y
+    dnf install -y wget ${1:-python3}
+}
+
+install_fq_pre_yum() {
+    yum update -y
+    yum install -y wget ${1:-python3}
+}
 
 install_fq_pre_centos () {
     local os_ver=$1
 
     if [ "$os_ver" -gt 7 ];
     then
-        dnf update -y
-        dnf install -y wget python3
+        install_fq_pre_dnf
     else
-        yum update -y
-        yum install -y wget python
+        install_fq_pre_yum python
     fi
 }
 
-install_fq_post_centos () {
+install_fq_pre_ubi () {
+    install_fq_pre_dnf python36
+}
+
+install_fq_pre_fedora () {
+    local os_ver=$1
+    dnf update -y
+    dnf install -y systemd
+
+    if [ "$os_ver" -ge "29" ];
+    then
+        install_fq_pre_dnf
+    else
+        install_fq_pre_dnf python
+    fi
+}
+
+install_fq_post_yum() {
     yum clean all
 }
 
-install_fq_pre_ubi () {
-    dnf update -y
-    dnf install -y wget python36
+install_fq_post_dnf() {
+    dnf clean all
+}
+
+install_fq_post_centos () {
+    local os_ver=$1
+
+    if [ "$os_ver" -gt 7 ];
+    then
+        install_fq_post_dnf
+    else
+        install_fq_post_yum
+    fi
 }
 
 install_fq_post_ubi () {
-    dnf clean all
+    install_fq_post_dnf
+}
+
+install_fq_post_fedora () {
+    install_fq_post_dnf
 }
 
 install_fq_pre_alpine () {
@@ -271,23 +314,6 @@ install_fq_pre_archlinux () {
         python \
         ca-certificates \
         libffi
-}
-
-install_fq_pre_fedora () {
-    local os_ver=$1
-    dnf update -y
-    dnf install -y wget systemd
-
-    if [ "$os_ver" -ge "29" ];
-    then
-        dnf install -y python3
-    else
-        dnf install -y python
-    fi
-}
-
-install_fq_post_fedora () {
-    dnf clean all
 }
 
 install_fq_pre_debian () {
@@ -418,6 +444,25 @@ install_fq_centos () {
     ansible_ping_localhost
 }
 
+install_fq_rockylinux () {
+    local os_major=$1
+    local os_minor=$2
+    local python_interpreter=$3
+    local pip=$4
+    local ansible_ver=$5
+
+    install_fq_pre_dnf
+
+    install_pip $python_interpreter
+    pip_install_ansible $pip $ansible_ver
+
+    install_fq_post_dnf
+
+    write_local_cfg
+    write_inventories rockylinux_${os_major}_${os_minor} $python_interpreter
+    ansible_ping_localhost
+}
+
 install_fq_ubi () {
     local os_ver=$1
     local python_interpreter=$2
@@ -514,6 +559,10 @@ install_ubuntu_xenial () {
 
 install_centos_8 () {
     install_fq_centos 8 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
+install_rockylinux_8_4 () {
+    install_fq_rockylinux 8 4 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_3_13 () {
