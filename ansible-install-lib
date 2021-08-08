@@ -294,7 +294,7 @@ install_fq_pre_ubuntu () {
     os_ver=$1
     apt-get update -y
     apt-get upgrade -y
-    apt-get install -y wget python3
+    apt-get install -y wget python3 language-pack-en
 
     if [ "$os_ver" = "bionic" ] || [ "$os_ver" = "focal" ];
     then
