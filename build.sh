@@ -3,7 +3,7 @@ set -e
 #set -x
 
 target_registry=${TARGET_REGISTRY:-quay.io}
-target_registry2=${TARGET_REGISTRY2:ghcr.io}
+target_registry2=${TARGET_REGISTRY2:-ghcr.io}
 target_slug=${TARGET_SLUG:-"andrewrothstein/docker-ansible"}
 
 target_image_name="${target_registry}/${target_slug}"
