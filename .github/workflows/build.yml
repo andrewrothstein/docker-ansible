@@ -47,5 +47,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: sudo buildah login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
       - run: sudo buildah login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
+      - run: sudo buildah login -u "${{ env.GITHUB_ACTOR }}" -p "${{ env.GITHUB_TOKEN }}" ghcr.io
       - run: ./build.sh ${{ matrix.distro.os }} ${{ matrix.distro.dotver }} ${{ matrix.distro.dashver }}
-      - run: sudo buildah push quay.io/andrewrothstein/docker-ansible:${{ matrix.distro.os}}_${{ matrix.distro.dotver }}
+      - run: sudo buildah push quay.io/${{ env.GITHUB_REPOSITORY }}:${{ matrix.distro.os}}_${{ matrix.distro.dotver }}
+      - run: sudo buildah push ghcr.io/${{ env.GITHUB_REPOSITORY }}:${{ matrix.distro.os}}_${{ matrix.distro.dotver }}
