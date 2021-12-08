@@ -565,6 +565,10 @@ install_rockylinux_8_4 () {
     install_fq_rockylinux 8 4 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
+install_rockylinux_8_5 () {
+    install_fq_rockylinux 8 5 /usr/bin/python3 pip $ANSIBLE_VER
+}
+
 install_alpine_3_13 () {
     install_fq_alpine 3 13 /usr/bin/python3 pip $ANSIBLE_VER
 }
