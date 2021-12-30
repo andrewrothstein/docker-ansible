@@ -1,4 +1,4 @@
-ANSIBLE_VER=4.9.0
+ANSIBLE_VER=5.1.0
 
 # install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
 install_pip () {
