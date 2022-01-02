@@ -11,49 +11,38 @@ jobs:
       matrix:
         distro:
           - os: alpine
-            dotver: '3.13'
-            dashver: '3_13'
+            ver: '3.13'
           - os: alpine
-            dotver: '3.14'
-            dashver: '3_14'
+            ver: '3.14'
           - os: alpine
-            dotver: '3.15'
-            dashver: '3_15'
+            ver: '3.15'
           - os: alpine
-            dotver: edge
-            dashver: edge
+            ver: edge
           - os: archlinux
-            dotver: latest
-            dashver: latest
+            ver: latest
           - os: centos
-            dotver: 8
-            dashver: 8
+            ver: 8
           - os: rockylinux
-            dotver: 8
-            dashver: 8
+            ver: 8
           - os: debian
-            dotver: bullseye
-            dashver: bullseye
+            ver: bullseye
           - os: debian
-            dotver: buster
-            dashver: buster
+            ver: buster
           - os: fedora
-            dotver: '34'
-            dashver: '34'
+            ver: '34'
           - os: fedora
-            dotver: '35'
-            dashver: '35'
+            ver: '35'
+          - os: fedora
+            ver: '36'
           - os: ubuntu
-            dotver: bionic
-            dashver: bionic
+            ver: bionic
           - os: ubuntu
-            dotver: focal
-            dashver: focal
+            ver: focal
     steps:
       - uses: actions/checkout@v2
       - run: sudo buildah login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
       - run: sudo buildah login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
       - run: sudo buildah login -u "${{ github.actor }}" -p "${{ github.token }}" ghcr.io
-      - run: ./build.sh ${{ matrix.distro.os }} ${{ matrix.distro.dotver }} ${{ matrix.distro.dashver }}
-      - run: sudo buildah push quay.io/${{ github.repository }}:${{ matrix.distro.os}}_${{ matrix.distro.dotver }}
-      - run: sudo buildah push ghcr.io/${{ github.repository }}:${{ matrix.distro.os}}_${{ matrix.distro.dotver }}
+      - run: ./build.sh ${{ matrix.distro.os }} ${{ matrix.distro.ver }}
+      - run: sudo buildah push quay.io/${{ github.repository }}:${{ matrix.distro.os}}_${{ matrix.distro.ver }}
+      - run: sudo buildah push ghcr.io/${{ github.repository }}:${{ matrix.distro.os}}_${{ matrix.distro.ver }}

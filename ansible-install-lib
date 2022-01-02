@@ -103,8 +103,7 @@ write_dockerfile () {
     local upstream_repo=$3
 
     local os=$4
-    local dotver=$5
-    local dashver=$6
+    local os_ver=$5
 
     local fq_upstream=${upstream_registry}/${upstream_namespace}/${upstream_repo}:${dotver}
     if [ "${upstream_namespace}" = "" ];
@@ -112,7 +111,7 @@ write_dockerfile () {
         fq_upstream=${upstream_registry}/${upstream_repo}:${dotver}
     fi
 
-    dockerfile=Dockerfile.${os}_${dotver}
+    dockerfile=Dockerfile.${os}_${os_ver}
     echo writing Dockerfile: $dockerfile
     cat > $dockerfile <<EOF
 FROM $fq_upstream
@@ -121,43 +120,42 @@ MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
 ADD ansible-install-lib ansible-install-lib
 ADD install.sh install.sh
 ADD requirements.yml requirements.yml
-RUN ./install.sh ${os} ${dashver}
+RUN ./install.sh ${os} ${os_ver}
 EOF
 }
 
 write_dockerfile_simple () {
     local os=$1
-    local dotver=$2
-    local dashver=$3
-    write_dockerfile docker.io library $os $os $dotver $dashver
+    local os_ver=$2
+    write_dockerfile docker.io library $os $os $os_ver
 }
 
 write_dockerfile_alpine () {
-    write_dockerfile_simple alpine $1 $2
+    write_dockerfile_simple alpine $1
 }
 
 write_dockerfile_archlinux () {
-    write_dockerfile_simple archlinux $1 $2
+    write_dockerfile_simple archlinux $1
 }
 
 write_dockerfile_centos () {
-    write_dockerfile_simple centos $1 $2
+    write_dockerfile_simple centos $1
 }
 
 write_dockerfile_rockylinux () {
-    write_dockerfile_simple rockylinux $1 $2
+    write_dockerfile_simple rockylinux $1
 }
 
 write_dockerfile_debian () {
-    write_dockerfile_simple debian $1 $2
+    write_dockerfile_simple debian $1
 }
 
 write_dockerfile_ubuntu () {
-    write_dockerfile_simple ubuntu $1 $2
+    write_dockerfile_simple ubuntu $1
 }
 
 write_dockerfile_fedora () {
-    write_dockerfile_simple fedora $1 $2
+    write_dockerfile_simple fedora $1
 }
 
 PYTHON_MIRROR=https://www.python.org/ftp/python
@@ -412,11 +410,10 @@ install_fq_rockylinux () {
 }
 
 install_fq_alpine () {
-    local os_major=$1
-    local os_minor=$2
-    local python_interpreter=$3
-    local pip=$4
-    local ansible_ver=$5
+    local os_ver=$1
+    local python_interpreter=$2
+    local pip=$3
+    local ansible_ver=$4
 
     install_fq_pre_alpine
 
@@ -430,45 +427,19 @@ install_fq_alpine () {
     ansible_ping_localhost
 }
 
-install_fq_alpine_edge () {
-    local python_interpreter=$1
-    local pip=$2
-    local ansible_ver=$3
-
-    install_fq_pre_alpine
-
-    install_pip_alpine $python_interpreter
-    pip_install_ansible $pip $ansible_ver
-
-    install_fq_post_alpine
-
-    write_local_cfg
-    write_inventories alpine_edge $python_interpreter
-    ansible_ping_localhost
+install_debian () {
+    local os_ver=$1
+    install_fq_debian $os_ver /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
-install_debian_stretch () {
-    install_fq_debian stretch /usr/bin/python3 pip3 $ANSIBLE_VER
+install_fedora () {
+    local os_ver=$1
+    install_fq_fedora $os_ver /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
-install_debian_bullseye () {
-    install_fq_debian bullseye /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_debian_buster () {
-    install_fq_debian buster /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_fedora_34 () {
-    install_fq_fedora 34 /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_fedora_35 () {
-    install_fq_fedora 35 /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_archlinux_latest () {
-    install_fq_archlinux latest /usr/sbin/python pip $ANSIBLE_VER
+install_archlinux () {
+    local os_ver=$1
+    install_fq_archlinux $os_ver /usr/sbin/python pip $ANSIBLE_VER
 }
 
 install_ubuntu () {
@@ -476,40 +447,19 @@ install_ubuntu () {
     install_fq_ubuntu $os_ver /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
-install_ubuntu_bionic () {
-    install_ubuntu bionic
+install_centos () {
+    local os_ver=$1
+    install_fq_centos $os_ver /usr/bin/python3 pip $ANSIBLE_VER
 }
 
-install_ubuntu_focal () {
-    install_ubuntu focal
+install_rockylinux () {
+    local os_ver=$1
+    install_fq_rockylinux $os_ver /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
-install_ubuntu_xenial () {
-    install_ubuntu xenial
-}
-
-install_centos_8 () {
-    install_fq_centos 8 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_rockylinux_8 () {
-    install_fq_rockylinux 8 /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_alpine_3_13 () {
-    install_fq_alpine 3 13 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_3_14 () {
-    install_fq_alpine 3 14 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_3_15 () {
-    install_fq_alpine 3 15 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_alpine_edge () {
-    install_fq_alpine_edge /usr/bin/python3 pip $ANSIBLE_VER
+install_alpine () {
+    local os_ver=$1
+    install_fq_alpine $os_ver /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 docker_build_and_tag() {
