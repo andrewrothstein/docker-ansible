@@ -125,12 +125,6 @@ RUN ./install.sh ${os} ${dashver}
 EOF
 }
 
-write_dockerfile_gentoo () {
-    local dotver=$1
-    local dashver=$2
-    write_dockerfile docker.io gentoo stage3-amd64 gentoo $dotver $dashver
-}
-
 write_dockerfile_simple () {
     local os=$1
     local dotver=$2
@@ -164,17 +158,6 @@ write_dockerfile_ubuntu () {
 
 write_dockerfile_fedora () {
     write_dockerfile_simple fedora $1 $2
-}
-
-write_dockerfile_ubi () {
-    local major_ver=$1
-    local dotver=$2
-    local dashver=$3
-    write_dockerfile registry.access.redhat.com ubi${major_ver} ubi ubi${major_ver} $dotver $dashver
-}
-
-write_dockerfile_ubi8 () {
-    write_dockerfile_ubi 8 $1 $2
 }
 
 PYTHON_MIRROR=https://www.python.org/ftp/python
@@ -212,10 +195,6 @@ install_fq_pre_centos () {
     fi
 }
 
-install_fq_pre_ubi () {
-    install_fq_pre_dnf python36
-}
-
 install_fq_pre_fedora () {
     local os_ver=$1
     dnf update -y
@@ -246,10 +225,6 @@ install_fq_post_centos () {
     else
         install_fq_post_yum
     fi
-}
-
-install_fq_post_ubi () {
-    install_fq_post_dnf
 }
 
 install_fq_post_fedora () {
@@ -362,23 +337,6 @@ install_fq_archlinux () {
     ansible_ping_localhost
 }
 
-install_fq_gentoo () {
-    local os_ver=$1
-    local python_interpreter=$2
-    local pip=$3
-    local ansible_ver=$4
-
-    emerge-webrsync
-    # for equery
-    emerge app-portage/gentoolkit
-    install_pip $python_interpreter
-    pip_install_ansible $pip $ansible_ver
-
-    write_local_cfg
-    write_inventories gentoo_${os_ver} $python_interpreter
-    ansible_ping_localhost
-}
-
 install_fq_ubuntu () {
 
     local os_ver=$1
@@ -450,23 +408,6 @@ install_fq_rockylinux () {
 
     write_local_cfg
     write_inventories rockylinux_${os_ver} $python_interpreter
-    ansible_ping_localhost
-}
-
-install_fq_ubi () {
-    local os_ver=$1
-    local python_interpreter=$2
-    local pip=$3
-    local ansible_ver=$4
-
-    install_fq_pre_ubi
-
-    pip_install_ansible $pip $ansible_ver
-
-    install_fq_post_ubi
-
-    write_local_cfg
-    write_inventories ubi_minimal_${os_ver} $python_interpreter
     ansible_ping_localhost
 }
 
@@ -569,18 +510,6 @@ install_alpine_3_15 () {
 
 install_alpine_edge () {
     install_fq_alpine_edge /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_ubi8_8 () {
-    install_fq_ubi 8 /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_ubi8_8_2 () {
-    install_ubi8_8
-}
-
-install_ubi8_8_3 () {
-    install_ubi8_8
 }
 
 docker_build_and_tag() {
