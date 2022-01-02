@@ -153,7 +153,7 @@ write_dockerfile_centos () {
 write_dockerfile_rockylinux () {
     local dotver=$1
     local dashver=$2
-    write_dockerfile docker.io rockylinux rockylinux rockylinux $dotver $dashver
+    write_dockerfile_simple rockylinux $1 $2
 }
 
 write_dockerfile_debian () {
@@ -445,11 +445,10 @@ install_fq_centos () {
 }
 
 install_fq_rockylinux () {
-    local os_major=$1
-    local os_minor=$2
+    local os_ver=$1
     local python_interpreter=$3
     local pip=$4
-    local ansible_ver=$5
+    local ansible_ver=$4
 
     install_fq_pre_dnf
 
@@ -459,7 +458,7 @@ install_fq_rockylinux () {
     install_fq_post_dnf
 
     write_local_cfg
-    write_inventories rockylinux_${os_major}_${os_minor} $python_interpreter
+    write_inventories rockylinux_${os_ver} $python_interpreter
     ansible_ping_localhost
 }
 
@@ -561,12 +560,8 @@ install_centos_8 () {
     install_fq_centos 8 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
-install_rockylinux_8_4 () {
-    install_fq_rockylinux 8 4 /usr/bin/python3 pip $ANSIBLE_VER
-}
-
-install_rockylinux_8_5 () {
-    install_fq_rockylinux 8 5 /usr/bin/python3 pip $ANSIBLE_VER
+install_rockylinux_8 () {
+    install_fq_rockylinux 8 /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_alpine_3_13 () {
