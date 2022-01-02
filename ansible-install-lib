@@ -105,10 +105,10 @@ write_dockerfile () {
     local os=$4
     local os_ver=$5
 
-    local fq_upstream=${upstream_registry}/${upstream_namespace}/${upstream_repo}:${dotver}
+    local fq_upstream=${upstream_registry}/${upstream_namespace}/${upstream_repo}:${os_ver}
     if [ "${upstream_namespace}" = "" ];
     then
-        fq_upstream=${upstream_registry}/${upstream_repo}:${dotver}
+        fq_upstream=${upstream_registry}/${upstream_repo}:${os_ver}
     fi
 
     dockerfile=Dockerfile.${os}_${os_ver}
