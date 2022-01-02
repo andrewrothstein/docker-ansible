@@ -20,16 +20,5 @@ fq_image_name2="${target_image_name2}:${tag_underbar}"
 . ./ansible-install-lib
 
 write_dockerfile_$os $dotver $dashver
-sudo \
-    buildah \
-    bud \
-    -f Dockerfile.${tag_underbar} \
-    --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY \
-    --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy \
-    -t ${fq_image_name} \
-    .
-sudo \
-    buildah \
-      tag \
-      $fq_image_name \
-      $fq_image_name2
+buildah_build_and_tag Dockerfile.${tag_underbar} ${fq_image_name} ${fq_image_name2}
+#docker_build_and_tag Dockerfile.${tag_underbar} ${fq_image_name} ${fq_image_name2}

@@ -151,8 +151,6 @@ write_dockerfile_centos () {
 }
 
 write_dockerfile_rockylinux () {
-    local dotver=$1
-    local dashver=$2
     write_dockerfile_simple rockylinux $1 $2
 }
 
@@ -165,14 +163,7 @@ write_dockerfile_ubuntu () {
 }
 
 write_dockerfile_fedora () {
-    local dotver=$1
-    local dashver=$2
-    if [ "$dotver" -ge "24" ];
-    then
-        write_dockerfile registry.fedoraproject.org '' fedora fedora $1 $2
-    else
-        write_dockerfile_simple fedora $dotver $dashver
-    fi
+    write_dockerfile_simple fedora $1 $2
 }
 
 write_dockerfile_ubi () {
@@ -446,8 +437,8 @@ install_fq_centos () {
 
 install_fq_rockylinux () {
     local os_ver=$1
-    local python_interpreter=$3
-    local pip=$4
+    local python_interpreter=$2
+    local pip=$3
     local ansible_ver=$4
 
     install_fq_pre_dnf
@@ -590,4 +581,36 @@ install_ubi8_8_2 () {
 
 install_ubi8_8_3 () {
     install_ubi8_8
+}
+
+docker_build_and_tag() {
+    local df=$1
+    local n=$2
+    local t=$3
+    docker build \
+           -f $df \
+           --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY \
+           --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy \
+           -t $n \
+           .
+    docker tag $n $t
+}
+
+buildah_build_and_tag() {
+    local df=$1
+    local n=$2
+    local t=$3
+    sudo \
+        buildah \
+        bud \
+        -f $df \
+        --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY \
+        --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy \
+        -t $n \
+        .
+
+    sudo \
+        buildah \
+        tag \
+        $n $t
 }
