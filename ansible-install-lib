@@ -561,7 +561,7 @@ install_centos_8 () {
 }
 
 install_rockylinux_8 () {
-    install_fq_rockylinux 8 /usr/bin/python3 pip $ANSIBLE_VER
+    install_fq_rockylinux 8 /usr/bin/python3 pip3 $ANSIBLE_VER
 }
 
 install_alpine_3_13 () {
