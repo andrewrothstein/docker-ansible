@@ -43,10 +43,6 @@ install_pip_debian () {
     install_pip $1
 }
 
-install_pip_centos () {
-    install_pip $1
-}
-
 install_pip_alpine () {
     install_pip $1
 }
@@ -138,10 +134,6 @@ write_dockerfile_archlinux () {
     write_dockerfile_simple archlinux $1
 }
 
-write_dockerfile_centos () {
-    write_dockerfile_simple centos $1
-}
-
 write_dockerfile_rockylinux () {
     write_dockerfile_simple rockylinux $1
 }
@@ -182,17 +174,6 @@ install_fq_pre_yum() {
     yum install -y wget ${1:-python3}
 }
 
-install_fq_pre_centos () {
-    local os_ver=$1
-
-    if [ "$os_ver" -gt 7 ];
-    then
-        install_fq_pre_dnf
-    else
-        install_fq_pre_yum python
-    fi
-}
-
 install_fq_pre_fedora () {
     local os_ver=$1
     dnf update -y
@@ -212,17 +193,6 @@ install_fq_post_yum() {
 
 install_fq_post_dnf() {
     dnf clean all
-}
-
-install_fq_post_centos () {
-    local os_ver=$1
-
-    if [ "$os_ver" -gt 7 ];
-    then
-        install_fq_post_dnf
-    else
-        install_fq_post_yum
-    fi
 }
 
 install_fq_post_fedora () {
@@ -373,24 +343,6 @@ install_fq_debian () {
     ansible_ping_localhost
 }
 
-install_fq_centos () {
-    local os_ver=$1
-    local python_interpreter=$2
-    local pip=$3
-    local ansible_ver=$4
-
-    install_fq_pre_centos $os_ver
-
-    install_pip_centos $python_interpreter
-    pip_install_ansible $pip $ansible_ver
-
-    install_fq_post_centos
-
-    write_local_cfg
-    write_inventories centos $python_interpreter
-    ansible_ping_localhost
-}
-
 install_fq_rockylinux () {
     local os_ver=$1
     local python_interpreter=$2
@@ -445,11 +397,6 @@ install_archlinux () {
 install_ubuntu () {
     local os_ver=$1
     install_fq_ubuntu $os_ver /usr/bin/python3 pip3 $ANSIBLE_VER
-}
-
-install_centos () {
-    local os_ver=$1
-    install_fq_centos $os_ver /usr/bin/python3 pip $ANSIBLE_VER
 }
 
 install_rockylinux () {

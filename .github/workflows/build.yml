@@ -20,8 +20,6 @@ jobs:
             ver: edge
           - os: archlinux
             ver: latest
-          - os: centos
-            ver: 8
           - os: rockylinux
             ver: 8
           - os: rockylinux
