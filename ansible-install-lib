@@ -226,9 +226,10 @@ install_fq_post_alpine () {
 
 install_fq_pre_ubuntu () {
     os_ver=$1
+    python_pkg=$2
     apt-get update -y
     apt-get upgrade -y
-    apt-get install -y wget python3 language-pack-en
+    apt-get install -y wget $python_pkg language-pack-en
 
     if [ "$os_ver" = "bionic" ] || [ "$os_ver" = "focal" ];
     then
@@ -311,8 +312,9 @@ install_fq_ubuntu () {
     local python_interpreter=$2
     local pip=$3
     local ansible_ver=$4
+    local python_pkg=$5
 
-    install_fq_pre_ubuntu $os_ver
+    install_fq_pre_ubuntu $os_ver $python_pkg
 
     install_pip_ubuntu $python_interpreter
     pip_install_ansible $pip $ansible_ver
@@ -396,7 +398,15 @@ install_archlinux () {
 
 install_ubuntu () {
     local os_ver=$1
-    install_fq_ubuntu $os_ver /usr/bin/python3 pip3 $ANSIBLE_VER
+    local python_pkg=python3
+    if [ "$os_ver" == "bionic" ];
+    then
+        python_pkg=python3.8
+    elif [ "$os_ver" == "focal" ];
+    then
+        python_pkg=python3.9
+    fi
+    install_fq_ubuntu $os_ver /usr/bin/python3 pip3 $ANSIBLE_VER $python_pkg
 }
 
 install_rockylinux () {
