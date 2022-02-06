@@ -230,11 +230,6 @@ install_fq_pre_ubuntu () {
     apt-get update -y
     apt-get upgrade -y
     apt-get install -y wget $python_pkg language-pack-en
-
-    if [ "$os_ver" = "bionic" ] || [ "$os_ver" = "focal" ];
-    then
-       apt-get install -y python3-distutils
-    fi
 }
 
 install_fq_post_ubuntu () {
