@@ -399,10 +399,10 @@ install_archlinux () {
 install_ubuntu () {
     local os_ver=$1
     local python_pkg=python3
-    if [ "$os_ver" == "bionic" ];
+    if [ "$os_ver" = "bionic" ];
     then
         python_pkg=python3.8
-    elif [ "$os_ver" == "focal" ];
+    elif [ "$os_ver" = "focal" ];
     then
         python_pkg=python3.9
     fi
