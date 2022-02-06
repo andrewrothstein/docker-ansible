@@ -349,7 +349,7 @@ install_fq_rockylinux () {
     local pip=$3
     local ansible_ver=$4
 
-    install_fq_pre_dnf
+    install_fq_pre_dnf python39
 
     install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
