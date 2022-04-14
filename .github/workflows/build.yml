@@ -11,8 +11,6 @@ jobs:
       matrix:
         distro:
           - os: alpine
-            ver: '3.13'
-          - os: alpine
             ver: '3.14'
           - os: alpine
             ver: '3.15'
@@ -22,14 +20,10 @@ jobs:
             ver: latest
           - os: rockylinux
             ver: 8
-          - os: rockylinux
-            ver: '8.5'
           - os: debian
             ver: bullseye
           - os: debian
             ver: buster
-          - os: fedora
-            ver: '34'
           - os: fedora
             ver: '35'
           - os: fedora
