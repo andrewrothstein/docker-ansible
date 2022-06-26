@@ -405,6 +405,9 @@ install_ubuntu () {
     elif [ "$os_ver" = "focal" ];
     then
         python_pkg=python3.9
+    elif [ "$os_ver" = "jammy" ];
+    then
+        python_pkg=python3.10
     fi
     install_fq_ubuntu $os_ver /usr/bin/${python_pkg} pip3 $ANSIBLE_VER $python_pkg
 }
