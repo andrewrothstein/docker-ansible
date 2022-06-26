@@ -406,6 +406,10 @@ install_ubuntu () {
     then
         python_pkg=python3.9
     fi
+    elif [ "$os_ver" = "jammy" ];
+    then
+        python_pkg=python3.10
+    fi
     install_fq_ubuntu $os_ver /usr/bin/${python_pkg} pip3 $ANSIBLE_VER $python_pkg
 }
 

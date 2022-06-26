@@ -34,6 +34,8 @@ jobs:
             ver: bionic
           - os: ubuntu
             ver: focal
+          - os: ubuntu
+            ver: jammy
     steps:
       - uses: actions/checkout@v2
       - run: sudo buildah login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
