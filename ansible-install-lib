@@ -405,7 +405,6 @@ install_ubuntu () {
     elif [ "$os_ver" = "focal" ];
     then
         python_pkg=python3.9
-    fi
     elif [ "$os_ver" = "jammy" ];
     then
         python_pkg=python3.10
