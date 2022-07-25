@@ -22,6 +22,8 @@ jobs:
             ver: latest
           - os: rockylinux
             ver: 8
+          - os: rockylinux
+            ver: 9
           - os: debian
             ver: bullseye
           - os: debian
