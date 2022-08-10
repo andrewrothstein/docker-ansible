@@ -11,8 +11,6 @@ jobs:
       matrix:
         distro:
           - os: alpine
-            ver: '3.14'
-          - os: alpine
             ver: '3.15'
           - os: alpine
             ver: '3.16'
@@ -32,6 +30,8 @@ jobs:
             ver: '35'
           - os: fedora
             ver: '36'
+          - os: fedora
+            ver: '37'
           - os: ubuntu
             ver: bionic
           - os: ubuntu
