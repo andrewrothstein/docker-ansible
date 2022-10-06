@@ -26,6 +26,8 @@ jobs:
             ver: bullseye
           - os: debian
             ver: buster
+          - os: debian
+            ver: bookworm
           - os: fedora
             ver: '35'
           - os: fedora
