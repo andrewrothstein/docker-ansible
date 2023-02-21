@@ -11,8 +11,6 @@ jobs:
       matrix:
         distro:
           - os: alpine
-            ver: '3.15'
-          - os: alpine
             ver: '3.16'
           - os: alpine
             ver: '3.17'
@@ -25,25 +23,19 @@ jobs:
           - os: rockylinux
             ver: 9
           - os: debian
-            ver: bullseye
-          - os: debian
             ver: buster
           - os: debian
             ver: bookworm
-          - os: fedora
-            ver: '35'
           - os: fedora
             ver: '36'
           - os: fedora
             ver: '37'
           - os: ubuntu
-            ver: bionic
-          - os: ubuntu
             ver: focal
           - os: ubuntu
             ver: jammy
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: sudo buildah login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
       - run: sudo buildah login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
       - run: sudo buildah login -u "${{ github.actor }}" -p "${{ github.token }}" ghcr.io
