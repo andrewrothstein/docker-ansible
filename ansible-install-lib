@@ -193,6 +193,7 @@ install_fedora () {
 
 install_archlinux () {
     pacman_install \
+        which \
         glibc \
         python \
         ca-certificates \
