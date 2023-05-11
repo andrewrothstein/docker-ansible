@@ -175,7 +175,11 @@ get_pip () {
 
 install_fq_pre_dnf() {
     dnf_up
-    dnf_install wget systemd python3
+    dnf_install \
+        wget \
+        systemd \
+        python3 \
+        which
 }
 
 install_fedora () {
