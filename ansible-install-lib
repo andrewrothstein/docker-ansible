@@ -23,28 +23,15 @@ install_pip_archlinux () {
 }
 
 install_pip_fedora () {
-    local os_ver=$1
-    local pip=$2
-
-    if [ "$os_ver" -ge "29" ];
-    then
-        dnf install -y python3-pip
-    else
-        dnf install -y python-pip
-        $pip install --upgrade pip
-    fi
-}
-
-install_pip_ubuntu () {
-    install_pip $1
+    dnf install -y python3-pip
 }
 
 install_pip_debian () {
-    install_pip $1
+    apt-get install python3-pip
 }
 
-install_pip_alpine () {
-    install_pip $1
+install_pip_ubuntu () {
+    apt install python3-pip
 }
 
 pip_install () {
@@ -280,7 +267,7 @@ install_fq_fedora () {
 
     install_fq_pre_fedora $os_ver
 
-    install_pip_fedora $os_ver $pip
+    install_pip_fedora
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_fedora
@@ -298,7 +285,7 @@ install_fq_archlinux () {
 
     install_fq_pre_archlinux
 
-    install_pip_archlinux $python_interpreter
+    install_pip_archlinux
     pip_install_ansible $pip $ansible_ver
 
     write_local_cfg
@@ -316,7 +303,7 @@ install_fq_ubuntu () {
 
     install_fq_pre_ubuntu $os_ver $python_pkg
 
-    install_pip_ubuntu $python_interpreter
+    install_pip_ubuntu
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_ubuntu
@@ -335,7 +322,7 @@ install_fq_debian () {
 
     install_fq_pre_debian $os_ver
 
-    install_pip_debian $python_interpreter
+    install_pip_debian
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_debian
@@ -371,7 +358,7 @@ install_fq_alpine () {
 
     install_fq_pre_alpine
 
-    install_pip_alpine $python_interpreter
+    install_pip $python_interpreter
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_alpine
