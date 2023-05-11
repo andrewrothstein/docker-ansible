@@ -24,8 +24,21 @@ dnf_clean() {
     dnf clean all
 }
 
+dnf_remove() {
+    dnf remove -y $@
+}
+
 apt_install() {
     apt install -y $@
+}
+
+apt_remove() {
+    apt remove -y $@
+}
+
+apt_up() {
+    apt update -y
+    apt upgrade -y
 }
 
 apt_clean() {
@@ -183,11 +196,13 @@ install_archlinux () {
         glibc \
         python \
         ca-certificates \
-        libffi
+        libffi \
+        python-pip
 
-    pacman_install python-pip
     pip_install pip
     pip_install ansible
+
+    pacman_clean
 
     write_local_cfg
     write_inventories archlinux
