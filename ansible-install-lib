@@ -175,6 +175,7 @@ get_pip () {
 
 _install_dnf () {
     local os=$1
+
     dnf_up
     dnf_install \
         wget \
@@ -183,6 +184,7 @@ _install_dnf () {
         python3-pip \
         which
 
+    pip_install pip
     pip_install ansible
 
     dnf_clean
