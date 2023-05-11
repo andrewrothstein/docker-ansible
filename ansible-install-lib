@@ -1,8 +1,7 @@
-ANSIBLE_VER=4.10.0
 
-# install_pip /usr/bin/python => /usr/bin/python /usr/local/bin/get-pip.py
-install_pip () {
-    local python_interpreter=$1
+#!/bin/sh
+
+get_pip () {
     local url=https://bootstrap.pypa.io/get-pip.py
     local getpippy=/tmp/get-pip.py
 
@@ -10,20 +9,28 @@ install_pip () {
     wget -O $getpippy $url
 
     echo installing with $python_interpreter...
-    $python_interpreter $getpippy
+    python3 $getpippy
     rm $getpippy
 }
 
-install_pip_archlinux () {
+pacman_install() {
     pacman \
         -Syu \
         --noconfirm \
-        python-pip
+        $@
+}
+
+install_pip_archlinux () {
+    pacman_install python-pip
     pip install --upgrade pip
 }
 
 install_pip_fedora () {
     dnf install -y python3-pip
+}
+
+apt_install () {
+    apt install -y $@
 }
 
 install_pip_debian () {
@@ -322,6 +329,7 @@ install_fq_debian () {
 
     install_fq_pre_debian $os_ver
 
+
     install_pip_debian
     pip_install_ansible $pip $ansible_ver
 
@@ -340,7 +348,7 @@ install_fq_rockylinux () {
 
     install_fq_pre_dnf python39
 
-    install_pip $python_interpreter
+    get_pip
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_dnf
@@ -358,7 +366,7 @@ install_fq_alpine () {
 
     install_fq_pre_alpine
 
-    install_pip $python_interpreter
+    get_pip
     pip_install_ansible $pip $ansible_ver
 
     install_fq_post_alpine
