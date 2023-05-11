@@ -173,26 +173,31 @@ get_pip () {
     rm $getpippy
 }
 
-install_fq_pre_dnf() {
+_install_dnf () {
+    local os=$1
     dnf_up
     dnf_install \
         wget \
         systemd \
         python3 \
+        python3-pip \
         which
-}
 
-install_fedora () {
-    install_fq_pre_dnf
-
-    dnf_install python3-pip
     pip_install ansible
 
     dnf_clean
 
     write_local_cfg
-    write_inventories fedora
+    write_inventories $os
     ansible_ping_localhost
+}
+
+install_fedora () {
+    _install_dnf fedora
+}
+
+install_rockylinux () {
+    _install_dnf rockylinux
 }
 
 install_archlinux () {
@@ -214,18 +219,22 @@ install_archlinux () {
     ansible_ping_localhost
 }
 
+install_apt_python_pip() {
+    apt_install \
+        python3 \
+        python3-distutils \
+        python3-pip
+    pip_install ansible
+}
+
 install_ubuntu () {
 
     apt_up
     apt_install \
         wget \
-        python3 \
-        python3-distutils \
         language-pack-en
 
-    apt_install python3-pip
-    pip_install ansible
-
+    install_apt_python_pip
     apt_clean
 
     write_local_cfg
@@ -234,28 +243,23 @@ install_ubuntu () {
 }
 
 install_debian () {
+    local os_ver=$1
+
     apt_up
     apt_install \
-        wget \
-        ansible
+        wget
+
+    if [ "${os_ver}" != "bookworm" ];
+    then
+        install_apt_python_pip
+    else
+        apt_install ansible
+    fi
+
     apt_clean
 
     write_local_cfg
     write_inventories debian
-    ansible_ping_localhost
-}
-
-install_rockylinux () {
-
-    install_fq_pre_dnf
-
-    get_pip
-    pip_install ansible
-
-    dnf_clean
-
-    write_local_cfg
-    write_inventories rockylinux
     ansible_ping_localhost
 }
 
