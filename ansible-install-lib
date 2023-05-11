@@ -237,12 +237,7 @@ install_debian () {
     apt_up
     apt_install \
         wget \
-        python3 \
-        python3-distutils
-
-    apt_install python3-pip
-    pip_install pip
-    pip_install ansible
+        ansible
     apt_clean
 
     write_local_cfg
