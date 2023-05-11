@@ -12,4 +12,4 @@ os_ver=$2
 export LC_CTYPE=en_US.UTF-8
 export LANG=en_US.UTF-8
 
-install_${os} ${os_ver}
+install_${os}
