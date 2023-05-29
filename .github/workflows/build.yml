@@ -33,6 +33,8 @@ jobs:
             ver: '36'
           - os: fedora
             ver: '37'
+          - os: fedora
+            ver: '38'
           - os: ubuntu
             ver: focal
           - os: ubuntu
