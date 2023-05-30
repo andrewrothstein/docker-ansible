@@ -73,4 +73,5 @@ jobs:
         with:
           pull: true
           push: true
-          target: "${{ matrix.distro.TARGET }}"
+          targets:
+            - "${{ matrix.distro.TARGET }}"
