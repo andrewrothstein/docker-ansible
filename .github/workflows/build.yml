@@ -11,35 +11,66 @@ jobs:
       fail-fast: false
       matrix:
         distro:
-          - os: alpine
-            ver: '3.17'
-          - os: alpine
-            ver: '3.18'
-          - os: alpine
-            ver: edge
-          - os: archlinux
-            ver: latest
-          - os: rockylinux
-            ver: 8
-          - os: rockylinux
-            ver: 9
-          - os: debian
-            ver: buster
-          - os: debian
-            ver: bookworm
-          - os: fedora
-            ver: '37'
-          - os: fedora
-            ver: '38'
-          - os: ubuntu
-            ver: focal
-          - os: ubuntu
-            ver: jammy
+          - TARGET: both
+            OS: alpine
+            OS_VER: 3.17
+          - TARGET: both
+            OS: alpine
+            OS_VER: 3.18
+          - TARGET: both
+            OS: alpine
+            OS_VER: edge
+          - TARGET: only
+            OS: archlinux
+            OS_VER: latest
+          - TARGET: both
+            OS: debian
+            OS_VER: bookworm
+          - TARGET: both
+            OS: debian
+            OS_VER: bullseye
+          - TARGET: both
+            OS: fedora
+            OS_VER: 37
+          - TARGET: both
+            OS: fedora
+            OS_VER: 38
+          - TARGET: both
+            OS: rockylinux
+            OS_VER: 8
+          - TARGET: both
+            OS: rockylinux
+            OS_VER: 9
+          - TARGET: both
+            OS: ubuntu
+            OS_VER: focal
+          - TARGET: both
+            OS: ubuntu
+            OS_VER: jammy
     steps:
       - uses: actions/checkout@v3
-      - run: docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
-      - run: docker login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
-      - run: docker login -u "${{ github.actor }}" -p "${{ github.token }}" ghcr.io
-      - run: ./build.sh ${{ matrix.distro.os }} ${{ matrix.distro.ver }}
-      - run: docker push quay.io/${{ github.repository }}:${{ matrix.distro.os}}_${{ matrix.distro.ver }}
-      - run: docker push ghcr.io/${{ github.repository }}:${{ matrix.distro.os}}_${{ matrix.distro.ver }}
+      - uses: docker/setup-qemu-action@v2
+      - uses: docker/setup-buildx-action@v2
+      - uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: "${{ secrets.DOCKER_USERNAME }}"
+          password: "${{ secrets.DOCKER_PASSWORD }}"
+      - uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: "${{ secrets.QUAY_USERNAME }}"
+          password: "${{ secrets.QUAY_PASSWORD }}"
+      - uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: "${{ github.actor }}"
+          password: "${{ github.token }}"
+      - uses: docker/bake-action@v3
+        env:
+          OS: "${{ matrix.distro.OS }}"
+          OS_VER: "${{ matrix.distro.OS_VER }}"
+        with:
+          pull: true
+          push: true
+          targets: "${{ matrix.distro.TARGET }}"

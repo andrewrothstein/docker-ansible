@@ -28,21 +28,25 @@ dnf_remove() {
     dnf remove -y $@
 }
 
+_apt() {
+    DEBIAN_FRONTEND=noninteractive apt $@
+}
+
 apt_install() {
-    apt install -y $@
+    _apt install -y $@
 }
 
 apt_remove() {
-    apt remove -y $@
+    _apt remove -y $@
 }
 
 apt_up() {
-    apt update -y
-    apt upgrade -y
+    _apt update -y
+    _apt upgrade -y
 }
 
 apt_clean() {
-    apt-get clean -y
+    DEBIAN_FRONTEND=noninteractive apt-get clean -y
 }
 
 apk_add () {
