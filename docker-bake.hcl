@@ -12,7 +12,7 @@ target "both" {
     "linux/arm64"
   ]
   tags = [
-    "docker.io/andrewrothstein/docker-ansible:${OS}_${OS_VER}"
+    "docker.io/andrewrothstein/docker-ansible:${OS}_${OS_VER}",
     "quay.io/andrewrothstein/docker-ansible:${OS}_${OS_VER}",
     "ghcr.io/andrewrothstein/docker-ansible:${OS}_${OS_VER}"
   ]
