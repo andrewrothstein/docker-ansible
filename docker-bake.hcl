@@ -2,6 +2,10 @@ variable "OS" {}
 variable "OS_VER" {}
 
 target "both" {
+  args = {
+    OS = "${OS}"
+    OS_VER = "${OS_VER}"
+  }
   context = "."
   dockerfile = "Dockerfile"
   labels = {
