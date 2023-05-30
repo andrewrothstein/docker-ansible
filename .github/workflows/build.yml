@@ -12,4 +12,4 @@ jobs:
       - run: docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
       - run: docker login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
       - run: docker login -u "${{ github.actor }}" -p "${{ github.token }}" ghcr.io
-      - run: docker buildx bake -o type=registry
+      - run: docker buildx bake --pull --push
