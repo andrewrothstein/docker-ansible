@@ -110,8 +110,6 @@ get_pip () {
 
     echo downloading from $url to $getpippy...
     wget -O $getpippy $url
-
-    echo installing with $python_interpreter...
     python3 $getpippy
     rm $getpippy
 }
