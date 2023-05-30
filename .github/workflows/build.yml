@@ -10,19 +10,43 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target:
-          - alpine_317
-          - alpine_318
-          - alpine_edge
-          - archlinux_latest
-          - debian_bookworm
-          - debian_bullseye
-          - fedora_37
-          - fedora_38
-          - rockylinux_8
-          - rockylinux_9
-          - ubuntu_focal
-          - ubuntu_jammy
+        distro:
+          - TARGET: alpine_317
+            OS: alpine
+            OS_VER: 3.17
+          - TARGET: alpine_318
+            OS: alpine
+            OS_VER: 3.18
+          - TARGET: alpine_edge
+            OS: alpine
+            OS_VER: edge
+          - TARGET: archlinux_latest
+            OS: archlinux
+            OS_VER: latest
+          - TARGET: debian_bookworm
+            OS: debian
+            OS_VER: bookworm
+          - TARGET: debian_bullseye
+            OS: debian
+            OS_VER: bullseye
+          - TARGET: fedora_37
+            OS: fedora
+            OS_VER: 37
+          - TARGET: fedora_38
+            OS: fedora
+            OS_VER: 38
+          - TARGET: rockylinux_8
+            OS: rockylinux
+            OS_VER: 8
+          - TARGET: rockylinux_9
+            OS: rockylinux
+            OS_VER: 9
+          - TARGET: ubuntu_focal
+            OS: ubuntu
+            OS_VER: focal
+          - TARGET: ubuntu_jammy
+            OS: ubuntu
+            OS_VER: jammy
     steps:
       - uses: actions/checkout@v3
       - uses: docker/setup-qemu-action@v2
@@ -30,4 +54,10 @@ jobs:
       - run: docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
       - run: docker login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
       - run: docker login -u "${{ github.actor }}" -p "${{ github.token }}" ghcr.io
-      - run: docker buildx bake --pull --push ${{ matrix.target }}
+      - run: |
+          "OS=${{ matrix.distro.OS }}" \
+          "OS_VER=${{ matrix.distro.OS_VER }}" \
+          docker buildx bake \
+            --pull \
+            --push \
+            "${{ matrix.distro.TARGET }}"
