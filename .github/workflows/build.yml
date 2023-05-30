@@ -11,40 +11,40 @@ jobs:
       fail-fast: false
       matrix:
         distro:
-          - TARGET: alpine_317
+          - TARGET: both
             OS: alpine
             OS_VER: 3.17
-          - TARGET: alpine_318
+          - TARGET: both
             OS: alpine
             OS_VER: 3.18
-          - TARGET: alpine_edge
+          - TARGET: both
             OS: alpine
             OS_VER: edge
-          - TARGET: archlinux_latest
+          - TARGET: only
             OS: archlinux
             OS_VER: latest
-          - TARGET: debian_bookworm
+          - TARGET: both
             OS: debian
             OS_VER: bookworm
-          - TARGET: debian_bullseye
+          - TARGET: both
             OS: debian
             OS_VER: bullseye
-          - TARGET: fedora_37
+          - TARGET: both
             OS: fedora
             OS_VER: 37
-          - TARGET: fedora_38
+          - TARGET: both
             OS: fedora
             OS_VER: 38
-          - TARGET: rockylinux_8
+          - TARGET: both
             OS: rockylinux
             OS_VER: 8
-          - TARGET: rockylinux_9
+          - TARGET: both
             OS: rockylinux
             OS_VER: 9
-          - TARGET: ubuntu_focal
+          - TARGET: both
             OS: ubuntu
             OS_VER: focal
-          - TARGET: ubuntu_jammy
+          - TARGET: both
             OS: ubuntu
             OS_VER: jammy
     steps:
