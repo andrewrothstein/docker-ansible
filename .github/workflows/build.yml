@@ -67,10 +67,10 @@ jobs:
           username: "${{ github.actor }}"
           password: "${{ github.token }}"
       - uses: docker/bake-action@v3
+        env:
+          OS: "${{ matrix.distro.OS }}"
+          OS_VER: "${{ matrix.distro.OS_VER }}"
         with:
           pull: true
           push: true
           target: "${{ matrix.distro.TARGET }}"
-          env:
-            OS: "${{ matrix.distro.OS }}"
-            OS_VER: "${{ matrix.distro.OS_VER }}"
