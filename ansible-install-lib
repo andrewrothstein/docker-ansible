@@ -104,71 +104,12 @@ ansible_python_interpreter=$ansible_python_interpreter
 HERE
 }
 
-write_dockerfile () {
-    local upstream_registry=$1
-    local upstream_namespace=$2
-    local upstream_repo=$3
-
-    local os=$4
-    local os_ver=$5
-
-    local fq_upstream=${upstream_registry}/${upstream_namespace}/${upstream_repo}:${os_ver}
-    if [ "${upstream_namespace}" = "" ];
-    then
-        fq_upstream=${upstream_registry}/${upstream_repo}:${os_ver}
-    fi
-
-    dockerfile=Dockerfile.${os}_${os_ver}
-    echo writing Dockerfile: $dockerfile
-    cat > $dockerfile <<EOF
-FROM $fq_upstream
-MAINTAINER "Andrew Rothstein" andrew.rothstein@gmail.com
-
-ADD ansible-install-lib ansible-install-lib
-ADD install.sh install.sh
-ADD requirements.yml requirements.yml
-RUN ./install.sh ${os} ${os_ver}
-EOF
-}
-
-write_dockerfile_simple () {
-    local os=$1
-    local os_ver=$2
-    write_dockerfile docker.io library $os $os $os_ver
-}
-
-write_dockerfile_alpine () {
-    write_dockerfile_simple alpine $1
-}
-
-write_dockerfile_archlinux () {
-    write_dockerfile_simple archlinux $1
-}
-
-write_dockerfile_rockylinux () {
-    write_dockerfile_simple rockylinux $1
-}
-
-write_dockerfile_debian () {
-    write_dockerfile_simple debian $1
-}
-
-write_dockerfile_ubuntu () {
-    write_dockerfile_simple ubuntu $1
-}
-
-write_dockerfile_fedora () {
-    write_dockerfile_simple fedora $1
-}
-
 get_pip () {
     local url=https://bootstrap.pypa.io/get-pip.py
     local getpippy=/tmp/get-pip.py
 
     echo downloading from $url to $getpippy...
     wget -O $getpippy $url
-
-    echo installing with $python_interpreter...
     python3 $getpippy
     rm $getpippy
 }
@@ -292,36 +233,4 @@ install_alpine () {
     write_local_cfg
     write_inventories alpine
     ansible_ping_localhost
-}
-
-docker_build_and_tag() {
-    local df=$1
-    local n=$2
-    local t=$3
-    docker build \
-           -f $df \
-           --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY \
-           --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy \
-           -t $n \
-           .
-    docker tag $n $t
-}
-
-buildah_build_and_tag() {
-    local df=$1
-    local n=$2
-    local t=$3
-    sudo \
-        buildah \
-        bud \
-        -f $df \
-        --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY \
-        --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy \
-        -t $n \
-        .
-
-    sudo \
-        buildah \
-        tag \
-        $n $t
 }
