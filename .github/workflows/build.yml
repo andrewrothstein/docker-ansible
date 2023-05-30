@@ -7,39 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        distro:
-          - os: alpine
-            ver: '3.17'
-          - os: alpine
-            ver: '3.18'
-          - os: alpine
-            ver: edge
-          - os: archlinux
-            ver: latest
-          - os: rockylinux
-            ver: 8
-          - os: rockylinux
-            ver: 9
-          - os: debian
-            ver: buster
-          - os: debian
-            ver: bookworm
-          - os: fedora
-            ver: '37'
-          - os: fedora
-            ver: '38'
-          - os: ubuntu
-            ver: focal
-          - os: ubuntu
-            ver: jammy
     steps:
       - uses: actions/checkout@v3
       - run: docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
       - run: docker login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
       - run: docker login -u "${{ github.actor }}" -p "${{ github.token }}" ghcr.io
-      - run: ./build.sh ${{ matrix.distro.os }} ${{ matrix.distro.ver }}
-      - run: docker push quay.io/${{ github.repository }}:${{ matrix.distro.os}}_${{ matrix.distro.ver }}
-      - run: docker push ghcr.io/${{ github.repository }}:${{ matrix.distro.os}}_${{ matrix.distro.ver }}
+      - run: docker buildx bake -o type=registry
