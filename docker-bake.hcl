@@ -57,6 +57,9 @@ target "archlinux_latest" {
   inherits = [
     "base"
   ]
+  platforms = [
+    "linux/amd64"
+  ]
   args = {
     OS = "archlinux"
     OS_VER = "latest"
