@@ -154,10 +154,7 @@ install_archlinux () {
         python \
         ca-certificates \
         libffi \
-        python-pip
-
-    pip_install pip
-    pip_install ansible
+        ansible
 
     pacman_clean
 
