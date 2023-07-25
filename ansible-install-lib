@@ -209,26 +209,10 @@ install_debian () {
 
 install_alpine () {
     apk_up
-    apk_add \
-        python3 \
-        python3-dev \
-        build-base \
-        libffi-dev \
-        openssl-dev \
-        wget \
+    apk_add wget \
         ca-certificates \
-        rust \
-        cargo
+        ansible
 
-    get_pip
-    pip_install ansible
-
-    apk_del \
-        build-base \
-        libffi-dev \
-        openssl-dev \
-        rust \
-        cargo
     apk_clean
 
     write_local_cfg
