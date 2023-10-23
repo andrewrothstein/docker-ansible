@@ -21,7 +21,6 @@ target "default" {
   ]
   tags = [
     "docker.io/andrewrothstein/docker-ansible:0.0.0+${OS}.${OS_VER}",
-    "quay.io/andrewrothstein/docker-ansible:0.0.0+${OS}.${OS_VER}",
     "ghcr.io/andrewrothstein/docker-ansible:0.0.0+${OS}.${OS_VER}"
   ]
 }
