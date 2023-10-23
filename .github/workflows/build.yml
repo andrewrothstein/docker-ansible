@@ -57,7 +57,7 @@ jobs:
         with:
           pull: true
           push: true
-      - uses: aquasecurity/trivy-action@v0.12.0
+      - uses: aquasecurity/trivy-action@0.12.0
         with:
           image-ref: "ghcr.io/${{ github.repository }}:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}"
           severity: 'CRITICAL,HIGH'
