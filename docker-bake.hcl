@@ -10,7 +10,7 @@ target "default" {
   RUN mkdir -p $WDIR
   WORKDIR $WDIR
   ADD . $WDIR
-  RUN sh -c "install.sh ${OS} ${OS_VER}"
+  RUN ./install.sh ${OS} ${OS_VER}
   EOF
 
   labels = {
