@@ -1,5 +1,5 @@
 ---
-name: dcb
+name: image-bake-and-scan
 on:
   push:
   schedule:
