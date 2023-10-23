@@ -11,66 +11,58 @@ jobs:
       fail-fast: false
       matrix:
         distro:
-          - TARGET: both
-            OS: alpine
+          - OS: alpine
             OS_VER: 3.17
-          - TARGET: both
-            OS: alpine
+          - OS: alpine
             OS_VER: 3.18
-          - TARGET: both
-            OS: alpine
+          - OS: alpine
             OS_VER: edge
-          - TARGET: only
-            OS: archlinux
+          - OS: archlinux
             OS_VER: latest
-          - TARGET: both
-            OS: debian
+          - OS: debian
             OS_VER: bookworm
-          - TARGET: both
-            OS: debian
+          - OS: debian
             OS_VER: bullseye
-          - TARGET: both
-            OS: fedora
+          - OS: fedora
             OS_VER: 37
-          - TARGET: both
-            OS: fedora
+          - OS: fedora
             OS_VER: 38
-          - TARGET: both
-            OS: rockylinux
+          - OS: rockylinux
             OS_VER: 8
-          - TARGET: both
-            OS: rockylinux
+          - OS: rockylinux
             OS_VER: 9
-          - TARGET: both
-            OS: ubuntu
+          - OS: ubuntu
             OS_VER: focal
-          - TARGET: both
-            OS: ubuntu
+          - OS: ubuntu
             OS_VER: jammy
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/setup-qemu-action@v2
-      - uses: docker/setup-buildx-action@v2
-      - uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: docker.io
-          username: "${{ secrets.DOCKER_USERNAME }}"
+          username: "${{ vars.DOCKER_USERNAME }}"
           password: "${{ secrets.DOCKER_PASSWORD }}"
-      - uses: docker/login-action@v2
-        with:
-          registry: quay.io
-          username: "${{ secrets.QUAY_USERNAME }}"
-          password: "${{ secrets.QUAY_PASSWORD }}"
-      - uses: docker/login-action@v2
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: "${{ github.actor }}"
           password: "${{ github.token }}"
-      - uses: docker/bake-action@v3
+      - uses: docker/bake-action@v4
         env:
           OS: "${{ matrix.distro.OS }}"
           OS_VER: "${{ matrix.distro.OS_VER }}"
+          SHA: "${{ github.sha }}"
         with:
           pull: true
           push: true
-          targets: "${{ matrix.distro.TARGET }}"
+      - uses: aquasecurity/trivy-action@0.12.0
+        with:
+          image-ref: "ghcr.io/${{ github.repository }}:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}"
+          severity: 'CRITICAL,HIGH'
+          format: sarif
+          output: trivy-results.sarif
+      - uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: trivy-results.sarif
