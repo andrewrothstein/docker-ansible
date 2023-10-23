@@ -1,32 +1,27 @@
 variable "OS" {}
 variable "OS_VER" {}
+variable "SHA" {}
 
-target "both" {
-  args = {
-    OS = "${OS}"
-    OS_VER = "${OS_VER}"
-  }
+target "default" {
   context = "."
-  dockerfile = "Dockerfile"
+  dockerfile-inline = <<-EOF
+  FROM docker.io/library/${OS}:${OS_VER}
+  ENV WDIR=/docker-ansible${SHA}
+  RUN mkdir -p $WDIR
+  WORKDIR $WDIR
+  ADD . $WDIR
+  RUN sh -c "install.sh ${OS} ${OS_VER}"
+  EOF
+
   labels = {
     maintainer = "Andrew Rothstein andrew.rothstein@gmail.com"
   }
   platforms = [
     "linux/amd64",
-    "linux/arm64"
   ]
   tags = [
-    "docker.io/andrewrothstein/docker-ansible:${OS}_${OS_VER}",
-    "quay.io/andrewrothstein/docker-ansible:${OS}_${OS_VER}",
-    "ghcr.io/andrewrothstein/docker-ansible:${OS}_${OS_VER}"
-  ]
-}
-
-target "only" {
-  inherits = [
-    "both"
-  ]
-  platforms = [
-    "linux/amd64"
+    "docker.io/andrewrothstein/docker-ansible:0.0.0+${OS}.${OS_VER}",
+    "quay.io/andrewrothstein/docker-ansible:0.0.0+${OS}.${OS_VER}",
+    "ghcr.io/andrewrothstein/docker-ansible:0.0.0+${OS}.${OS_VER}"
   ]
 }

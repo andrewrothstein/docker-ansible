@@ -11,41 +11,29 @@ jobs:
       fail-fast: false
       matrix:
         distro:
-          - TARGET: both
-            OS: alpine
+          - OS: alpine
             OS_VER: 3.17
-          - TARGET: both
-            OS: alpine
+          - OS: alpine
             OS_VER: 3.18
-          - TARGET: both
-            OS: alpine
+          - OS: alpine
             OS_VER: edge
-          - TARGET: only
-            OS: archlinux
+          - OS: archlinux
             OS_VER: latest
-          - TARGET: both
-            OS: debian
+          - OS: debian
             OS_VER: bookworm
-          - TARGET: both
-            OS: debian
+          - OS: debian
             OS_VER: bullseye
-          - TARGET: both
-            OS: fedora
+          - OS: fedora
             OS_VER: 37
-          - TARGET: both
-            OS: fedora
+          - OS: fedora
             OS_VER: 38
-          - TARGET: both
-            OS: rockylinux
+          - OS: rockylinux
             OS_VER: 8
-          - TARGET: both
-            OS: rockylinux
+          - OS: rockylinux
             OS_VER: 9
-          - TARGET: both
-            OS: ubuntu
+          - OS: ubuntu
             OS_VER: focal
-          - TARGET: both
-            OS: ubuntu
+          - OS: ubuntu
             OS_VER: jammy
     steps:
       - uses: actions/checkout@v3
@@ -70,7 +58,7 @@ jobs:
         env:
           OS: "${{ matrix.distro.OS }}"
           OS_VER: "${{ matrix.distro.OS_VER }}"
+          SHA: "{{ env.GITHUB_SHA }}"
         with:
           pull: true
           push: true
-          targets: "${{ matrix.distro.TARGET }}"
