@@ -20,7 +20,7 @@ target "default" {
     "linux/amd64",
   ]
   tags = [
-    "docker.io/andrewrothstein/docker-ansible:0.0.0+${OS}.${OS_VER}",
-    "ghcr.io/andrewrothstein/docker-ansible:0.0.0+${OS}.${OS_VER}"
+    "docker.io/andrewrothstein/docker-ansible:0.0.0-${OS}.${OS_VER}",
+    "ghcr.io/andrewrothstein/docker-ansible:0.0.0-${OS}.${OS_VER}"
   ]
 }
