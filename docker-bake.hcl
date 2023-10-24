@@ -21,6 +21,8 @@ target "default" {
   ]
   tags = [
     "docker.io/andrewrothstein/docker-ansible:0.0.0-${OS}.${OS_VER}",
-    "ghcr.io/andrewrothstein/docker-ansible:0.0.0-${OS}.${OS_VER}"
+    "ghcr.io/andrewrothstein/docker-ansible:0.0.0-${OS}.${OS_VER}",
+    # non semver hold over -- to deprecate
+    "ghcr.io/andrewrothstein/docker-ansible:${OS}_${OS_VER}",
   ]
 }
