@@ -101,11 +101,20 @@ _install_archlinux () {
 }
 
 _install_ubuntu () {
+    os_ver=$1
     _apt_up
     _apt_install \
-        pipx \
         language-pack-en \
         wget
+    if [ "${os_ver}" = "focal" ];
+    then
+        _apt_install \
+            python3-pip \
+            python3-venv
+        _pip_install_pipx
+    else
+        _apt_install pipx
+    fi
     _apt_clean
 }
 
