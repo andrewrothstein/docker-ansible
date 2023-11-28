@@ -67,6 +67,7 @@ _apk_up () {
 _pip_install() {
     pip install -U $1 --user
 }
+
 _pip_install_pipx() {
     _pip_install pip
     _pip_install pipx
@@ -84,11 +85,11 @@ _install_dnf () {
     _pip_install_pipx
 }
 
-install_fedora () {
+_install_fedora () {
     _install_dnf
 }
 
-install_rockylinux () {
+_install_rockylinux () {
     _install_dnf
 }
 
