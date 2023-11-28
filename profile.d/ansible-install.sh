@@ -65,15 +65,18 @@ _apk_up () {
 }
 
 _pip_install() {
-    pip install -U $1 --user
+    pip_ver=${1:-""}
+    "pip${pip_ver}" install -U $2 --user
 }
 
 _pip_install_pipx() {
-    _pip_install pip
-    _pip_install pipx
+    pip_ver=${1:-""}
+    _pip_install "${pip_ver}" pip
+    _pip_install "${pip_ver}" pipx
 }
 
 _install_dnf () {
+    pip_ver=$1
     _dnf_up
     _dnf_install \
         python3 \
@@ -82,7 +85,7 @@ _install_dnf () {
         wget \
         which
     _dnf_clean
-    _pip_install_pipx
+    _pip_install_pipx 3
 }
 
 _install_fedora () {
@@ -90,7 +93,13 @@ _install_fedora () {
 }
 
 _install_rockylinux () {
-    _install_dnf
+    os_ver=$1
+    pip_ver=""
+    if [ "${os_ver}" = "8" ];
+    then
+        pip_ver="3"
+    fi
+    _install_dnf $pip_ver
 }
 
 _install_archlinux () {
