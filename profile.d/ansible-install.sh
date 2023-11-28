@@ -76,7 +76,7 @@ _pip_install_pipx() {
 }
 
 _install_dnf () {
-    pip_ver=$1
+    pip_ver=${1:-""}
     _dnf_up
     _dnf_install \
         python3 \
@@ -85,7 +85,7 @@ _install_dnf () {
         wget \
         which
     _dnf_clean
-    _pip_install_pipx 3
+    _pip_install_pipx "${pip_ver}"
 }
 
 _install_fedora () {
