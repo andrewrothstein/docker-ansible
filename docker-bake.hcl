@@ -5,12 +5,15 @@ variable "SHA" {}
 target "default" {
   context = "."
   dockerfile-inline = <<-EOF
+
   FROM docker.io/library/${OS}:${OS_VER}
+  COPY profile.d/* /etc/profile.d
   ENV WDIR=/docker-ansible${SHA}
   RUN mkdir -p $WDIR
   WORKDIR $WDIR
   ADD . $WDIR
-  RUN ./install.sh ${OS} ${OS_VER}
+  SHELL ["/bin/sh", "-lc"]
+  RUN set -ex; ansible_install ${OS} ${OS_VER}
   EOF
 
   labels = {
