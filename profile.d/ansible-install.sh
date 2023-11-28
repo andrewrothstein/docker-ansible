@@ -136,20 +136,23 @@ _install_debian () {
     _apt_clean
 }
 
-_install_apk () {
+_install_alpine () {
+    os_ver=$1
     _apk_up
     _apk_add \
         ca-certificates \
-        python3 \
-        py3-pip \
-        py3-virtualenv \
         wget
+    if [ "${os_ver}" = "edge" ];
+    then
+        _apk_add pipx
+    else
+        _apk_add \
+            python3 \
+            py3-pip \
+            py3-virtualenv
+        _pip_install_pipx
+    fi
     _apk_clean
-    _pip_install_pipx
-}
-
-_install_alpine () {
-    _install_apk
 }
 
 _write_local_cfg () {
