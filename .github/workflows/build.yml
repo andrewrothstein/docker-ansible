@@ -5,36 +5,22 @@ on:
   schedule:
     - cron:  '0 0 * * *'
 jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      distro: ${{ steps.read-matrix.outputs.distro }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: read platform-matrix-v1.json
+        id: read-matrix
+        run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
   build:
     runs-on: ubuntu-latest
+    needs: [prepare-matrix]
     strategy:
       fail-fast: false
       matrix:
-        distro:
-          - OS: alpine
-            OS_VER: 3.17
-          - OS: alpine
-            OS_VER: 3.18
-          - OS: alpine
-            OS_VER: edge
-          - OS: archlinux
-            OS_VER: latest
-          - OS: debian
-            OS_VER: bookworm
-          - OS: debian
-            OS_VER: bullseye
-          - OS: fedora
-            OS_VER: 38
-          - OS: fedora
-            OS_VER: 39
-          - OS: rockylinux
-            OS_VER: 8
-          - OS: rockylinux
-            OS_VER: 9
-          - OS: ubuntu
-            OS_VER: focal
-          - OS: ubuntu
-            OS_VER: jammy
+        distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
