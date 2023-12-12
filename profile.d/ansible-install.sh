@@ -151,15 +151,15 @@ _install_alpine () {
     _apk_add \
         ca-certificates \
         wget
-    if [ "${os_ver}" = "edge" ];
+    if [ "${os_ver}" = "3.18" ];
     then
-        _apk_add pipx
-    else
         _apk_add \
             python3 \
             py3-pip \
             py3-virtualenv
         _pip_install_pipx
+    else
+        _apk_add pipx
     fi
     _apk_clean
 }
