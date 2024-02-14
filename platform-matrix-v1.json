@@ -32,6 +32,10 @@
     "OS_VER": "39"
   },
   {
+    "OS": "fedora",
+    "OS_VER": "40"
+  },
+  {
     "OS": "rockylinux",
     "OS_VER": "8"
   },
