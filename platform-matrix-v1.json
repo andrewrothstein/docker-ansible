@@ -9,6 +9,10 @@
   },
   {
     "OS": "alpine",
+    "OS_VER": "3.20"
+  },
+  {
+    "OS": "alpine",
     "OS_VER": "edge"
   },
   {
