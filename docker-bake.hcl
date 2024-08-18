@@ -13,7 +13,7 @@ target "default" {
   WORKDIR $WDIR
   ADD . $WDIR
   SHELL ["/bin/sh", "-lc"]
-  RUN set -ex; ansible_install ${OS} ${OS_VER}
+  RUN set -ex; ansible_install ${OS} ${OS_VER}; rm -rf .git/
   EOF
 
   labels = {
