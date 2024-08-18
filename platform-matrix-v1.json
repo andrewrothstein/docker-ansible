@@ -1,10 +1,6 @@
 [
   {
     "OS": "alpine",
-    "OS_VER": "3.18"
-  },
-  {
-    "OS": "alpine",
     "OS_VER": "3.19"
   },
   {
@@ -29,10 +25,6 @@
   },
   {
     "OS": "fedora",
-    "OS_VER": "38"
-  },
-  {
-    "OS": "fedora",
     "OS_VER": "39"
   },
   {
@@ -46,10 +38,6 @@
   {
     "OS": "rockylinux",
     "OS_VER": "9"
-  },
-  {
-    "OS": "ubuntu",
-    "OS_VER": "focal"
   },
   {
     "OS": "ubuntu",
