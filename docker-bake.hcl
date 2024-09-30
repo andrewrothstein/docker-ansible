@@ -2,9 +2,10 @@ variable "UPSTREAM_REGISTRY" {
   default = "docker.io"
 }
 
-variable "UPSTREAM_ORG" {
+variable "DEFAULT_UPSTREAM_ORG" {
   default = "library"
 }
+variable "UPSTREAM_ORG" {}
 
 variable "TARGET_IMAGE_SEMVER" {
   default = "0.0.0"
@@ -23,7 +24,7 @@ function "dflt" {
 }
 
 variable "UPSTREAM_IMAGE" {
-  default = "${UPSTREAM_REGISTRY}/${UPSTREAM_ORG}/${dflt(UPSTREAM_OS, OS)}:${dflt(UPSTREAM_OS_VER,OS_VER)}"
+  default = "${UPSTREAM_REGISTRY}/${dflt(UPSTREAM_ORG,DEFAULT_UPSTREAM_ORG)}/${dflt(UPSTREAM_OS, OS)}:${dflt(UPSTREAM_OS_VER,OS_VER)}"
 }
 
 variable "TARGET_OS" {
