@@ -92,7 +92,17 @@ _install_fedora () {
     _install_dnf
 }
 
+_install_ubi () {
+    os_ver=$1
+    _install_rh $os_ver
+}
+
 _install_rockylinux () {
+    os_ver=$1
+    _install_rh $os_ver
+}
+
+_install_rh () {
     os_ver=$1
     pip_ver=""
     if [ "${os_ver}" = "8" ];

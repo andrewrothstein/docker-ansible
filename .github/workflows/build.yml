@@ -35,15 +35,18 @@ jobs:
           registry: ghcr.io
           username: "${{ github.actor }}"
           password: "${{ github.token }}"
-      - uses: docker/bake-action@v4
+      - uses: docker/bake-action@v5
         env:
+          UPSTREAM_ORG: "${{ matrix.distro.UPSTREAM_ORG }}"
+          UPSTREAM_OS: "${{ matrix.distro.UPSTREAM_OS }}"
+          UPSTREAM_OS_VER: "${{ matrix.distro.UPSTREAM_OS_VER }}"
           OS: "${{ matrix.distro.OS }}"
           OS_VER: "${{ matrix.distro.OS_VER }}"
           SHA: "${{ github.sha }}"
         with:
           pull: true
           push: true
-      - uses: aquasecurity/trivy-action@0.19.0
+      - uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: "ghcr.io/${{ github.repository }}:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}"
           severity: 'CRITICAL,HIGH'
