@@ -97,6 +97,10 @@ _install_ubi () {
 }
 
 _install_rockylinux () {
+    _install_rh
+}
+
+_install_rh () {
     os_ver=$1
     pip_ver=""
     if [ "${os_ver}" = "8" ];
