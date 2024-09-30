@@ -18,9 +18,6 @@ variable "SHA" {}
 variable "UPSTREAM_OS" {}
 variable "UPSTREAM_OS_VER" {}
 
-variable "TARGET_OS" {}
-variable "TARGET_OS_VER" {}
-
 function "dflt" {
   params=[o,v]
   result = o == "" ? v : o
@@ -31,7 +28,7 @@ variable "UPSTREAM_IMAGE" {
 }
 
 variable "TARGET_IMAGE" {
-  default = "docker-ansible:${TARGET_IMAGE_SEMVER}-${dflt(TARGET_OS,OS)}.${dflt(TARGET_OS_VER,OS_VER)}"
+  default = "docker-ansible:${TARGET_IMAGE_SEMVER}-${OS}.${OS_VER}"
 }
 
 target "default" {
@@ -45,7 +42,7 @@ target "default" {
   WORKDIR $WDIR
   ADD . $WDIR
   SHELL ["/bin/sh", "-lc"]
-  RUN set -ex; ansible_install ${dflt(TARGET_OS,OS)} ${dflt(TARGET_OS_VER,OS_VER)}; rm -rf .git/
+  RUN set -ex; ansible_install ${OS} ${OS_VER}; rm -rf .git/
   EOF
 
   labels = {
