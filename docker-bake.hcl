@@ -6,36 +6,36 @@ variable "UPSTREAM_ORG" {
   default = "library"
 }
 
-variable "OS" {}
-variable "OS_VER" {}
-variable "SHA" {}
-
-variable "UPSTREAM_OS" {
-  default = "${OS}"
-}
-
-variable "UPSTREAM_OS_VER" {
-  default = "${OS_VER}"
-}
-
-variable "UPSTREAM_IMAGE" {
-  default = "${UPSTREAM_REGISTRY}/${UPSTREAM_ORG}/${UPSTREAM_OS}:${UPSTREAM_OS_VER}"
-}
-
-variable "TARGET_OS" {
-  default = "${OS}"
-}
-
-variable "TARGET_OS_VER" {
-  default = "${OS_VER}"
-}
-
 variable "TARGET_IMAGE_SEMVER" {
   default = "0.0.0"
 }
 
+variable "OS" {}
+variable "OS_VER" {}
+variable "SHA" {}
+
+variable "UPSTREAM_OS" {}
+variable "UPSTREAM_OS_VER" {}
+
+function "dflt" {
+  params=[o,v]
+  result = o == "" ? v : o
+}
+
+variable "UPSTREAM_IMAGE" {
+  default = "${UPSTREAM_REGISTRY}/${UPSTREAM_ORG}/${dflt(UPSTREAM_OS, OS)}:${dflt(UPSTREAM_OS_VER,OS_VER)}"
+}
+
+variable "TARGET_OS" {
+  default = ""
+}
+
+variable "TARGET_OS_VER" {
+  default = ""
+}
+
 variable "TARGET_IMAGE" {
-  default = "docker-ansible:${TARGET_IMAGE_SEMVER}-${TARGET_OS}.${TARGET_OS_VER}"
+  default = "docker-ansible:${TARGET_IMAGE_SEMVER}-${dflt(TARGET_OS,OS)}.${dflt(TARGET_OS_VER,OS_VER)}"
 }
 
 target "default" {
@@ -49,7 +49,7 @@ target "default" {
   WORKDIR $WDIR
   ADD . $WDIR
   SHELL ["/bin/sh", "-lc"]
-  RUN set -ex; ansible_install ${TARGET_OS} ${TARGET_OS_VER}; rm -rf .git/
+  RUN set -ex; ansible_install ${dflt(TARGET_OS,OS)} ${dflt(TARGET_OS_VER,OS_VER)}; rm -rf .git/
   EOF
 
   labels = {
