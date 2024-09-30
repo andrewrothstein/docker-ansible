@@ -93,11 +93,13 @@ _install_fedora () {
 }
 
 _install_ubi () {
-    _install_dnf
+    os_ver=$1
+    _install_rh $os_ver
 }
 
 _install_rockylinux () {
-    _install_rh
+    os_ver=$1
+    _install_rh $os_ver
 }
 
 _install_rh () {
