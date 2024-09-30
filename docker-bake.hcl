@@ -18,6 +18,9 @@ variable "SHA" {}
 variable "UPSTREAM_OS" {}
 variable "UPSTREAM_OS_VER" {}
 
+variable "TARGET_OS" {}
+variable "TARGET_OS_VER" {}
+
 function "dflt" {
   params=[o,v]
   result = o == "" ? v : o
@@ -25,14 +28,6 @@ function "dflt" {
 
 variable "UPSTREAM_IMAGE" {
   default = "${UPSTREAM_REGISTRY}/${dflt(UPSTREAM_ORG,DEFAULT_UPSTREAM_ORG)}/${dflt(UPSTREAM_OS, OS)}:${dflt(UPSTREAM_OS_VER,OS_VER)}"
-}
-
-variable "TARGET_OS" {
-  default = ""
-}
-
-variable "TARGET_OS_VER" {
-  default = ""
 }
 
 variable "TARGET_IMAGE" {
