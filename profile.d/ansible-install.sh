@@ -92,6 +92,10 @@ _install_fedora () {
     _install_dnf
 }
 
+_install_ubi () {
+    _install_dnf
+}
+
 _install_rockylinux () {
     os_ver=$1
     pip_ver=""

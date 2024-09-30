@@ -40,6 +40,20 @@
     "OS_VER": "9"
   },
   {
+    "UPSTREAM_ORG": "redhat",
+    "UPSTREAM_OS": "ubi8",
+    "UPSTREAM_OS_VER": "latest",
+    "OS": "ubi",
+    "OS_VER": "8"
+  },
+  {
+    "UPSTREAM_ORG": "redhat",
+    "UPSTREAM_OS": "ubi9",
+    "UPSTREAM_OS_VER": "latest",
+    "OS": "ubi",
+    "OS_VER": "9"
+  },
+  {
     "OS": "ubuntu",
     "OS_VER": "jammy"
   },
