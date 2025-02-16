@@ -9,6 +9,10 @@
   },
   {
     "OS": "alpine",
+    "OS_VER": "3.21"
+  },
+  {
+    "OS": "alpine",
     "OS_VER": "edge"
   },
   {
@@ -30,6 +34,10 @@
   {
     "OS": "fedora",
     "OS_VER": "40"
+  },
+  {
+    "OS": "fedora",
+    "OS_VER": "41"
   },
   {
     "OS": "rockylinux",
