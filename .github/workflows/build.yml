@@ -35,7 +35,7 @@ jobs:
           registry: ghcr.io
           username: "${{ github.actor }}"
           password: "${{ github.token }}"
-      - uses: docker/bake-action@v5
+      - uses: docker/bake-action@v6
         env:
           UPSTREAM_ORG: "${{ matrix.distro.UPSTREAM_ORG }}"
           UPSTREAM_OS: "${{ matrix.distro.UPSTREAM_OS }}"
