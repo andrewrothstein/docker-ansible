@@ -90,6 +90,8 @@ _install_dnf () {
 
 _install_fedora () {
     _install_dnf
+    # not included by default in fedora:41
+    _dnf_install python3-libdnf5
 }
 
 _install_ubi () {
