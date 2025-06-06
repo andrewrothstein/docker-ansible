@@ -1,15 +1,15 @@
 [
   {
     "OS": "alpine",
-    "OS_VER": "3.19"
-  },
-  {
-    "OS": "alpine",
     "OS_VER": "3.20"
   },
   {
     "OS": "alpine",
     "OS_VER": "3.21"
+  },
+  {
+    "OS": "alpine",
+    "OS_VER": "3.22"
   },
   {
     "OS": "alpine",
