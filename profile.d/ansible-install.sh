@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Install ansible using uv
-_install_ansible() {
-    uv tool install --python 3.13 ansible
-}
-
 # Configure ansible local settings
 _write_local_cfg() {
     mkdir -p /etc/ansible
@@ -20,7 +15,7 @@ HERE
 _write_inventories() {
     mkdir -p /etc/ansible/inventories
     cat >/etc/ansible/inventories/localhost <<HERE
-localhost
+localhost ansible_python_interpreter=${HOME}/.local/share/uv/tools/ansible-core/bin/python3
 HERE
 }
 
@@ -33,8 +28,7 @@ _ansible_ping_localhost() {
 
 # Main installation function
 ansible_install() {
-    # Install ansible using uv
-    _install_ansible
+    uv tool install ansible-core
 
     # Configure ansible
     _write_local_cfg

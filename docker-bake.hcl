@@ -45,7 +45,7 @@ target "default" {
   FROM ${UPSTREAM_IMAGE}
 
   # Copy uv from the official image
-  COPY --from=uv /usr/local/bin/uv /usr/local/bin/uv
+  COPY --from=uv /uv /usr/local/bin/uv
 
   COPY profile.d/* /etc/profile.d
   ENV WDIR=/docker-ansible${SHA}
