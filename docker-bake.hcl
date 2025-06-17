@@ -31,18 +31,29 @@ variable "TARGET_IMAGE" {
   default = "docker-ansible:${TARGET_IMAGE_SEMVER}-${OS}.${OS_VER}"
 }
 
+variable "UV_VERSION" {
+  default = "latest"
+}
+
 target "default" {
   context = "."
   dockerfile-inline = <<-EOF
+  # Stage 1: Get uv from official image
+  FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
+  # Stage 2: Build final image
   FROM ${UPSTREAM_IMAGE}
+
+  # Copy uv from the official image
+  COPY --from=uv /uv /usr/local/bin/uv
+
   COPY profile.d/* /etc/profile.d
   ENV WDIR=/docker-ansible${SHA}
   RUN mkdir -p $WDIR
   WORKDIR $WDIR
   ADD . $WDIR
   SHELL ["/bin/sh", "-lc"]
-  RUN set -ex; ansible_install ${OS} ${OS_VER}; rm -rf .git/
+  RUN set -ex; ansible_install; rm -rf .git/
   EOF
 
   labels = {
