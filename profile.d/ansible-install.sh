@@ -28,7 +28,7 @@ _ansible_ping_localhost() {
 
 # Main installation function
 ansible_install() {
-    uv tool install ansible-core
+    uv tool install ansible-core --with ansible
 
     # Configure ansible
     _write_local_cfg
