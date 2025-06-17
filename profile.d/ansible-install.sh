@@ -1,20 +1,5 @@
 #!/bin/bash
 
-# Install uv package manager
-_install_uv() {
-    ARCH=$(uname -m)
-    case "$ARCH" in
-        x86_64) UV_ARCH="x86_64";;
-        aarch64) UV_ARCH="aarch64";;
-        *) echo "Unsupported architecture: $ARCH"; exit 1;;
-    esac
-
-    curl -LsSf https://github.com/astral/uv/releases/latest/download/uv-installer.sh | sh
-
-    # Add uv to PATH
-    export PATH="/root/.cargo/bin:$PATH"
-}
-
 # Install ansible using uv
 _install_ansible() {
     uv tool install --python 3.13 ansible
@@ -48,9 +33,6 @@ _ansible_ping_localhost() {
 
 # Main installation function
 ansible_install() {
-    # Install uv package manager
-    _install_uv
-
     # Install ansible using uv
     _install_ansible
 
