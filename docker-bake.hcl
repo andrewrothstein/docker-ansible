@@ -39,7 +39,7 @@ target "default" {
   context = "."
   dockerfile-inline = <<-EOF
   # Stage 1: Get uv from official image
-  FROM ghcr.io/astral/uv:${UV_VERSION} as uv
+  FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
   # Stage 2: Build final image
   FROM ${UPSTREAM_IMAGE}
