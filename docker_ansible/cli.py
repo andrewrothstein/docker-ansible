@@ -1,17 +1,15 @@
-import sys
-import json
 import dagger
 import typer
-from pathlib import Path
-import os
 import asyncio
 from dotenv import load_dotenv
 
 app = typer.Typer()
 
-
 @app.command()
 def build_and_publish(
+    dagger_cloud_token: str = typer.Option(
+        None, help="Dagger Cloud token (optional)"
+    ),
     os: str = typer.Option(..., help="Target OS name, e.g. alpine, debian, etc."),
     os_ver: str = typer.Option(
         ..., help="Target OS version, e.g. 3.20, bookworm, etc."
@@ -28,7 +26,7 @@ def build_and_publish(
         "docker.io/andrewrothstein", help="Docker Hub repo"
     ),
     ghcr_repo: str = typer.Option("ghcr.io/andrewrothstein", help="GHCR repo"),
-    push: bool = typer.Option(True, help="Push images after build"),
+    push: bool = typer.Option(False, help="Push images after build"),
     dockerhub_username: str = typer.Option(None, help="Docker Hub username (for auth)"),
     dockerhub_password: str = typer.Option(None, help="Docker Hub password (for auth)"),
     ghcr_username: str = typer.Option(None, help="GHCR username (for auth)"),
@@ -39,15 +37,29 @@ def build_and_publish(
     """
     load_dotenv()
     asyncio.run(_build_and_publish_async(
+        dagger_cloud_token,
         os, os_ver, upstream_org, upstream_os, upstream_os_ver, target_image_semver,
         uv_version, sha, dockerhub_repo, ghcr_repo, push,
         dockerhub_username, dockerhub_password, ghcr_username, ghcr_password
     ))
 
 async def _build_and_publish_async(
-    os, os_ver, upstream_org, upstream_os, upstream_os_ver, target_image_semver,
-    uv_version, sha, dockerhub_repo, ghcr_repo, push,
-    dockerhub_username, dockerhub_password, ghcr_username, ghcr_password
+    dagger_cloud_token: str,
+    os: str,
+    os_ver: str,
+    upstream_org: str,
+    upstream_os: str,
+    upstream_os_ver: str,
+    target_image_semver: str,
+    uv_version: str,
+    sha: str,
+    dockerhub_repo: str,
+    ghcr_repo: str,
+    push: bool,
+    dockerhub_username: str,
+    dockerhub_password: str,
+    ghcr_username: str,
+    ghcr_password: str
 ):
     # Compose image tags
     tag = f"docker-ansible:{target_image_semver}-{os}.{os_ver}"
@@ -78,7 +90,6 @@ async def _build_and_publish_async(
     upstream_image = f"{upstream_registry}/{uorg}/{uos}:{uosver}"
 
     # Read Dagger Cloud token from environment (optional, now loaded via dotenv)
-    dagger_cloud_token = os.environ.get("DAGGER_CLOUD_TOKEN")
     connection_kwargs = {}
     if dagger_cloud_token:
         connection_kwargs["cloud_token"] = dagger_cloud_token
@@ -109,14 +120,14 @@ async def _build_and_publish_async(
         if push:
             # Docker Hub
             if dockerhub_username and dockerhub_password:
-                dockerhub_password_secret = await client.set_secret("dockerhub_password", dockerhub_password)
+                dockerhub_password_secret = client.set_secret("dockerhub_password", dockerhub_password)
                 ctr = await ctr.with_registry_auth(
                     "docker.io", dockerhub_username, dockerhub_password_secret
                 )
             await ctr.publish(dockerhub_tag)
             # GHCR
             if ghcr_username and ghcr_password:
-                ghcr_password_secret = await client.set_secret("ghcr_password", ghcr_password)
+                ghcr_password_secret = client.set_secret("ghcr_password", ghcr_password)
                 ctr = await ctr.with_registry_auth("ghcr.io", ghcr_username, ghcr_password_secret)
             await ctr.publish(ghcr_tag)
             print(f"Pushed: {dockerhub_tag} and {ghcr_tag}")
