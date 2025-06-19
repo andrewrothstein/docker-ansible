@@ -27,6 +27,8 @@ jobs:
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v6
       - name: Run Dagger build and publish
+        env:
+          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
         run: |
           uv run python -m docker_ansible.cli \
             --os "${{ matrix.distro.OS }}" \

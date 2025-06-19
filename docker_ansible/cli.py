@@ -5,6 +5,7 @@ import typer
 from pathlib import Path
 import os
 import asyncio
+from dotenv import load_dotenv
 
 app = typer.Typer()
 
@@ -36,6 +37,7 @@ def build_and_publish(
     """
     Build and publish docker-ansible image for a given OS/OS_VER using Dagger.
     """
+    load_dotenv()
     asyncio.run(_build_and_publish_async(
         os, os_ver, upstream_org, upstream_os, upstream_os_ver, target_image_semver,
         uv_version, sha, dockerhub_repo, ghcr_repo, push,
@@ -75,7 +77,7 @@ async def _build_and_publish_async(
     uosver = upstream_os_ver if upstream_os_ver else os_ver
     upstream_image = f"{upstream_registry}/{uorg}/{uos}:{uosver}"
 
-    # Read Dagger Cloud token from environment (optional)
+    # Read Dagger Cloud token from environment (optional, now loaded via dotenv)
     dagger_cloud_token = os.environ.get("DAGGER_CLOUD_TOKEN")
     connection_kwargs = {}
     if dagger_cloud_token:
