@@ -28,7 +28,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
       - name: Run Dagger build and publish
         run: |
-          uv run python -m docker_ansible.cli build-and-publish \
+          uv run python -m docker_ansible.cli \
             --os "${{ matrix.distro.OS }}" \
             --os-ver "${{ matrix.distro.OS_VER }}" \
             --sha "${{ github.sha }}" \
