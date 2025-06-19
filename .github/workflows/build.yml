@@ -1,72 +1,42 @@
-name: dagger-matrix-build
-
+---
+name: image-bake-and-scan
 on:
-  workflow_dispatch:
   push:
-    branches: [ main ]
-
+  schedule:
+    - cron:  '0 0 * * *'
 jobs:
-  build-matrix:
+  prepare-matrix:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          # This block can be generated from platform-matrix-v1.json
-          - OS: alpine
-            OS_VER: 3.20
-          - OS: alpine
-            OS_VER: 3.21
-          - OS: alpine
-            OS_VER: 3.22
-          - OS: alpine
-            OS_VER: edge
-          - OS: archlinux
-            OS_VER: latest
-          - OS: debian
-            OS_VER: bookworm
-          - OS: debian
-            OS_VER: bullseye
-          - OS: fedora
-            OS_VER: 41
-          - OS: fedora
-            OS_VER: 42
-          - OS: rockylinux
-            OS_VER: 8
-          - OS: rockylinux
-            OS_VER: 9
-          - OS: ubi
-            OS_VER: 8
-            UPSTREAM_ORG: redhat
-            UPSTREAM_OS: ubi8
-            UPSTREAM_OS_VER: latest
-          - OS: ubi
-            OS_VER: 9
-            UPSTREAM_ORG: redhat
-            UPSTREAM_OS: ubi9
-            UPSTREAM_OS_VER: latest
-          - OS: ubuntu
-            OS_VER: jammy
-          - OS: ubuntu
-            OS_VER: noble
+    outputs:
+      distro: ${{ steps.read-matrix.outputs.distro }}
     steps:
+      - uses: actions/checkout@v4
+      - name: read platform-matrix-v1.json
+        id: read-matrix
+        run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
+  build:
+    runs-on: ubuntu-latest
+    needs: [prepare-matrix]
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
+    steps:
+      - uses: docker/setup-qemu-action@v3
       - uses: actions/checkout@v4
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v6
       - name: Run Dagger build and publish
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
-          GHCR_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
         run: |
-          uv run python ci.py build-and-publish \
-            --os "${{ matrix.OS }}" \
-            --os-ver "${{ matrix.OS_VER }}" \
-            ${{ matrix.UPSTREAM_ORG && format('--upstream-org "{0}"', matrix.UPSTREAM_ORG) || '' }} \
-            ${{ matrix.UPSTREAM_OS && format('--upstream-os "{0}"', matrix.UPSTREAM_OS) || '' }} \
-            ${{ matrix.UPSTREAM_OS_VER && format('--upstream-os-ver "{0}"', matrix.UPSTREAM_OS_VER) || '' }} \
-            --dockerhub-username "$DOCKERHUB_USERNAME" \
-            --dockerhub-password "$DOCKERHUB_PASSWORD" \
-            --ghcr-username "$GHCR_USERNAME" \
-            --ghcr-password "$GHCR_PASSWORD" \
+          uv run python -m docker_ansible.cli build-and-publish \
+            --os "${{ matrix.distro.OS }}" \
+            --os-ver "${{ matrix.distro.OS_VER }}" \
+            --sha "${{ github.sha }}" \
+            ${{ matrix.distro.UPSTREAM_ORG && format('--upstream-org "{0}"', matrix.distro.UPSTREAM_ORG) || '' }} \
+            ${{ matrix.distro.UPSTREAM_OS && format('--upstream-os "{0}"', matrix.distro.UPSTREAM_OS) || '' }} \
+            ${{ matrix.distro.UPSTREAM_OS_VER && format('--upstream-os-ver "{0}"', matrix.distro.UPSTREAM_OS_VER) || '' }} \
+            --dockerhub-username "${{ vars.DOCKER_USERNAME }}" \
+            --dockerhub-password "${{ secrets.DOCKER_PASSWORD }}" \
+            --ghcr-username "${{ github.actor }}" \
+            --ghcr-password "${{ github.token }}" \
             --push
