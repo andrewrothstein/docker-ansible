@@ -7,9 +7,6 @@ app = typer.Typer()
 
 @app.command()
 def build_and_publish(
-    dagger_cloud_token: str = typer.Option(
-        None, help="Dagger Cloud token (optional)"
-    ),
     os: str = typer.Option(..., help="Target OS name, e.g. alpine, debian, etc."),
     os_ver: str = typer.Option(
         ..., help="Target OS version, e.g. 3.20, bookworm, etc."
@@ -37,14 +34,24 @@ def build_and_publish(
     """
     load_dotenv()
     asyncio.run(_build_and_publish_async(
-        dagger_cloud_token,
-        os, os_ver, upstream_org, upstream_os, upstream_os_ver, target_image_semver,
-        uv_version, sha, dockerhub_repo, ghcr_repo, push,
-        dockerhub_username, dockerhub_password, ghcr_username, ghcr_password
+        os,
+        os_ver,
+        upstream_org,
+        upstream_os,
+        upstream_os_ver,
+        target_image_semver,
+        uv_version,
+        sha,
+        dockerhub_repo,
+        ghcr_repo,
+        push,
+        dockerhub_username,
+        dockerhub_password,
+        ghcr_username,
+        ghcr_password,
     ))
 
 async def _build_and_publish_async(
-    dagger_cloud_token: str,
     os: str,
     os_ver: str,
     upstream_org: str,
@@ -90,11 +97,7 @@ async def _build_and_publish_async(
     upstream_image = f"{upstream_registry}/{uorg}/{uos}:{uosver}"
 
     # Read Dagger Cloud token from environment (optional, now loaded via dotenv)
-    connection_kwargs = {}
-    if dagger_cloud_token:
-        connection_kwargs["cloud_token"] = dagger_cloud_token
-
-    async with dagger.Connection(**connection_kwargs) as client:
+    async with dagger.Connection() as client:
         src = await client.host().directory(".")
         # Get uv binary from the uv image
         uv_container = await client.container().from_(f"ghcr.io/astral-sh/uv:{uv_version}")
