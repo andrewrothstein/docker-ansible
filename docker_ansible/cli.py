@@ -75,7 +75,13 @@ async def _build_and_publish_async(
     uosver = upstream_os_ver if upstream_os_ver else os_ver
     upstream_image = f"{upstream_registry}/{uorg}/{uos}:{uosver}"
 
-    async with dagger.Connection() as client:
+    # Read Dagger Cloud token from environment (optional)
+    dagger_cloud_token = os.environ.get("DAGGER_CLOUD_TOKEN")
+    connection_kwargs = {}
+    if dagger_cloud_token:
+        connection_kwargs["cloud_token"] = dagger_cloud_token
+
+    async with dagger.Connection(**connection_kwargs) as client:
         src = await client.host().directory(".")
         # Get uv binary from the uv image
         uv_container = await client.container().from_(f"ghcr.io/astral-sh/uv:{uv_version}")
@@ -101,13 +107,15 @@ async def _build_and_publish_async(
         if push:
             # Docker Hub
             if dockerhub_username and dockerhub_password:
+                dockerhub_password_secret = await client.set_secret("dockerhub_password", dockerhub_password)
                 ctr = await ctr.with_registry_auth(
-                    "docker.io", dockerhub_username, dockerhub_password
+                    "docker.io", dockerhub_username, dockerhub_password_secret
                 )
             await ctr.publish(dockerhub_tag)
             # GHCR
             if ghcr_username and ghcr_password:
-                ctr = await ctr.with_registry_auth("ghcr.io", ghcr_username, ghcr_password)
+                ghcr_password_secret = await client.set_secret("ghcr_password", ghcr_password)
+                ctr = await ctr.with_registry_auth("ghcr.io", ghcr_username, ghcr_password_secret)
             await ctr.publish(ghcr_tag)
             print(f"Pushed: {dockerhub_tag} and {ghcr_tag}")
         else:
