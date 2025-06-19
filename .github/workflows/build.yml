@@ -1,57 +1,72 @@
----
-name: image-bake-and-scan
+name: dagger-matrix-build
+
 on:
+  workflow_dispatch:
   push:
-  schedule:
-    - cron:  '0 0 * * *'
+    branches: [ main ]
+
 jobs:
-  prepare-matrix:
+  build-matrix:
     runs-on: ubuntu-latest
-    outputs:
-      distro: ${{ steps.read-matrix.outputs.distro }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: read platform-matrix-v1.json
-        id: read-matrix
-        run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
-  build:
-    runs-on: ubuntu-latest
-    needs: [prepare-matrix]
     strategy:
-      fail-fast: false
       matrix:
-        distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
+        include:
+          # This block can be generated from platform-matrix-v1.json
+          - OS: alpine
+            OS_VER: 3.20
+          - OS: alpine
+            OS_VER: 3.21
+          - OS: alpine
+            OS_VER: 3.22
+          - OS: alpine
+            OS_VER: edge
+          - OS: archlinux
+            OS_VER: latest
+          - OS: debian
+            OS_VER: bookworm
+          - OS: debian
+            OS_VER: bullseye
+          - OS: fedora
+            OS_VER: 41
+          - OS: fedora
+            OS_VER: 42
+          - OS: rockylinux
+            OS_VER: 8
+          - OS: rockylinux
+            OS_VER: 9
+          - OS: ubi
+            OS_VER: 8
+            UPSTREAM_ORG: redhat
+            UPSTREAM_OS: ubi8
+            UPSTREAM_OS_VER: latest
+          - OS: ubi
+            OS_VER: 9
+            UPSTREAM_ORG: redhat
+            UPSTREAM_OS: ubi9
+            UPSTREAM_OS_VER: latest
+          - OS: ubuntu
+            OS_VER: jammy
+          - OS: ubuntu
+            OS_VER: noble
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: docker.io
-          username: "${{ vars.DOCKER_USERNAME }}"
-          password: "${{ secrets.DOCKER_PASSWORD }}"
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: "${{ github.actor }}"
-          password: "${{ github.token }}"
-      - uses: docker/bake-action@v6
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+      - name: Run Dagger build and publish
         env:
-          UPSTREAM_ORG: "${{ matrix.distro.UPSTREAM_ORG }}"
-          UPSTREAM_OS: "${{ matrix.distro.UPSTREAM_OS }}"
-          UPSTREAM_OS_VER: "${{ matrix.distro.UPSTREAM_OS_VER }}"
-          OS: "${{ matrix.distro.OS }}"
-          OS_VER: "${{ matrix.distro.OS_VER }}"
-          SHA: "${{ github.sha }}"
-        with:
-          pull: true
-          push: true
-      - uses: aquasecurity/trivy-action@0.29.0
-        with:
-          image-ref: "ghcr.io/${{ github.repository }}:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}"
-          severity: 'CRITICAL,HIGH'
-          format: sarif
-          output: trivy-results.sarif
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy-results.sarif
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
+        run: |
+          uv run python ci.py build-and-publish \
+            --os "${{ matrix.OS }}" \
+            --os-ver "${{ matrix.OS_VER }}" \
+            ${{ matrix.UPSTREAM_ORG && format('--upstream-org "{0}"', matrix.UPSTREAM_ORG) || '' }} \
+            ${{ matrix.UPSTREAM_OS && format('--upstream-os "{0}"', matrix.UPSTREAM_OS) || '' }} \
+            ${{ matrix.UPSTREAM_OS_VER && format('--upstream-os-ver "{0}"', matrix.UPSTREAM_OS_VER) || '' }} \
+            --dockerhub-username "$DOCKERHUB_USERNAME" \
+            --dockerhub-password "$DOCKERHUB_PASSWORD" \
+            --ghcr-username "$GHCR_USERNAME" \
+            --ghcr-password "$GHCR_PASSWORD" \
+            --push
