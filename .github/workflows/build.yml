@@ -22,7 +22,6 @@ jobs:
       matrix:
         distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
     steps:
-      - uses: docker/setup-qemu-action@v3
       - uses: actions/checkout@v4
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v6
