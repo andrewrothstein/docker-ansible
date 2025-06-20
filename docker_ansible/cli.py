@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 app = typer.Typer()
 
+
 @app.command()
 def build_and_publish(
     os: str = typer.Option(..., help="Target OS name, e.g. alpine, debian, etc."),
@@ -53,6 +54,7 @@ def build_and_publish(
         )
     )
 
+
 async def _build_and_publish_async(
     os: str,
     os_ver: str,
@@ -68,7 +70,7 @@ async def _build_and_publish_async(
     dockerhub_username: str,
     dockerhub_password: str,
     ghcr_username: str,
-    ghcr_password: str
+    ghcr_password: str,
 ):
     # Compose image tags
     tag = f"docker-ansible:{target_image_semver}-{os}.{os_ver}"
@@ -89,9 +91,7 @@ async def _build_and_publish_async(
         src = client.host().directory(".")
         # Get uv binary from the uv image
         uv_bin = (
-            client.container()
-            .from_(f"ghcr.io/astral-sh/uv:{uv_version}")
-            .file("/uv")
+            client.container().from_(f"ghcr.io/astral-sh/uv:{uv_version}").file("/uv")
         )
 
         # Start from the upstream image
@@ -99,77 +99,62 @@ async def _build_and_publish_async(
             client.container()
             .from_(upstream_image)
             .with_file("/usr/local/bin/uv", uv_bin)
-            .with_exec([
-                "uv", "tool",
-                "install", "ansible-core",
-                "--with", "ansible"]
-            )
-            .with_directory(
-                "/etc/profile.d",
-                await src.directory("profile.d")
-            )
-            .with_directory(
-                wdir,
-                await src.directory("docker_ansible")
-            )
+            .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
+            .with_directory("/etc/profile.d", await src.directory("profile.d"))
+            .with_directory(wdir, await src.directory("docker_ansible"))
             .with_files(
-                wdir,
-                [
-                    await src.file("uv.lock"),
-                    await src.file("pyproject.toml")
-                ]
+                wdir, [await src.file("uv.lock"), await src.file("pyproject.toml")]
             )
             .with_workdir(wdir)
             .with_exec(["uv", "sync", "--frozen", "--no-dev"])
             .with_env_variable("SHELL", "/bin/sh -lc")
             .with_env_variable(
                 "ANSIBLE_PYTHON_INTERPRETER",
-                "/root/.local/share/uv/tools/ansible-core/bin/python3"
+                "/root/.local/share/uv/tools/ansible-core/bin/python3",
             )
             .with_file("/etc/ansible/ansible.cfg", await src.file("ansible.cfg"))
-            .with_file("/etc/ansible/inventories/localhost", await src.file("localhost-inventory"))
-            .with_exec([
-                "sh", "-lc",
-                """
+            .with_file(
+                "/etc/ansible/inventories/localhost",
+                await src.file("localhost-inventory"),
+            )
+            .with_exec(
+                [
+                    "sh",
+                    "-lc",
+                    """
                 ansible --version \
                     && ansible all --list-hosts \
                     && ansible localhost -m ping
-                """
-            ])
+                """,
+                ]
+            )
         )
         await ctr
 
         if push:
             # Docker Hub
             if dockerhub_username and dockerhub_password:
-                dockerhub_password_secret = client.set_secret("dockerhub_password", dockerhub_password)
-                await (
-                    ctr.with_registry_auth(
-                        "docker.io",
-                        dockerhub_username,
-                        dockerhub_password_secret
-                    )
-                    .publish(dockerhub_tag)
+                dockerhub_password_secret = client.set_secret(
+                    "dockerhub_password", dockerhub_password
                 )
+                await ctr.with_registry_auth(
+                    "docker.io", dockerhub_username, dockerhub_password_secret
+                ).publish(dockerhub_tag)
                 print(f"Pushed: {dockerhub_tag}")
 
             # GHCR
             if ghcr_username and ghcr_password:
                 ghcr_password_secret = client.set_secret("ghcr_password", ghcr_password)
-                await (
-                    ctr.with_registry_auth(
-                        "ghcr.io",
-                        ghcr_username,
-                        ghcr_password_secret
-                    )
-                    .publish(ghcr_tag)
-                )
+                await ctr.with_registry_auth(
+                    "ghcr.io", ghcr_username, ghcr_password_secret
+                ).publish(ghcr_tag)
                 print(f"Pushed: {ghcr_tag}")
 
         else:
             print(
                 f"Built images but did not push (dry run): {dockerhub_tag} and {ghcr_tag}"
             )
+
 
 if __name__ == "__main__":
     app()
