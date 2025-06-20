@@ -33,23 +33,25 @@ def build_and_publish(
     Build and publish docker-ansible image for a given OS/OS_VER using Dagger.
     """
     load_dotenv()
-    asyncio.run(_build_and_publish_async(
-        os,
-        os_ver,
-        upstream_org,
-        upstream_os,
-        upstream_os_ver,
-        target_image_semver,
-        uv_version,
-        sha,
-        dockerhub_repo,
-        ghcr_repo,
-        push,
-        dockerhub_username,
-        dockerhub_password,
-        ghcr_username,
-        ghcr_password,
-    ))
+    asyncio.run(
+        _build_and_publish_async(
+            os,
+            os_ver,
+            upstream_org,
+            upstream_os,
+            upstream_os_ver,
+            target_image_semver,
+            uv_version,
+            sha,
+            dockerhub_repo,
+            ghcr_repo,
+            push,
+            dockerhub_username,
+            dockerhub_password,
+            ghcr_username,
+            ghcr_password,
+        )
+    )
 
 async def _build_and_publish_async(
     os: str,
@@ -84,16 +86,16 @@ async def _build_and_publish_async(
 
     # Read Dagger Cloud token from environment (optional, now loaded via dotenv)
     async with dagger.Connection() as client:
-        src = await client.host().directory(".")
+        src = client.host().directory(".")
         # Get uv binary from the uv image
-        uv_bin = await (
+        uv_bin = (
             client.container()
             .from_(f"ghcr.io/astral-sh/uv:{uv_version}")
             .file("/uv")
         )
 
         # Start from the upstream image
-        ctr = await (
+        ctr = (
             client.container()
             .from_(upstream_image)
             .with_file("/usr/local/bin/uv", uv_bin)
@@ -129,6 +131,7 @@ async def _build_and_publish_async(
                 """
             ])
         )
+        await ctr
 
         if push:
             # Docker Hub
