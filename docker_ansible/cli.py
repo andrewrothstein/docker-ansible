@@ -91,17 +91,20 @@ async def _build_and_publish_async(
 #        log_output=sys.stderr
     )
     async with dagger.Connection(config) as client:
-        src = client.host().directory(".")
         # Get uv binary from the uv image
         uv_bin = (
-            client.container().from_(f"ghcr.io/astral-sh/uv:{uv_version}").file("/uv")
+            client.container()
+            .from_(f"ghcr.io/astral-sh/uv:{uv_version}")
+            .file("/uv")
         )
+
+        src = client.host().directory(".")
 
         # Start from the upstream image
         ctr = (
             client.container()
             .from_(upstream_image)
-            .with_file("/usr/local/bin/uv", uv_bin)
+            .with_file("/usr/local/bin/uv", await uv_bin)
             .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
             .with_directory("/etc/profile.d", await src.directory("profile.d"))
             .with_directory(wdir, await src.directory("docker_ansible"))
