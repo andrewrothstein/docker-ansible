@@ -108,11 +108,17 @@ async def _build_and_publish_async(
                 "/etc/profile.d",
                 await src.directory("profile.d")
             )
-            .with_directory(wdir, src.directory("docker_ansible"))
-            .with_files(wdir, [
-                src.file("uv.lock"),
-                src.file("pyproject.toml")
-                ])
+            .with_directory(
+                wdir,
+                await src.directory("docker_ansible")
+            )
+            .with_files(
+                wdir,
+                [
+                    await src.file("uv.lock"),
+                    await src.file("pyproject.toml")
+                ]
+            )
             .with_workdir(wdir)
             .with_exec(["uv", "sync", "--frozen", "--no-dev"])
             .with_env_variable("SHELL", "/bin/sh -lc")
