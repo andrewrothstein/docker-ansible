@@ -73,21 +73,6 @@ async def _build_and_publish_async(
     dockerhub_tag = f"{dockerhub_repo}/{tag}"
     ghcr_tag = f"{ghcr_repo}/{tag}"
 
-    # Compose build args
-    build_args = {
-        "OS": os,
-        "OS_VER": os_ver,
-        "TARGET_IMAGE_SEMVER": target_image_semver,
-        "UV_VERSION": uv_version,
-        "SHA": sha,
-    }
-    if upstream_org:
-        build_args["UPSTREAM_ORG"] = upstream_org
-    if upstream_os:
-        build_args["UPSTREAM_OS"] = upstream_os
-    if upstream_os_ver:
-        build_args["UPSTREAM_OS_VER"] = upstream_os_ver
-
     # Compose UPSTREAM_IMAGE as in docker-bake.hcl
     upstream_registry = "docker.io"
     default_upstream_org = "library"
@@ -143,7 +128,6 @@ async def _build_and_publish_async(
                 ansible --version \
                     && ansible all --list-hosts \
                     && ansible localhost -m ping
-                rm -rf .git/
                 """
             ]
         )
