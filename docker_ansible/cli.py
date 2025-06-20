@@ -88,7 +88,7 @@ async def _build_and_publish_async(
     wdir = f"/docker-ansible{sha}"
 
     config = dagger.Config(
-#        log_output=sys.stderr
+        log_output=sys.stderr
     )
     async with dagger.Connection(config) as client:
         # Get uv binary from the uv image
