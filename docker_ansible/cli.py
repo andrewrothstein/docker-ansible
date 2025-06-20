@@ -106,19 +106,47 @@ async def _build_and_publish_async(
         # Start from the upstream image
         ctr = await client.container().from_(upstream_image)
         # Copy uv binary
-        ctr = await ctr.with_file("/usr/local/bin/uv", uv_bin)
+        ctr = await (
+            ctr.with_file("/usr/local/bin/uv", uv_bin)
+            .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
+        )
+
         # Copy profile.d scripts
-        ctr = await ctr.with_directory("/etc/profile.d", await src.directory("profile.d"))
+        ctr = await ctr.with_directory(
+            "/etc/profile.d",
+            await src.directory("profile.d")
+        )
         # Set up working directory
         wdir = f"/docker-ansible{sha}"
-        ctr = await ctr.with_exec(["mkdir", "-p", wdir])
-        ctr = await ctr.with_workdir(wdir)
-        # Copy all project files into the working directory
-        ctr = await ctr.with_directory(wdir, src)
-        # Set shell to /bin/sh -lc
-        ctr = await ctr.with_env_variable("SHELL", "/bin/sh -lc")
+        ctr = await (
+            ctr
+            .with_directory(wdir, src.directory("docker_ansible"))
+            .with_files(wdir, [
+                src.file("uv.lock"),
+                src.file("pyproject.toml")
+                ])
+            .with_workdir(wdir)
+            .with_exec(["uv", "sync", "--frozen", "--no-dev"])
+            .with_env_variable("SHELL", "/bin/sh -lc")
+            .with_env_variable(
+                "ANSIBLE_PYTHON_INTERPRETER",
+                "/root/.local/share/uv/tools/ansible-core/bin/python3"
+            )
+            .with_file("/etc/ansible/ansible.cfg", await src.file("ansible.cfg"))
+            .with_file("/etc/ansible/inventories/localhost", await src.file("localhost-inventory"))
+        )
         # Run ansible_install and clean up .git
-        ctr = await ctr.with_exec(["sh", "-lc", "set -ex; ansible_install; rm -rf .git/"])
+        ctr = await ctr.with_exec(
+            [
+                "sh", "-lc",
+                """
+                ansible --version \
+                    && ansible all --list-hosts \
+                    && ansible localhost -m ping
+                rm -rf .git/
+                """
+            ]
+        )
 
         if push:
             # Docker Hub
