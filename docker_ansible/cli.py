@@ -1,4 +1,5 @@
 import asyncio
+import sys
 import dagger
 from dotenv import load_dotenv
 import typer
@@ -86,8 +87,8 @@ async def _build_and_publish_async(
     upstream_image = f"{upstream_registry}/{uorg}/{uos}:{uosver}"
     wdir = f"/docker-ansible{sha}"
 
-    # Read Dagger Cloud token from environment (optional, now loaded via dotenv)
-    async with dagger.Connection() as client:
+    config = dagger.Config(log_output=sys.stderr)
+    async with dagger.Connection(config) as client:
         src = client.host().directory(".")
         # Get uv binary from the uv image
         uv_bin = (
