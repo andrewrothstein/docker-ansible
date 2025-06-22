@@ -1,0 +1,28 @@
+---
+version: '3'
+dotenv:
+  - .env
+tasks:
+  build:
+    cmds:
+      - >-
+        dagger call
+        build
+        --os=alpine
+        --os-ver=3.22
+  publish:
+    cmds:
+      - >-
+        dagger call
+        publish
+        --os=alpine
+        --os-ver=3.22
+        --dockerhub-username=${DOCKERHUB_USERNAME}
+        --dockerhub-password=env:DOCKERHUB_PASSWORD
+        --ghcr-username=${GITHUB_ACTOR}
+        --ghcr-password=env:GITHUB_TOKEN
+    env:
+      DOCKERHUB_USERNAME: ${DOCKERHUB_USERNAME}
+      DOCKERHUB_PASSWORD: ${DOCKERHUB_PASSWORD}
+      GITHUB_ACTOR: ${GITHUB_ACTOR}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
