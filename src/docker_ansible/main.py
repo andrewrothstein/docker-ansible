@@ -128,8 +128,8 @@ class DockerAnsible:
         )
 
         await ctr.with_registry_auth(
-            dockerhub_registry, dockerhub_username, dockerhub_password
-        ).publish(f"{dockerhub}:{v}")
-        await ctr.with_registry_auth(
             ghcr_registry, ghcr_username, ghcr_password
         ).publish(f"{ghcr}:{v}")
+        await ctr.with_registry_auth(
+            dockerhub_registry, dockerhub_username, dockerhub_password
+        ).publish(f"{dockerhub}:{v}")

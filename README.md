@@ -7,23 +7,8 @@ docker-ansible
 
 ## Example CLI Usage
 
-To build and publish a docker-ansible image for Alpine 3.20:
+To build a docker-ansible image for Ubuntu Noble:
 
 ```bash
-python3 -m docker_ansible.cli build-and-publish \
-  --os alpine \
-  --os-ver 3.20 \
-  --target-image-semver 1.0.0 \
-  --dockerhub-username <your-dockerhub-username> \
-  --dockerhub-password <your-dockerhub-password>
+dagger call build --os=ubuntu --os-ver=noble
 ```
-
-Replace the username and password with your Docker Hub credentials. Additional options are available; run:
-
-```bash
-python3 -m docker_ansible.cli build-and-publish --help
-```
-
-to see all available options.
-
-Andrew Rothstein <andrew.rothstein@gmail.com>
