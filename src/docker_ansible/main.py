@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 import dagger
 from dagger import dag, function, object_type
-
+import asyncio
 
 @dataclass
 class Tag:
@@ -127,9 +127,11 @@ class DockerAnsible:
             repo=ghcr_repo,
         )
 
-        await ctr.with_registry_auth(
-            dockerhub_registry, dockerhub_username, dockerhub_password
-        ).publish(f"{dockerhub}:{v}")
-        await ctr.with_registry_auth(
-            ghcr_registry, ghcr_username, ghcr_password
-        ).publish(f"{ghcr}:{v}")
+        await asyncio.gather(
+            ctr.with_registry_auth(
+                dockerhub_registry, dockerhub_username, dockerhub_password
+            ).publish(f"{dockerhub}:{v}"),
+            ctr.with_registry_auth(
+                ghcr_registry, ghcr_username, ghcr_password
+            ).publish(f"{ghcr}:{v}"),
+        )
