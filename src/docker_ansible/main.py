@@ -1,7 +1,27 @@
+from dataclasses import dataclass
 from typing import Optional
 import dagger
 from dagger import dag, function, object_type
-import asyncio
+
+
+@dataclass
+class Tag:
+    target_image_semver: str
+    os: str
+    os_ver: str
+
+    def __str__(self) -> str:
+        return f"{self.target_image_semver}-{self.os}.{self.os_ver}"
+
+
+@dataclass
+class Image:
+    registry: str
+    org: str
+    repo: str
+
+    def __str__(self) -> str:
+        return f"{self.registry}/{self.org}/{self.repo}"
 
 
 @object_type
@@ -17,13 +37,12 @@ class DockerAnsible:
         upstream_os_ver: Optional[str] = None,
         uv_version: str = "latest",
     ) -> dagger.Container:
-        # Compose UPSTREAM_IMAGE as in docker-bake.hcl
-        upstream_registry = "docker.io"
-        default_upstream_org = "library"
-        uorg = upstream_org if upstream_org else default_upstream_org
-        uos = upstream_os if upstream_os else os
-        uosver = upstream_os_ver if upstream_os_ver else os_ver
-        upstream_image = f"{upstream_registry}/{uorg}/{uos}:{uosver}"
+        upstream_image = Image(
+            registry="docker.io",
+            org=upstream_org or "library",
+            repo=upstream_os or os,
+        )
+        upstream_image = f"{upstream_image}:{upstream_os_ver or os_ver}"
 
         # Get uv binary from the uv image
         uv_bin = dag.container().from_(f"ghcr.io/astral-sh/uv:{uv_version}").file("/uv")
@@ -73,8 +92,12 @@ class DockerAnsible:
         upstream_os_ver: Optional[str] = None,
         target_image_semver: str = "0.0.0",
         uv_version: str = "latest",
-        dockerhub_repo: str = "docker.io/andrewrothstein",
-        ghcr_repo: str = "ghcr.io/andrewrothstein",
+        dockerhub_registry: str = "docker.io",
+        dockerhub_org: str = "andrewrothstein",
+        dockerhub_repo: str = "docker-ansible",
+        ghcr_registry: str = "ghcr.io",
+        ghcr_org: str = "andrewrothstein",
+        ghcr_repo: str = "docker-ansible",
     ) -> None:
         # Compose image tags
         ctr = await self.build(
@@ -87,18 +110,27 @@ class DockerAnsible:
             uv_version,
         )
 
-        slug = "docker-ansible"
-        tag = f"{slug}:{target_image_semver}-{os}.{os_ver}"
-
-        # Docker Hub
-        dockerhub_tag = f"{dockerhub_repo}/{tag}"
-        ghcr_tag = f"{ghcr_repo}/{tag}"
-
-        await asyncio.gather(
-            ctr.with_registry_auth(
-                "docker.io", dockerhub_username, dockerhub_password
-            ).publish(dockerhub_tag),
-            ctr.with_registry_auth("ghcr.io", ghcr_username, ghcr_password).publish(
-                ghcr_tag
-            ),
+        v = Tag(
+            target_image_semver=target_image_semver,
+            os=os,
+            os_ver=os_ver,
         )
+
+        dockerhub = Image(
+            registry=dockerhub_registry,
+            org=dockerhub_org,
+            repo=dockerhub_repo,
+        )
+
+        ghcr = Image(
+            registry=ghcr_registry,
+            org=ghcr_org,
+            repo=ghcr_repo,
+        )
+
+        await ctr.with_registry_auth(
+            dockerhub_registry, dockerhub_username, dockerhub_password
+        ).publish(f"{dockerhub}:{v}")
+        await ctr.with_registry_auth(
+            ghcr_registry, ghcr_username, ghcr_password
+        ).publish(f"{ghcr}:{v}")

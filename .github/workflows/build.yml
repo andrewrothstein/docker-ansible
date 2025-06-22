@@ -14,7 +14,10 @@ jobs:
       - name: read platform-matrix-v1.json
         id: read-matrix
         run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
-  build:
+  publish:
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-latest
     needs: [prepare-matrix]
     strategy:
@@ -28,18 +31,18 @@ jobs:
         env:
           DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          GHCR_PASSWORD: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           verb: call
           args: >-
             publish
             --wdir .
-            --os "${{ matrix.distro.OS }}"
-            --os-ver "${{ matrix.distro.OS_VER }}"
-            ${{ matrix.distro.UPSTREAM_ORG && format('--upstream-org "{0}"', matrix.distro.UPSTREAM_ORG) || '' }}
-            ${{ matrix.distro.UPSTREAM_OS && format('--upstream-os "{0}"', matrix.distro.UPSTREAM_OS) || '' }}
-            ${{ matrix.distro.UPSTREAM_OS_VER && format('--upstream-os-ver "{0}"', matrix.distro.UPSTREAM_OS_VER) || '' }}
-            --dockerhub-username "${{ secrets.DOCKER_USERNAME }}"
+            --os ${{ matrix.distro.OS }}
+            --os-ver ${{ matrix.distro.OS_VER }}
+            --upstream-org ${{ matrix.distro.UPSTREAM_ORG || 'library' }}
+            --upstream-os ${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
+            --upstream-os-ver ${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
+            --dockerhub-username ${{ secrets.DOCKERHUB_USERNAME }}
             --dockerhub-password env:DOCKERHUB_PASSWORD
-            --ghcr-username ${{ github.actor }}
-            --ghcr-password env:GHCR_PASSWORD
+            --ghcr-username "${{ github.actor }}"
+            --ghcr-password env:GITHUB_TOKEN
