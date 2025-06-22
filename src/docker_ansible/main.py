@@ -1,6 +1,7 @@
 from typing import Optional
 import dagger
 from dagger import dag, function, object_type
+import asyncio
 
 
 @object_type
@@ -33,17 +34,13 @@ class DockerAnsible:
             .from_(upstream_image)
             .with_file("/usr/local/bin/uv", await uv_bin)
             .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
-            .with_directory(
-                "/etc/profile.d", await wdir.directory("profile.d")
-            )
+            .with_directory("/etc/profile.d", await wdir.directory("profile.d"))
             .with_env_variable("SHELL", "/bin/sh -lc")
             .with_env_variable(
                 "ANSIBLE_PYTHON_INTERPRETER",
                 "/root/.local/share/uv/tools/ansible-core/bin/python3",
             )
-            .with_file(
-                "/etc/ansible/ansible.cfg", await wdir.file("ansible.cfg")
-            )
+            .with_file("/etc/ansible/ansible.cfg", await wdir.file("ansible.cfg"))
             .with_file(
                 "/etc/ansible/inventories/localhost",
                 await wdir.file("localhost-inventory"),
@@ -67,6 +64,10 @@ class DockerAnsible:
         wdir: dagger.Directory,
         os: str,
         os_ver: str,
+        dockerhub_username: str,
+        dockerhub_password: dagger.Secret,
+        ghcr_username: str,
+        ghcr_password: dagger.Secret,
         upstream_org: Optional[str] = None,
         upstream_os: Optional[str] = None,
         upstream_os_ver: Optional[str] = None,
@@ -74,10 +75,6 @@ class DockerAnsible:
         uv_version: str = "latest",
         dockerhub_repo: str = "docker.io/andrewrothstein",
         ghcr_repo: str = "ghcr.io/andrewrothstein",
-        dockerhub_username: Optional[str] = None,
-        dockerhub_password: Optional[dagger.Secret] = None,
-        ghcr_username: Optional[str] = None,
-        ghcr_password: Optional[dagger.Secret] = None,
     ) -> None:
         # Compose image tags
         ctr = await self.build(
@@ -94,17 +91,14 @@ class DockerAnsible:
         tag = f"{slug}:{target_image_semver}-{os}.{os_ver}"
 
         # Docker Hub
-        if dockerhub_username and dockerhub_password:
-            dockerhub_tag = f"{dockerhub_repo}/{tag}"
-            await ctr.with_registry_auth(
-                "docker.io", dockerhub_username, dockerhub_password
-            ).publish(dockerhub_tag)
-            print(f"Pushed: {dockerhub_tag}")
+        dockerhub_tag = f"{dockerhub_repo}/{tag}"
+        ghcr_tag = f"{ghcr_repo}/{tag}"
 
-        # GHCR
-        if ghcr_username and ghcr_password:
-            ghcr_tag = f"{ghcr_repo}/{tag}"
-            await ctr.with_registry_auth(
-                "ghcr.io", ghcr_username, ghcr_password
-            ).publish(ghcr_tag)
-            print(f"Pushed: {ghcr_tag}")
+        await asyncio.gather(
+            ctr.with_registry_auth(
+                "docker.io", dockerhub_username, dockerhub_password
+            ).publish(dockerhub_tag),
+            ctr.with_registry_auth("ghcr.io", ghcr_username, ghcr_password).publish(
+                ghcr_tag
+            ),
+        )
