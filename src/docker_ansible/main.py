@@ -64,9 +64,9 @@ class DockerAnsible:
     @function
     async def publish(
         self,
-        directory_arg: dagger.Directory,
-        os: str = "ubuntu",
-        os_ver: str = "noble",
+        wdir: dagger.Directory,
+        os: str,
+        os_ver: str,
         upstream_org: Optional[str] = None,
         upstream_os: Optional[str] = None,
         upstream_os_ver: Optional[str] = None,
@@ -81,7 +81,7 @@ class DockerAnsible:
     ) -> None:
         # Compose image tags
         ctr = await self.build(
-            directory_arg,
+            wdir,
             os,
             os_ver,
             upstream_org,

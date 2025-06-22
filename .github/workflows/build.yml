@@ -32,7 +32,8 @@ jobs:
         with:
           verb: call
           args: >-
-            build
+            publish
+            --wdir .
             --os "${{ matrix.distro.OS }}"
             --os-ver "${{ matrix.distro.OS_VER }}"
             ${{ matrix.distro.UPSTREAM_ORG && format('--upstream-org "{0}"', matrix.distro.UPSTREAM_ORG) || '' }}
