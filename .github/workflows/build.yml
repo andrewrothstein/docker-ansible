@@ -29,19 +29,16 @@ jobs:
         uses: dagger/dagger-for-github@8.0.0
         env:
           DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-      - name: Run Dagger build and publish
-        env:
-          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-        run: |
-          uv run python -Wd -m docker_ansible.cli \
-            --os "${{ matrix.distro.OS }}" \
-            --os-ver "${{ matrix.distro.OS_VER }}" \
-            --sha "${{ github.sha }}" \
-            ${{ matrix.distro.UPSTREAM_ORG && format('--upstream-org "{0}"', matrix.distro.UPSTREAM_ORG) || '' }} \
-            ${{ matrix.distro.UPSTREAM_OS && format('--upstream-os "{0}"', matrix.distro.UPSTREAM_OS) || '' }} \
-            ${{ matrix.distro.UPSTREAM_OS_VER && format('--upstream-os-ver "{0}"', matrix.distro.UPSTREAM_OS_VER) || '' }} \
-            --dockerhub-username "${{ vars.DOCKER_USERNAME }}" \
-            --dockerhub-password "${{ secrets.DOCKER_PASSWORD }}" \
-            --ghcr-username "${{ github.actor }}" \
-            --ghcr-password "${{ github.token }}" \
-            --push
+        with:
+          verb: call
+          args: >-
+            build
+            --os "${{ matrix.distro.OS }}"
+            --os-ver "${{ matrix.distro.OS_VER }}"
+            ${{ matrix.distro.UPSTREAM_ORG && format('--upstream-org "{0}"', matrix.distro.UPSTREAM_ORG) || '' }}
+            ${{ matrix.distro.UPSTREAM_OS && format('--upstream-os "{0}"', matrix.distro.UPSTREAM_OS) || '' }}
+            ${{ matrix.distro.UPSTREAM_OS_VER && format('--upstream-os-ver "{0}"', matrix.distro.UPSTREAM_OS_VER) || '' }}
+            --dockerhub-username "${{ vars.DOCKER_USERNAME }}"
+            --dockerhub-password "${{ secrets.DOCKER_PASSWORD }}"
+            --ghcr-username "${{ github.actor }}"
+            --ghcr-password "${{ github.token }}"

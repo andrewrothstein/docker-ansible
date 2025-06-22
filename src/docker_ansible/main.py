@@ -6,27 +6,9 @@ from dagger import dag, function, object_type
 @object_type
 class DockerAnsible:
     @function
-    def container_echo(self, string_arg: str) -> dagger.Container:
-        """Returns a container that echoes whatever string argument is provided"""
-        return dag.container().from_("alpine:latest").with_exec(["echo", string_arg])
-
-    @function
-    async def grep_dir(self, directory_arg: dagger.Directory, pattern: str) -> str:
-        """Returns lines that match a pattern
-        in the files of the provided Directory"""
-        return await (
-            dag.container()
-            .from_("alpine:latest")
-            .with_mounted_directory("/mnt", directory_arg)
-            .with_workdir("/mnt")
-            .with_exec(["grep", "-R", pattern, "."])
-            .stdout()
-        )
-
-    @function
     async def build(
         self,
-        directory_arg: dagger.Directory,
+        wdir: dagger.Directory,
         os: str,
         os_ver: str,
         upstream_org: Optional[str] = None,
@@ -52,7 +34,7 @@ class DockerAnsible:
             .with_file("/usr/local/bin/uv", await uv_bin)
             .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
             .with_directory(
-                "/etc/profile.d", await directory_arg.directory("profile.d")
+                "/etc/profile.d", await wdir.directory("profile.d")
             )
             .with_env_variable("SHELL", "/bin/sh -lc")
             .with_env_variable(
@@ -60,11 +42,11 @@ class DockerAnsible:
                 "/root/.local/share/uv/tools/ansible-core/bin/python3",
             )
             .with_file(
-                "/etc/ansible/ansible.cfg", await directory_arg.file("ansible.cfg")
+                "/etc/ansible/ansible.cfg", await wdir.file("ansible.cfg")
             )
             .with_file(
                 "/etc/ansible/inventories/localhost",
-                await directory_arg.file("localhost-inventory"),
+                await wdir.file("localhost-inventory"),
             )
             .with_exec(
                 [
