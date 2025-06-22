@@ -36,12 +36,12 @@ jobs:
           verb: call
           args: >-
             publish
-            --os ${{ matrix.distro.OS }}
-            --os-ver ${{ matrix.distro.OS_VER }}
-            --upstream-org ${{ matrix.distro.UPSTREAM_ORG || 'library' }}
-            --upstream-os ${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
-            --upstream-os-ver ${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
-            --dockerhub-username ${{ vars.DOCKERHUB_USERNAME }}
-            --dockerhub-password env:DOCKERHUB_PASSWORD
-            --ghcr-username ${{ github.actor }}
-            --ghcr-password env:GITHUB_TOKEN
+            --os=${{ matrix.distro.OS }}
+            --os-ver=${{ matrix.distro.OS_VER }}
+            --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
+            --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
+            --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
+            --dockerhub-username=${{ vars.DOCKERHUB_USERNAME }}
+            --dockerhub-password=env:DOCKERHUB_PASSWORD
+            --ghcr-username=${{ github.actor }}
+            --ghcr-password=env:GITHUB_TOKEN
