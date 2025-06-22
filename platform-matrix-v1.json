@@ -1,74 +1,90 @@
 [
   {
     "OS": "alpine",
-    "OS_VER": "3.20"
+    "OS_VER": "3.20",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   },
   {
     "OS": "alpine",
-    "OS_VER": "3.21"
+    "OS_VER": "3.21",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   },
   {
     "OS": "alpine",
-    "OS_VER": "3.22"
+    "OS_VER": "3.22",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   },
   {
     "OS": "alpine",
-    "OS_VER": "edge"
+    "OS_VER": "edge",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   },
   {
     "OS": "archlinux",
-    "OS_VER": "latest"
+    "OS_VER": "latest",
+    "PLATFORMS": ["linux/amd64"]
   },
   {
     "OS": "debian",
-    "OS_VER": "bookworm"
+    "OS_VER": "bookworm",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   },
   {
     "OS": "debian",
-    "OS_VER": "bullseye"
+    "OS_VER": "bullseye",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   },
   {
     "OS": "fedora",
-    "OS_VER": "41"
+    "OS_VER": "41",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   },
   {
     "OS": "fedora",
-    "OS_VER": "42"
+    "OS_VER": "42",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   },
   {
     "OS": "kali",
     "OS_VER": "latest",
     "UPSTREAM_ORG": "kalilinux",
-    "UPSTREAM_OS": "kali-rolling"
+    "UPSTREAM_OS": "kali-rolling",
+    "PLATFORMS": ["linux/amd64"]
   },
   {
     "OS": "rockylinux",
-    "OS_VER": "8"
+    "OS_VER": "8",
+    "PLATFORMS": ["linux/amd64"]
   },
   {
     "OS": "rockylinux",
-    "OS_VER": "9"
+    "OS_VER": "9",
+    "PLATFORMS": ["linux/amd64"]
   },
   {
     "OS": "ubi",
     "OS_VER": "8",
     "UPSTREAM_ORG": "redhat",
     "UPSTREAM_OS": "ubi8",
-    "UPSTREAM_OS_VER": "latest"
+    "UPSTREAM_OS_VER": "latest",
+    "PLATFORMS": ["linux/amd64"]
   },
   {
     "OS": "ubi",
     "OS_VER": "9",
     "UPSTREAM_ORG": "redhat",
     "UPSTREAM_OS": "ubi9",
-    "UPSTREAM_OS_VER": "latest"
+    "UPSTREAM_OS_VER": "latest",
+    "PLATFORMS": ["linux/amd64"]
   },
   {
     "OS": "ubuntu",
-    "OS_VER": "jammy"
+    "OS_VER": "jammy",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   },
   {
     "OS": "ubuntu",
-    "OS_VER": "noble"
+    "OS_VER": "noble",
+    "PLATFORMS": ["linux/amd64", "linux/arm64"]
   }
 ]

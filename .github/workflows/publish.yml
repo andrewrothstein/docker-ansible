@@ -43,6 +43,7 @@ jobs:
             --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
             --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
             --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
+            --platforms=${{ matrix.distro.platforms }}
             --dockerhub-username=${{ vars.DOCKERHUB_USERNAME }}
             --dockerhub-password=env:DOCKERHUB_PASSWORD
             --ghcr-username=${{ github.actor }}

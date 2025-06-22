@@ -8,10 +8,9 @@ tasks:
       - >-
         dagger call
         build
-        --os=kali
-        --os-ver=latest
-        --upstream-org=kalilinux
-        --upstream-os=kali-rolling
+        --os=ubuntu
+        --os-ver=noble
+        --platforms=linux/amd64,linux/arm64
   publish:
     cmds:
       - >-

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 import dagger
 from dagger import dag, function, object_type
 import asyncio
@@ -36,7 +36,8 @@ class DockerAnsible:
         upstream_os: Optional[str] = None,
         upstream_os_ver: Optional[str] = None,
         uv_version: str = "latest",
-    ) -> dagger.Container:
+        platforms: str = "linux/amd64",
+    ) -> List[dagger.Container]:
         upstream_image = Image(
             registry="docker.io",
             org=upstream_org or "library",
@@ -44,40 +45,48 @@ class DockerAnsible:
         )
         upstream_image = f"{upstream_image}:{upstream_os_ver or os_ver}"
 
-        # Get uv binary from the uv image
-        uv_bin = dag.container().from_(f"ghcr.io/astral-sh/uv:{uv_version}").file("/uv")
-
         wdir = dag.current_module().source()
 
-        # Start from the upstream image
-        return (
-            dag.container()
-            .from_(upstream_image)
-            .with_file("/usr/local/bin/uv", await uv_bin)
-            .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
-            .with_directory("/etc/profile.d", await wdir.directory("profile.d"))
-            .with_env_variable("SHELL", "/bin/sh -lc")
-            .with_env_variable(
-                "ANSIBLE_PYTHON_INTERPRETER",
-                "/root/.local/share/uv/tools/ansible-core/bin/python3",
+        results: List[dagger.Container] = []
+        for platform in platforms.split(","):
+            # Get uv binary from the uv image
+            uv_bin = (
+                dag.container(platform=dagger.Platform(platform))
+                .from_(f"ghcr.io/astral-sh/uv:{uv_version}")
+                .file("/uv")
             )
-            .with_file("/etc/ansible/ansible.cfg", await wdir.file("ansible.cfg"))
-            .with_file(
-                "/etc/ansible/inventories/localhost",
-                await wdir.file("localhost-inventory"),
+
+            # Start from the upstream image
+            results.append(
+                dag
+                .container(platform=dagger.Platform(platform))
+                .from_(upstream_image)
+                .with_file("/usr/local/bin/uv", await uv_bin)
+                .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
+                .with_directory("/etc/profile.d", await wdir.directory("profile.d"))
+                .with_env_variable("SHELL", "/bin/sh -lc")
+                .with_env_variable(
+                    "ANSIBLE_PYTHON_INTERPRETER",
+                    "/root/.local/share/uv/tools/ansible-core/bin/python3",
+                )
+                .with_file("/etc/ansible/ansible.cfg", await wdir.file("ansible.cfg"))
+                .with_file(
+                    "/etc/ansible/inventories/localhost",
+                    await wdir.file("localhost-inventory"),
+                )
+                .with_exec(
+                    [
+                        "sh",
+                        "-lc",
+                        """
+                    ansible --version \
+                        && ansible all --list-hosts \
+                        && ansible localhost -m ping
+                    """,
+                    ]
+                )
             )
-            .with_exec(
-                [
-                    "sh",
-                    "-lc",
-                    """
-                ansible --version \
-                    && ansible all --list-hosts \
-                    && ansible localhost -m ping
-                """,
-                ]
-            )
-        )
+        return results
 
     @function
     async def publish(
@@ -99,17 +108,9 @@ class DockerAnsible:
         ghcr_registry: str = "ghcr.io",
         ghcr_org: str = "andrewrothstein",
         ghcr_repo: str = "docker-ansible",
+        platforms: str = "linux/amd64",
     ) -> None:
         # Compose image tags
-        ctr = await self.build(
-            os,
-            os_ver,
-            upstream_org,
-            upstream_os,
-            upstream_os_ver,
-            uv_version,
-        )
-
         v = Tag(
             target_image_semver=target_image_semver,
             os=os,
@@ -128,11 +129,24 @@ class DockerAnsible:
             repo=ghcr_repo,
         )
 
-        await asyncio.gather(
-            ctr.with_registry_auth(
-                dockerhub_registry, dockerhub_username, dockerhub_password
-            ).publish(f"{dockerhub}:{v}"),
-            ctr.with_registry_auth(ghcr_registry, ghcr_username, ghcr_password).publish(
-                f"{ghcr}:{v}"
-            ),
+        images = await self.build(
+            os,
+            os_ver,
+            upstream_org,
+            upstream_os,
+            upstream_os_ver,
+            uv_version,
+            platforms,
         )
+
+        for ctr in images:
+            # Get the container for the platform
+            # Tag the image
+            await asyncio.gather(
+                ctr.with_registry_auth(
+                    dockerhub_registry, dockerhub_username, dockerhub_password
+                ).publish(f"{dockerhub}:{v}"),
+                ctr.with_registry_auth(ghcr_registry, ghcr_username, ghcr_password).publish(
+                    f"{ghcr}:{v}"
+                ),
+            )
