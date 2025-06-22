@@ -36,7 +36,6 @@ jobs:
           verb: call
           args: >-
             publish
-            --wdir .
             --os ${{ matrix.distro.OS }}
             --os-ver ${{ matrix.distro.OS_VER }}
             --upstream-org ${{ matrix.distro.UPSTREAM_ORG || 'library' }}
