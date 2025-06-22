@@ -29,7 +29,6 @@ class DockerAnsible:
     @function
     async def build(
         self,
-        wdir: dagger.Directory,
         os: str,
         os_ver: str,
         upstream_org: Optional[str] = None,
@@ -46,6 +45,8 @@ class DockerAnsible:
 
         # Get uv binary from the uv image
         uv_bin = dag.container().from_(f"ghcr.io/astral-sh/uv:{uv_version}").file("/uv")
+
+        wdir = dag.directory()
 
         # Start from the upstream image
         return (
@@ -80,7 +81,6 @@ class DockerAnsible:
     @function
     async def publish(
         self,
-        wdir: dagger.Directory,
         os: str,
         os_ver: str,
         dockerhub_username: str,
@@ -101,7 +101,6 @@ class DockerAnsible:
     ) -> None:
         # Compose image tags
         ctr = await self.build(
-            wdir,
             os,
             os_ver,
             upstream_org,
