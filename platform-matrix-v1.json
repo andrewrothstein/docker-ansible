@@ -2,22 +2,22 @@
   {
     "OS": "alpine",
     "OS_VER": "3.20",
-    "PLATFORMS": "linux/amd64,linux/arm64"
+    "PLATFORMS": "linux/amd64"
   },
   {
     "OS": "alpine",
     "OS_VER": "3.21",
-    "PLATFORMS": "linux/amd64,linux/arm64"
+    "PLATFORMS": "linux/amd64"
   },
   {
     "OS": "alpine",
     "OS_VER": "3.22",
-    "PLATFORMS": "linux/amd64,linux/arm64"
+    "PLATFORMS": "linux/amd64"
   },
   {
     "OS": "alpine",
     "OS_VER": "edge",
-    "PLATFORMS": "linux/amd64,linux/arm64"
+    "PLATFORMS": "linux/amd64"
   },
   {
     "OS": "archlinux",
