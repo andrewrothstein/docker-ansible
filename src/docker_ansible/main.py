@@ -46,7 +46,7 @@ class DockerAnsible:
         # Get uv binary from the uv image
         uv_bin = dag.container().from_(f"ghcr.io/astral-sh/uv:{uv_version}").file("/uv")
 
-        wdir = dag.directory()
+        wdir = dag.current_module().source()
 
         # Start from the upstream image
         return (
