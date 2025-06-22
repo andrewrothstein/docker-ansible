@@ -139,9 +139,8 @@ class DockerAnsible:
             platforms,
         )
 
+        # tag and publish images
         for ctr in images:
-            # Get the container for the platform
-            # Tag the image
             await asyncio.gather(
                 ctr.with_registry_auth(
                     dockerhub_registry, dockerhub_username, dockerhub_password
