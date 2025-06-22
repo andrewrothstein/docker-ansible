@@ -21,7 +21,7 @@ jobs:
         distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Dagger
+      - name: build images
         uses: dagger/dagger-for-github@8.0.0
         env:
           DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
