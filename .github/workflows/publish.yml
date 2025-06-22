@@ -1,7 +1,11 @@
 ---
-name: build
+name: publish
 on:
-  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron:  '0 0 * * *'
 jobs:
   prepare-matrix:
     runs-on: ubuntu-latest
@@ -12,7 +16,10 @@ jobs:
       - name: read platform-matrix-v1.json
         id: read-matrix
         run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
-  build:
+  publish:
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-latest
     needs: [prepare-matrix]
     strategy:
@@ -21,16 +28,22 @@ jobs:
         distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
     steps:
       - uses: actions/checkout@v4
-      - name: build images
+      - name: publish to docker.io and ghcr.io
         uses: dagger/dagger-for-github@8.0.0
         env:
           DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           verb: call
           args: >-
-            build
+            publish
             --os=${{ matrix.distro.OS }}
             --os-ver=${{ matrix.distro.OS_VER }}
             --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
             --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
             --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
+            --dockerhub-username=${{ vars.DOCKERHUB_USERNAME }}
+            --dockerhub-password=env:DOCKERHUB_PASSWORD
+            --ghcr-username=${{ github.actor }}
+            --ghcr-password=env:GITHUB_TOKEN

@@ -1,0 +1,15 @@
+[project]
+name = "docker-ansible"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.16.0",
+    "dagger-io",
+]
+
+[build-system]
+requires = ["hatchling==1.25.0"]
+build-backend = "hatchling.build"
+
+[tool.uv.sources]
+dagger-io = { path = "sdk", editable = true }
