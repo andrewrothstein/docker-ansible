@@ -43,5 +43,5 @@ jobs:
             --upstream-os-ver ${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
             --dockerhub-username ${{ vars.DOCKERHUB_USERNAME }}
             --dockerhub-password env:DOCKERHUB_PASSWORD
-            --ghcr-username "${{ github.actor }}"
+            --ghcr-username ${{ github.actor }}
             --ghcr-password env:GITHUB_TOKEN
