@@ -54,12 +54,12 @@
   {
     "OS": "rockylinux",
     "OS_VER": "8",
-    "PLATFORMS": "linux/amd64"
+    "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
     "OS": "rockylinux",
     "OS_VER": "9",
-    "PLATFORMS": "linux/amd64"
+    "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
     "OS": "ubi",
@@ -67,7 +67,7 @@
     "UPSTREAM_ORG": "redhat",
     "UPSTREAM_OS": "ubi8",
     "UPSTREAM_OS_VER": "latest",
-    "PLATFORMS": "linux/amd64"
+    "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
     "OS": "ubi",
@@ -75,7 +75,7 @@
     "UPSTREAM_ORG": "redhat",
     "UPSTREAM_OS": "ubi9",
     "UPSTREAM_OS_VER": "latest",
-    "PLATFORMS": "linux/amd64"
+    "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
     "OS": "ubuntu",
