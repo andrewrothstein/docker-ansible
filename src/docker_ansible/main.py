@@ -38,28 +38,29 @@ class DockerAnsible:
         uv_version: str = "latest",
         platforms: str = "linux/amd64",
     ) -> List[dagger.Container]:
-        upstream_image = Image(
-            registry="docker.io",
-            org=upstream_org or "library",
-            repo=upstream_os or os,
-        )
-        upstream_image = f"{upstream_image}:{upstream_os_ver or os_ver}"
+        containers = []
+        for p in platforms.split(",") or []:
+            plat = dagger.Platform(p)
+            upstream_image = Image(
+                registry="docker.io",
+                org=upstream_org or "library",
+                repo=upstream_os or os,
+            )
+            upstream_image = f"{upstream_image}:{upstream_os_ver or os_ver}"
 
-        wdir = dag.current_module().source()
+            wdir = dag.current_module().source()
 
-        results: List[dagger.Container] = []
-        for platform in platforms.split(","):
             # Get uv binary from the uv image
             uv_bin = (
-                dag.container(platform=dagger.Platform(platform))
+                dag.container(platform=plat)
                 .from_(f"ghcr.io/astral-sh/uv:{uv_version}")
                 .file("/uv")
             )
 
             # Start from the upstream image
-            results.append(
+            containers.append(
                 dag
-                .container(platform=dagger.Platform(platform))
+                .container(platform=plat)
                 .from_(upstream_image)
                 .with_file("/usr/local/bin/uv", await uv_bin)
                 .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
@@ -86,17 +87,17 @@ class DockerAnsible:
                     ]
                 )
             )
-        return results
+        return containers
 
     @function
     async def publish(
         self,
         os: str,
         os_ver: str,
-        dockerhub_username: str,
-        dockerhub_password: dagger.Secret,
-        ghcr_username: str,
-        ghcr_password: dagger.Secret,
+        dockerhub_username: Optional[str] = None,
+        dockerhub_password: Optional[dagger.Secret] = None,
+        ghcr_username: Optional[str] = None,
+        ghcr_password: Optional[dagger.Secret] = None,
         upstream_org: Optional[str] = None,
         upstream_os: Optional[str] = None,
         upstream_os_ver: Optional[str] = None,
@@ -129,23 +130,22 @@ class DockerAnsible:
             repo=ghcr_repo,
         )
 
-        images = await self.build(
+        ctr = await self.build(
             os,
             os_ver,
             upstream_org,
             upstream_os,
             upstream_os_ver,
             uv_version,
-            platforms,
+            platforms=platforms,
         )
 
         # tag and publish images
-        for ctr in images:
-            await asyncio.gather(
-                ctr.with_registry_auth(
-                    dockerhub_registry, dockerhub_username, dockerhub_password
-                ).publish(f"{dockerhub}:{v}"),
-                ctr.with_registry_auth(ghcr_registry, ghcr_username, ghcr_password).publish(
-                    f"{ghcr}:{v}"
-                ),
-            )
+        if dockerhub_username and dockerhub_password:
+            await dag.container().with_registry_auth(
+                dockerhub_registry, dockerhub_username, dockerhub_password
+            ).publish(f"{dockerhub}:{v}", platform_variants=ctr)
+        if ghcr_username and ghcr_password:
+            await dag.container().with_registry_auth(
+                ghcr_registry, ghcr_username, ghcr_password
+            ).publish(f"{ghcr}:{v}", platform_variants=ctr)
