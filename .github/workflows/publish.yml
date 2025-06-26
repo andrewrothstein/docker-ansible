@@ -26,7 +26,9 @@ jobs:
       - name: Filter for amd64 only
         id: filter
         run: |
-          echo "matrix=$(echo '${{ needs.prepare-matrix.outputs.distro }}' | jq -c '[.[] | select(.PLATFORMS | test(\"linux/amd64\"))]')" >> $GITHUB_OUTPUT
+          result=$(echo '${{ needs.prepare-matrix.outputs.distro }}' | jq -c '[.[] | select(.PLATFORMS | test("linux/amd64"))]')
+          if [ -z "$result" ]; then result="[]"; fi
+          echo "matrix=$result" >> $GITHUB_OUTPUT
 
   filter-arm64:
     runs-on: ubuntu-latest
@@ -37,7 +39,9 @@ jobs:
       - name: Filter for arm64 only
         id: filter
         run: |
-          echo "matrix=$(echo '${{ needs.prepare-matrix.outputs.distro }}' | jq -c '[.[] | select(.PLATFORMS | test(\"linux/arm64\"))]')" >> $GITHUB_OUTPUT
+          result=$(echo '${{ needs.prepare-matrix.outputs.distro }}' | jq -c '[.[] | select(.PLATFORMS | test("linux/arm64"))]')
+          if [ -z "$result" ]; then result="[]"; fi
+          echo "matrix=$result" >> $GITHUB_OUTPUT
 
   publish-amd64:
     permissions:
