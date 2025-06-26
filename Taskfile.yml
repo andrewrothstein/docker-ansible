@@ -4,26 +4,35 @@ dotenv:
   - .env
 tasks:
   build:
+    vars:
+      docker_ansible_os: '{{ .docker_ansible_os | default "ubuntu" }}'
+      docker_ansible_os_ver: '{{ .docker_ansible_os_ver | default "noble" }}'
+      docker_ansible_platforms: '{{ .docker_ansible_platforms | default "linux/amd64,linux/arm64" }}'
     cmds:
       - >-
         dagger call
         build
-        --os=ubuntu
-        --os-ver=noble
-        --platforms=linux/amd64,linux/arm64
+        --os={{ .docker_ansible_os | quote }}
+        --os-ver={{ .docker_ansible_os_ver | quote }}
+        --platforms={{ .docker_ansible_platforms | quote }}
   publish:
+    vars:
+      docker_ansible_os: '{{ .docker_ansible_os | default "ubuntu" }}'
+      docker_ansible_os_ver: '{{ .docker_ansible_os_ver | default "noble" }}'
+      dockerhub_username: '{{ .dockerhub_username | default "${DOCKERHUB_USERNAME}" }}'
+      dockerhub_password: '{{ .dockerhub_password | default "env:DOCKERHUB_PASSWORD" }}'
+      ghcr_username: '{{ .ghcr_username | default "${GITHUB_ACTOR}" }}'
+      ghcr_password: '{{ .ghcr_password | default "env:GITHUB_TOKEN" }}'
+      platforms: '{{ .platforms | default "linux/amd64,linux/arm64" }}'
+    desc: Publish the Docker image to Docker Hub and GitHub Container Registry
     cmds:
       - >-
         dagger call
         publish
-        --os=alpine
-        --os-ver=3.22
-        --dockerhub-username=${DOCKERHUB_USERNAME}
-        --dockerhub-password=env:DOCKERHUB_PASSWORD
-        --ghcr-username=${GITHUB_ACTOR}
-        --ghcr-password=env:GITHUB_TOKEN
-    env:
-      DOCKERHUB_USERNAME: ${DOCKERHUB_USERNAME}
-      DOCKERHUB_PASSWORD: ${DOCKERHUB_PASSWORD}
-      GITHUB_ACTOR: ${GITHUB_ACTOR}
-      GITHUB_TOKEN: ${GITHUB_TOKEN}
+        --os={{ .docker_ansible_os | quote }}
+        --os-ver={{ .docker_ansible_os_ver | quote }}
+        --dockerhub-username={{ .dockerhub_username | quote }}
+        --dockerhub-password={{ .dockerhub_password | quote }}
+        --ghcr-username={{ .ghcr_username | quote }}
+        --ghcr-password={{ .ghcr_password | quote }}
+        --platforms={{ .platforms | quote }}
