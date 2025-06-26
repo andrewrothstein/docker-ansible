@@ -5,20 +5,20 @@ dotenv:
 tasks:
   build:
     vars:
-      docker_ansible_os: '{{ .docker_ansible_os | default "ubuntu" }}'
-      docker_ansible_os_ver: '{{ .docker_ansible_os_ver | default "noble" }}'
-      docker_ansible_platforms: '{{ .docker_ansible_platforms | default "linux/amd64,linux/arm64" }}'
+      os: '{{ .os | default "ubuntu" }}'
+      os_ver: '{{ .os_ver | default "noble" }}'
+      platforms: '{{ .platforms | default "linux/amd64,linux/arm64" }}'
     cmds:
       - >-
         dagger call
         build
-        --os={{ .docker_ansible_os | quote }}
-        --os-ver={{ .docker_ansible_os_ver | quote }}
-        --platforms={{ .docker_ansible_platforms | quote }}
+        --os={{ .os | quote }}
+        --os-ver={{ .os_ver | quote }}
+        --platforms={{ .platforms | quote }}
   publish:
     vars:
-      docker_ansible_os: '{{ .docker_ansible_os | default "ubuntu" }}'
-      docker_ansible_os_ver: '{{ .docker_ansible_os_ver | default "noble" }}'
+      os: '{{ .os | default "ubuntu" }}'
+      os_ver: '{{ .os_ver | default "noble" }}'
       dockerhub_username: '{{ .dockerhub_username | default "${DOCKERHUB_USERNAME}" }}'
       dockerhub_password: '{{ .dockerhub_password | default "env:DOCKERHUB_PASSWORD" }}'
       ghcr_username: '{{ .ghcr_username | default "${GITHUB_ACTOR}" }}'
@@ -29,8 +29,8 @@ tasks:
       - >-
         dagger call
         publish
-        --os={{ .docker_ansible_os | quote }}
-        --os-ver={{ .docker_ansible_os_ver | quote }}
+        --os={{ .os | quote }}
+        --os-ver={{ .os_ver | quote }}
         --dockerhub-username={{ .dockerhub_username | quote }}
         --dockerhub-password={{ .dockerhub_password | quote }}
         --ghcr-username={{ .ghcr_username | quote }}
