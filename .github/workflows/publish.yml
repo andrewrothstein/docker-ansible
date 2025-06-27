@@ -16,46 +16,19 @@ jobs:
       - name: read platform-matrix-v1.json
         id: read-matrix
         run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
-
-  filter-amd64:
-    runs-on: ubuntu-latest
-    needs: [prepare-matrix]
-    outputs:
-      matrix: ${{ steps.filter.outputs.matrix }}
-    steps:
-      - name: Filter for amd64 only
-        id: filter
-        run: |
-          result=$(echo '${{ needs.prepare-matrix.outputs.distro }}' | jq -c '[.[] | select(.PLATFORMS | test("linux/amd64"))]')
-          if [ -z "$result" ]; then result="[]"; fi
-          echo "matrix=$result" >> $GITHUB_OUTPUT
-
-  filter-arm64:
-    runs-on: ubuntu-latest
-    needs: [prepare-matrix]
-    outputs:
-      matrix: ${{ steps.filter.outputs.matrix }}
-    steps:
-      - name: Filter for arm64 only
-        id: filter
-        run: |
-          result=$(echo '${{ needs.prepare-matrix.outputs.distro }}' | jq -c '[.[] | select(.PLATFORMS | test("linux/arm64"))]')
-          if [ -z "$result" ]; then result="[]"; fi
-          echo "matrix=$result" >> $GITHUB_OUTPUT
-
-  publish-amd64:
+  publish:
     permissions:
       contents: read
       packages: write
-    runs-on: ubuntu-24.04
-    needs: [filter-amd64]
+    runs-on: ubuntu-latest
+    needs: [prepare-matrix]
     strategy:
       fail-fast: false
       matrix:
-        distro: ${{ fromJSON(needs.filter-amd64.outputs.matrix) }}
+        distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
     steps:
       - uses: actions/checkout@v4
-      - name: publish to docker.io and ghcr.io (amd64)
+      - name: publish to docker.io and ghcr.io
         uses: dagger/dagger-for-github@8.0.0
         env:
           DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
@@ -70,40 +43,7 @@ jobs:
             --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
             --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
             --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
-            --platforms=linux/amd64
-            --dockerhub-username=${{ vars.DOCKERHUB_USERNAME }}
-            --dockerhub-password=env:DOCKERHUB_PASSWORD
-            --ghcr-username=${{ github.actor }}
-            --ghcr-password=env:GITHUB_TOKEN
-
-  publish-arm64:
-    permissions:
-      contents: read
-      packages: write
-    runs-on: ubuntu-24.04-arm
-    needs: [filter-arm64]
-    strategy:
-      fail-fast: false
-      matrix:
-        distro: ${{ fromJSON(needs.filter-arm64.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: publish to docker.io and ghcr.io (arm64)
-        uses: dagger/dagger-for-github@8.0.0
-        env:
-          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          verb: call
-          args: >-
-            publish
-            --os=${{ matrix.distro.OS }}
-            --os-ver=${{ matrix.distro.OS_VER }}
-            --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
-            --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
-            --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
-            --platforms=linux/arm64
+            --platforms=${{ matrix.distro.platforms }}
             --dockerhub-username=${{ vars.DOCKERHUB_USERNAME }}
             --dockerhub-password=env:DOCKERHUB_PASSWORD
             --ghcr-username=${{ github.actor }}
