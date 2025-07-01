@@ -50,9 +50,141 @@ class DockerAnsible:
             "local-bin-path.sh", contents="export PATH=$HOME/.local/bin:$PATH"
         )
 
+    async def pkg_manager_sh(self) -> dagger.File:
+        return await dag.file(
+            "pkg-manager.sh",
+            contents=textwrap.dedent(
+                """
+                #!/bin/sh
+
+                # Package manager detection and helper functions
+
+                detect_pkg_manager() {
+                    if command -v apk >/dev/null 2>&1; then
+                        echo "apk"
+                    elif command -v apt-get >/dev/null 2>&1; then
+                        echo "apt"
+                    elif command -v dnf >/dev/null 2>&1; then
+                        echo "dnf"
+                    elif command -v yum >/dev/null 2>&1; then
+                        echo "yum"
+                    elif command -v pacman >/dev/null 2>&1; then
+                        echo "pacman"
+                    else
+                        echo "unknown"
+                    fi
+                }
+
+                pkg_update() {
+                    PKG_MGR=$(detect_pkg_manager)
+                    case "$PKG_MGR" in
+                        apk)
+                            apk update
+                            ;;
+                        apt)
+                            apt-get update
+                            ;;
+                        dnf|yum)
+                            # dnf/yum don't need explicit update
+                            :
+                            ;;
+                        pacman)
+                            pacman -Sy
+                            ;;
+                        *)
+                            echo "Unknown package manager"
+                            return 1
+                            ;;
+                    esac
+                }
+
+                pkg_install() {
+                    PKG_MGR=$(detect_pkg_manager)
+                    case "$PKG_MGR" in
+                        apk)
+                            apk add --no-cache "$@"
+                            ;;
+                        apt)
+                            apt-get install -y "$@"
+                            ;;
+                        dnf)
+                            dnf install -y "$@"
+                            ;;
+                        yum)
+                            yum install -y "$@"
+                            ;;
+                        pacman)
+                            pacman -S --noconfirm "$@"
+                            ;;
+                        *)
+                            echo "Unknown package manager"
+                            return 1
+                            ;;
+                    esac
+                }
+
+                # Install CA certificates using the appropriate package name for each distro
+                install_ca_certificates() {
+                    PKG_MGR=$(detect_pkg_manager)
+                    case "$PKG_MGR" in
+                        apk)
+                            pkg_install ca-certificates
+                            ;;
+                        apt)
+                            pkg_install ca-certificates
+                            ;;
+                        dnf|yum)
+                            pkg_install ca-certificates
+                            ;;
+                        pacman)
+                            pkg_install ca-certificates
+                            ;;
+                        *)
+                            echo "Unknown package manager"
+                            return 1
+                            ;;
+                    esac
+                }
+
+                # Install Ansible dependencies for each distro
+                install_ansible_deps() {
+                    PKG_MGR=$(detect_pkg_manager)
+                    case "$PKG_MGR" in
+                        apk)
+                            # Alpine minimal deps
+                            :
+                            ;;
+                        apt)
+                            # Debian/Ubuntu minimal deps
+                            :
+                            ;;
+                        dnf)
+                            # Fedora needs python3-libdnf5 for ansible dnf module
+                            pkg_install python3-libdnf5
+                            ;;
+                        yum)
+                            # RHEL/Rocky needs python3-dnf for ansible dnf module
+                            pkg_install python3-dnf
+                            ;;
+                        pacman)
+                            # Arch minimal deps
+                            :
+                            ;;
+                        *)
+                            echo "Unknown package manager"
+                            return 1
+                            ;;
+                    esac
+                }
+                """
+            ),
+        )
+
     async def etc_profiled(self) -> dagger.Directory:
-        return dag.directory().with_file(
-            "local-bin-path.sh", await self.local_bin_path_sh()
+        return (
+            dag.directory()
+            .with_file("local-bin-path.sh", await self.local_bin_path_sh())
+            .with_file("pkg-manager.sh", await self.pkg_manager_sh())
         )
 
     async def requirements_yml(self) -> dagger.File:
@@ -63,6 +195,7 @@ class DockerAnsible:
                 ---
                 collections:
                   - name: ansible.posix
+                  - name: ansible.utils
                   - name: community.general
                 roles:
                   - name: andrewrothstein.unarchivedeps
@@ -112,9 +245,11 @@ class DockerAnsible:
         return (
             dag.container(platform=plat)
             .from_(upstream_image)
+            .with_directory("/etc/profile.d", await self.etc_profiled())
+            .with_env_variable("SHELL", "/bin/sh -lc")
+            .with_exec(["sh", "-lc", "pkg_update && install_ca_certificates && install_ansible_deps"])
             .with_file("/usr/local/bin/uv", await uv_bin)
             .with_exec(["uv", "tool", "install", "ansible-core"])
-            .with_directory("/etc/profile.d", await self.etc_profiled())
             .with_env_variable(
                 "ANSIBLE_PYTHON_INTERPRETER",
                 "/root/.local/share/uv/tools/ansible-core/bin/python3",
@@ -123,6 +258,19 @@ class DockerAnsible:
             .with_file(
                 "/etc/ansible/inventories/localhost",
                 await self.localhost_inventory(),
+            )
+            .with_exec(
+                [
+                    "sh",
+                    "-lc",
+                    textwrap.dedent(
+                        """
+                        ansible --version \
+                            && ansible all --list-hosts \
+                            && ansible localhost -m ping
+                        """
+                    ),
+                ]
             )
             .with_workdir("/root")
             .with_file("requirements.yml", await self.requirements_yml())
@@ -133,11 +281,8 @@ class DockerAnsible:
                     "-lc",
                     textwrap.dedent(
                         """
-                        ansible-galaxy install -r requirements.yml;
-                        ansible-playbook playbook.yml;
-                        ansible --version \
-                            && ansible all --list-hosts \
-                            && ansible localhost -m ping
+                        ansible-galaxy install -r requirements.yml \
+                            && ansible-playbook playbook.yml
                         """
                     ),
                 ]
@@ -221,11 +366,11 @@ class DockerAnsible:
             platforms=platforms,
         )
 
-        image_pushes: List[str] = []
+        image_pushes: List = []
         # tag and publish images
         if dockerhub_username and dockerhub_password:
             image_pushes.append(
-                dag.container()
+                await dag.container()
                 .with_registry_auth(
                     dockerhub_registry, dockerhub_username, dockerhub_password
                 )
@@ -233,11 +378,11 @@ class DockerAnsible:
             )
         if ghcr_username and ghcr_password:
             image_pushes.append(
-                dag.container()
+                await dag.container()
                 .with_registry_auth(ghcr_registry, ghcr_username, ghcr_password)
                 .publish(f"{ghcr}:{v}", platform_variants=ctr)
             )
-        return await asyncio.gather(*image_pushes) if len(image_pushes) > 0 else []
+        return image_pushes
 
     async def test_role_one(
         self,
