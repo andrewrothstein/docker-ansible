@@ -82,7 +82,7 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
             dag.container(platform=plat)
             .from_(upstream_image)
             .with_file("/usr/local/bin/uv", await uv_bin)
-            .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
+            .with_exec(["uv", "tool", "install", "ansible-core"])
             .with_directory("/etc/profile.d", await self.etc_profiled())
             .with_env_variable(
                 "ANSIBLE_PYTHON_INTERPRETER",
@@ -98,12 +98,31 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
                     "sh",
                     "-lc",
                     """
-ansible --version \
-    && ansible all --list-hosts \
-    && ansible localhost -m ping
-                """,
+    ansible --version \
+        && ansible all --list-hosts \
+        && ansible localhost -m ping
+                    """,
                 ]
             )
+                .with_workdir("/root")
+                .with_file(
+                    "requirements.yml",
+                    await wdir.file("requirements.yml")
+                )
+                .with_file(
+                    "playbook.yml",
+                    await wdir.file("playbook.yml")
+                )
+                .with_exec(
+                    [
+                        "sh",
+                        "-lc",
+                        """
+                        ansible-galaxy install -r requirements.yml \
+                        ansible-playbook playbook.yml
+                        """,
+                    ]
+                )
         )
 
     @function
