@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Optional, List
 import dagger
 from dagger import dag, function, object_type
-import asyncio
 
 
 @dataclass
@@ -27,6 +26,27 @@ class Image:
 
 @object_type
 class DockerAnsible:
+    async def ansible_cfg(self) -> dagger.File:
+        return dag.file().with_contents(
+            """
+[defaults]
+inventory = /etc/ansible/inventories
+transport = local
+callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
+                """
+        )
+
+    async def localhost_inventory(self) -> dagger.File:
+        return dag.file().with_contents("localhost")
+
+    async def local_bin_path_sh(self) -> dagger.File:
+        return dag.file().with_contents("""export PATH=$HOME/.local/bin:$PATH""")
+
+    async def etc_profiled(self) -> dagger.Directory:
+        return dag.directory().with_file(
+            "local-bin-path.sh", await self.local_bin_path_sh()
+        )
+
     @function
     async def build(
         self,
@@ -48,8 +68,6 @@ class DockerAnsible:
             )
             upstream_image = f"{upstream_image}:{upstream_os_ver or os_ver}"
 
-            wdir = dag.current_module().source()
-
             # Get uv binary from the uv image
             uv_bin = (
                 dag.container(platform=plat)
@@ -59,21 +77,21 @@ class DockerAnsible:
 
             # Start from the upstream image
             containers.append(
-                dag
-                .container(platform=plat)
+                dag.container(platform=plat)
                 .from_(upstream_image)
                 .with_file("/usr/local/bin/uv", await uv_bin)
-                .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
-                .with_directory("/etc/profile.d", await wdir.directory("profile.d"))
-                .with_env_variable("SHELL", "/bin/sh -lc")
+                .with_exec(
+                    ["uv", "tool", "install", "ansible-core", "--with", "ansible"]
+                )
+                .with_directory("/etc/profile.d", await self.etc_profiled())
                 .with_env_variable(
                     "ANSIBLE_PYTHON_INTERPRETER",
                     "/root/.local/share/uv/tools/ansible-core/bin/python3",
                 )
-                .with_file("/etc/ansible/ansible.cfg", await wdir.file("ansible.cfg"))
+                .with_file("/etc/ansible/ansible.cfg", await self.ansible_cfg())
                 .with_file(
                     "/etc/ansible/inventories/localhost",
-                    await wdir.file("localhost-inventory"),
+                    await self.localhost_inventory(),
                 )
                 .with_exec(
                     [
@@ -142,10 +160,16 @@ class DockerAnsible:
 
         # tag and publish images
         if dockerhub_username and dockerhub_password:
-            await dag.container().with_registry_auth(
-                dockerhub_registry, dockerhub_username, dockerhub_password
-            ).publish(f"{dockerhub}:{v}", platform_variants=ctr)
+            await (
+                dag.container()
+                .with_registry_auth(
+                    dockerhub_registry, dockerhub_username, dockerhub_password
+                )
+                .publish(f"{dockerhub}:{v}", platform_variants=ctr)
+            )
         if ghcr_username and ghcr_password:
-            await dag.container().with_registry_auth(
-                ghcr_registry, ghcr_username, ghcr_password
-            ).publish(f"{ghcr}:{v}", platform_variants=ctr)
+            await (
+                dag.container()
+                .with_registry_auth(ghcr_registry, ghcr_username, ghcr_password)
+                .publish(f"{ghcr}:{v}", platform_variants=ctr)
+            )
