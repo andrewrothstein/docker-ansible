@@ -3,6 +3,7 @@ from typing import Optional, List
 import dagger
 from dagger import dag, function, object_type
 import asyncio
+import textwrap
 
 
 @dataclass
@@ -31,12 +32,14 @@ class DockerAnsible:
         # Updated for Dagger Python SDK: use dag.client().file(name, contents=...)
         return await dag.file(
             "ansible.cfg",
-            contents="""
-[defaults]
-inventory = /etc/ansible/inventories
-transport = local
-callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
-                """,
+            contents=textwrap.dedent(
+                """
+                [defaults]
+                inventory = /etc/ansible/inventories
+                transport = local
+                callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
+                """
+            ),
         )
 
     async def localhost_inventory(self) -> dagger.File:
@@ -50,6 +53,34 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
     async def etc_profiled(self) -> dagger.Directory:
         return dag.directory().with_file(
             "local-bin-path.sh", await self.local_bin_path_sh()
+        )
+
+    async def requirements_yml(self) -> dagger.File:
+        return await dag.file(
+            "requirements.yml",
+            contents=textwrap.dedent(
+                """
+                ---
+                collections:
+                  - name: ansible.posix
+                  - name: community.general
+                roles:
+                  - name: andrewrothstein.unarchivedeps
+                """
+            ),
+        )
+
+    async def playbook_yml(self) -> dagger.File:
+        return await dag.file(
+            "playbook.yml",
+            contents=textwrap.dedent(
+                """
+                ---
+                - hosts: all
+                  roles:
+                    - andrewrothstein.unarchivedeps
+                """
+            ),
         )
 
     async def build_one(
@@ -82,7 +113,7 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
             dag.container(platform=plat)
             .from_(upstream_image)
             .with_file("/usr/local/bin/uv", await uv_bin)
-            .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
+            .with_exec(["uv", "tool", "install", "ansible-core"])
             .with_directory("/etc/profile.d", await self.etc_profiled())
             .with_env_variable(
                 "ANSIBLE_PYTHON_INTERPRETER",
@@ -93,15 +124,22 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
                 "/etc/ansible/inventories/localhost",
                 await self.localhost_inventory(),
             )
+            .with_workdir("/root")
+            .with_file("requirements.yml", await self.requirements_yml())
+            .with_file("playbook.yml", await self.playbook_yml())
             .with_exec(
                 [
                     "sh",
                     "-lc",
-                    """
-ansible --version \
-    && ansible all --list-hosts \
-    && ansible localhost -m ping
-                """,
+                    textwrap.dedent(
+                        """
+                        ansible-galaxy install -r requirements.yml;
+                        ansible-playbook playbook.yml;
+                        ansible --version \
+                            && ansible all --list-hosts \
+                            && ansible localhost -m ping
+                        """
+                    ),
                 ]
             )
         )
