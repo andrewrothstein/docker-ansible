@@ -26,46 +26,55 @@ jobs:
       - uses: actions/checkout@v4
       - name: build and publish to ttl.sh
         id: build
-        uses: dagger/dagger-for-github@8.0.0
-        with:
-          verb: call
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: >-
-            build-and-publish-temp
-            --os=${{ matrix.distro.OS }}
-            --os-ver=${{ matrix.distro.OS_VER }}
-            --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
-            --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
-            --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
-            --platforms=${{ matrix.distro.platforms }}
-            --ttl=1h
+        run: |
+          # Run dagger and capture output
+          OUTPUT=$(dagger call \
+            build-and-publish-temp \
+            --os=${{ matrix.distro.OS }} \
+            --os-ver=${{ matrix.distro.OS_VER }} \
+            --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }} \
+            --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }} \
+            --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }} \
+            --platforms=${{ matrix.distro.platforms }} \
+            --ttl=1h)
+          
+          echo "Dagger output:"
+          echo "$OUTPUT"
+          
+          # Save output for next step
+          echo "$OUTPUT" > build-output.txt
+        env:
+          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
 
       - name: Extract image URLs
         id: images
         run: |
-          # Debug: Show raw output
-          echo "=== Raw Dagger output ==="
-          echo '${{ steps.build.outputs.stdout }}'
-          echo "=== End raw output ==="
-
-          # Save to file for easier processing
-          echo '${{ steps.build.outputs.stdout }}' > dagger-output.txt
-
-          # Try to parse as JSON
-          if jq -e . dagger-output.txt > /dev/null 2>&1; then
+          # Read the output from previous step
+          echo "=== Build output ==="
+          cat build-output.txt
+          echo "=== End output ==="
+          
+          # Try to parse as JSON array
+          if jq -e . build-output.txt > /dev/null 2>&1; then
             echo "Output is valid JSON"
-            IMAGE_URL=$(jq -r '.[0]' dagger-output.txt)
+            IMAGE_URL=$(jq -r '.[0]' build-output.txt)
           else
-            echo "Output is not valid JSON, trying to extract URL pattern"
-            # Look for ttl.sh URLs
-            IMAGE_URL=$(grep -o 'ttl\.sh/[^"]*' dagger-output.txt | head -n1 || echo "")
+            echo "Output is not JSON, extracting first line"
+            # Get the first line which should be the first image URL
+            IMAGE_URL=$(head -n1 build-output.txt | tr -d '[]"' | cut -d',' -f1)
           fi
-
+          
+          # If still no URL, try to find ttl.sh pattern
+          if [ -z "$IMAGE_URL" ] || [ "$IMAGE_URL" = "null" ]; then
+            echo "Trying to extract ttl.sh URL pattern"
+            IMAGE_URL=$(grep -o 'ttl\.sh/[^ ]*' build-output.txt | head -n1 || echo "")
+          fi
+          
           if [ -z "$IMAGE_URL" ]; then
-            echo "ERROR: Could not extract image URL"
+            echo "ERROR: Could not extract image URL from build output"
             exit 1
           fi
-
+          
           echo "Extracted image URL: ${IMAGE_URL}"
           echo "image_url=${IMAGE_URL}" >> $GITHUB_OUTPUT
 
