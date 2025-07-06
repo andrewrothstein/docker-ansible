@@ -58,8 +58,6 @@ This project creates multi-platform Docker container images with Ansible pre-ins
      - `publish()`: Pushes to registries
      - `test_role()`: Tests Ansible roles using pre-built images
      - `test_role_one()`: Tests a role on a single platform
-     - `test_role()`: Tests Ansible roles using pre-built images
-     - `test_role_one()`: Tests a role on a single platform
    - Embeds Ansible configuration and inventory files into images
    - Uses uv for efficient Ansible installation
 
@@ -101,7 +99,7 @@ Expected role structure:
 - `test-inventory.ini` - Custom inventory for tests (optional)
 - Standard Ansible role directories: `tasks/`, `vars/`, `defaults/`, etc.
 
-### Local Testing
+### Local Testing (from this repository)
 ```bash
 # Test a role on Ubuntu Noble (uses version 0.0.0 by default)
 dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble
@@ -110,13 +108,32 @@ dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble
 dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --platforms=linux/amd64,linux/arm64
 
 # Use latest docker-ansible version
-dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --target-image-semver=0.0.0
+dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --target-image-semver=latest
 
 # Use specific docker-ansible version
 dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --target-image-semver=1.2.3
 ```
 
+### Remote Usage (from other repositories)
+
+When using this module from another repository, you need to specify the module reference:
+
+```bash
+# Use from default branch
+dagger call --mod github.com/andrewrothstein/docker-ansible test-role --role-dir=. --os=ubuntu --os-ver=noble
+
+# Use from specific branch
+dagger call --mod github.com/andrewrothstein/docker-ansible@develop test-role --role-dir=. --os=ubuntu --os-ver=noble
+
+# Use from specific tag
+dagger call --mod github.com/andrewrothstein/docker-ansible@v1.0.0 test-role --role-dir=. --os=ubuntu --os-ver=noble
+
+# Use from specific commit
+dagger call --mod github.com/andrewrothstein/docker-ansible@abc123def test-role --role-dir=. --os=ubuntu --os-ver=noble
+```
+
 ### GitHub Actions Integration
+
 Create `.github/workflows/test.yml` in your Ansible role repository:
 
 ```yaml
@@ -141,15 +158,20 @@ jobs:
         include: ${{ fromJson(needs.matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dagger/dagger-action@v7
+      - uses: dagger/dagger-for-github@v8
         with:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-
-            call test-role
+            call --mod github.com/andrewrothstein/docker-ansible@develop
+            test-role
             --role-dir=.
             --os=${{ matrix.OS }}
             --os-ver=${{ matrix.OS_VER }}
             --platforms=${{ matrix.PLATFORMS }}
 ```
+
+Note: The `--mod` parameter specifies the remote module reference:
+- `github.com/{owner}/{repo}` - uses the default branch
+- `github.com/{owner}/{repo}@{ref}` - where ref can be a branch, tag, or commit SHA
 
 This enables matrix testing across all supported OS/platform combinations using the same `platform-matrix-v1.json` format.
