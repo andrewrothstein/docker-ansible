@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, List
 import dagger
 from dagger import dag, function, object_type
+import asyncio
 
 
 @dataclass
@@ -27,24 +28,82 @@ class Image:
 @object_type
 class DockerAnsible:
     async def ansible_cfg(self) -> dagger.File:
-        return dag.file().with_contents(
-            """
+        # Updated for Dagger Python SDK: use dag.client().file(name, contents=...)
+        return await dag.file(
+            "ansible.cfg",
+            contents="""
 [defaults]
 inventory = /etc/ansible/inventories
 transport = local
 callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
-                """
+                """,
         )
 
     async def localhost_inventory(self) -> dagger.File:
-        return dag.file().with_contents("localhost")
+        return await dag.file("localhost", contents="localhost")
 
     async def local_bin_path_sh(self) -> dagger.File:
-        return dag.file().with_contents("""export PATH=$HOME/.local/bin:$PATH""")
+        return await dag.file(
+            "local-bin-path.sh", contents="export PATH=$HOME/.local/bin:$PATH"
+        )
 
     async def etc_profiled(self) -> dagger.Directory:
         return dag.directory().with_file(
             "local-bin-path.sh", await self.local_bin_path_sh()
+        )
+
+    async def build_one(
+        self,
+        os: str,
+        os_ver: str,
+        upstream_org: Optional[str] = None,
+        upstream_os: Optional[str] = None,
+        upstream_os_ver: Optional[str] = None,
+        uv_version: str = "latest",
+        p: str = "linux/amd64",
+    ) -> dagger.Container:
+        plat = dagger.Platform(p)
+        upstream_image = Image(
+            registry="docker.io",
+            org=upstream_org or "library",
+            repo=upstream_os or os,
+        )
+        upstream_image = f"{upstream_image}:{upstream_os_ver or os_ver}"
+
+        # Get uv binary from the uv image
+        uv_bin = (
+            dag.container(platform=plat)
+            .from_(f"ghcr.io/astral-sh/uv:{uv_version}")
+            .file("/uv")
+        )
+
+        # Start from the upstream image
+        return (
+            dag.container(platform=plat)
+            .from_(upstream_image)
+            .with_file("/usr/local/bin/uv", await uv_bin)
+            .with_exec(["uv", "tool", "install", "ansible-core", "--with", "ansible"])
+            .with_directory("/etc/profile.d", await self.etc_profiled())
+            .with_env_variable(
+                "ANSIBLE_PYTHON_INTERPRETER",
+                "/root/.local/share/uv/tools/ansible-core/bin/python3",
+            )
+            .with_file("/etc/ansible/ansible.cfg", await self.ansible_cfg())
+            .with_file(
+                "/etc/ansible/inventories/localhost",
+                await self.localhost_inventory(),
+            )
+            .with_exec(
+                [
+                    "sh",
+                    "-lc",
+                    """
+                ansible --version \
+                    && ansible all --list-hosts \
+                    && ansible localhost -m ping
+                """,
+                ]
+            )
         )
 
     @function
@@ -58,54 +117,20 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
         uv_version: str = "latest",
         platforms: str = "linux/amd64",
     ) -> List[dagger.Container]:
-        containers = []
-        for p in platforms.split(",") or []:
-            plat = dagger.Platform(p)
-            upstream_image = Image(
-                registry="docker.io",
-                org=upstream_org or "library",
-                repo=upstream_os or os,
+        tasks = [
+            self.build_one(
+                os=os,
+                os_ver=os_ver,
+                upstream_org=upstream_org,
+                upstream_os=upstream_os,
+                upstream_os_ver=upstream_os_ver,
+                uv_version=uv_version,
+                p=p,
             )
-            upstream_image = f"{upstream_image}:{upstream_os_ver or os_ver}"
-
-            # Get uv binary from the uv image
-            uv_bin = (
-                dag.container(platform=plat)
-                .from_(f"ghcr.io/astral-sh/uv:{uv_version}")
-                .file("/uv")
-            )
-
-            # Start from the upstream image
-            containers.append(
-                dag.container(platform=plat)
-                .from_(upstream_image)
-                .with_file("/usr/local/bin/uv", await uv_bin)
-                .with_exec(
-                    ["uv", "tool", "install", "ansible-core", "--with", "ansible"]
-                )
-                .with_directory("/etc/profile.d", await self.etc_profiled())
-                .with_env_variable(
-                    "ANSIBLE_PYTHON_INTERPRETER",
-                    "/root/.local/share/uv/tools/ansible-core/bin/python3",
-                )
-                .with_file("/etc/ansible/ansible.cfg", await self.ansible_cfg())
-                .with_file(
-                    "/etc/ansible/inventories/localhost",
-                    await self.localhost_inventory(),
-                )
-                .with_exec(
-                    [
-                        "sh",
-                        "-lc",
-                        """
-                    ansible --version \
-                        && ansible all --list-hosts \
-                        && ansible localhost -m ping
-                    """,
-                    ]
-                )
-            )
-        return containers
+            for p in platforms.split(",")
+            if p
+        ]
+        return await asyncio.gather(*tasks)
 
     @function
     async def publish(
