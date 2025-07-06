@@ -77,7 +77,7 @@ class DockerAnsible:
                 """
                 ---
                 - hosts: all
-                roles:
+                  roles:
                     - andrewrothstein.unarchivedeps
                 """
             ),
