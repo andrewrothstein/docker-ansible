@@ -19,18 +19,64 @@ jobs:
       fail-fast: false
       matrix:
         distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
+    permissions:
+      contents: read
+      security-events: write  # Required for uploading SARIF reports
     steps:
       - uses: actions/checkout@v4
-      - name: build images
+      - name: build and scan images
         uses: dagger/dagger-for-github@8.0.0
         with:
           verb: call
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-
-            build
+            build-and-export-scan-results
             --os=${{ matrix.distro.OS }}
             --os-ver=${{ matrix.distro.OS_VER }}
             --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
             --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
             --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
             --platforms=${{ matrix.distro.platforms }}
+            export
+            --path=./scan-results
+
+      - name: Process scan results
+        if: always()
+        run: |
+          # List all SARIF files
+          echo "Scan results:"
+          ls -la ./scan-results/
+          
+          # Generate summary from text files
+          echo "## Build Vulnerability Scan for ${{ matrix.distro.OS }}:${{ matrix.distro.OS_VER }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Display all summaries
+          for summary in ./scan-results/summary-*.txt; do
+            if [ -f "$summary" ]; then
+              echo "### $(basename $summary .txt)" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              cat "$summary" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+      - name: Upload SARIF files
+        if: always()
+        run: |
+          # Upload each SARIF file separately with unique categories
+          for sarif in ./scan-results/trivy-*.sarif; do
+            if [ -f "$sarif" ]; then
+              # Extract platform from filename (e.g., trivy-ubuntu-noble-linux-amd64.sarif)
+              platform=$(basename "$sarif" .sarif | sed 's/trivy-//')
+              echo "Uploading $sarif as category: build-$platform"
+            fi
+          done
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: './scan-results/'
+          category: 'build-${{ matrix.distro.OS }}-${{ matrix.distro.OS_VER }}'

@@ -42,6 +42,24 @@ dagger functions
 uv pip list
 ```
 
+### Vulnerability Scanning
+```bash
+# Scan built images locally (displays results in terminal)
+dagger call scan --os=ubuntu --os-ver=noble --severity=HIGH,CRITICAL
+
+# Build and export scan results as SARIF files
+dagger call build-and-export-scan-results --os=ubuntu --os-ver=noble export --path=./scan-results
+ls ./scan-results/  # View SARIF and summary files
+
+# Scan published GHCR images with Trivy locally
+docker run --rm aquasec/trivy:latest image ghcr.io/andrewrothstein/docker-ansible:latest-ubuntu.noble
+
+# View scan results in GitHub
+# Go to Security > Code scanning alerts after workflows run
+```
+
+**Note**: The build workflow now automatically scans all built images before they're published, uploading results to GitHub Security tab.
+
 ## High-Level Architecture
 
 ### Project Purpose
@@ -62,10 +80,11 @@ This project creates multi-platform Docker container images with Ansible pre-ins
    - Uses uv for efficient Ansible installation
 
 2. **CI/CD Workflows (`.github/workflows/`)**
-   - `build.yml`: PR validation builds
-   - `publish.yml`: Daily and push-to-develop publishing
-   - Both use Dagger Cloud for optimized caching
+   - `build.yml`: PR validation with builds and vulnerability scanning of built images
+   - `publish.yml`: Daily and push-to-develop publishing with post-publish vulnerability scanning
+   - All workflows use Dagger Cloud for optimized caching
    - Matrix builds from `platform-matrix-v1.json`
+   - Vulnerability reports uploaded to GitHub Security tab via SARIF
 
 3. **Build System Design**
    - Multi-architecture support via Docker buildx

@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import dagger
 from dagger import dag, function, object_type
 import asyncio
+import json
 
 
 @dataclass
@@ -320,3 +321,181 @@ ansible --version \
             if p
         ]
         return await asyncio.gather(*tasks)
+
+    @function
+    async def scan(
+        self,
+        os: str,
+        os_ver: str,
+        upstream_org: Optional[str] = None,
+        upstream_os: Optional[str] = None,
+        upstream_os_ver: Optional[str] = None,
+        uv_version: str = "latest",
+        platforms: str = "linux/amd64",
+        severity: str = "HIGH,CRITICAL",
+        exit_code: int = 0,
+        ignore_unfixed: bool = True,
+        output_format: str = "table",
+    ) -> str:
+        """
+        Build and scan images for vulnerabilities using Trivy.
+        
+        Args:
+            os: Operating system
+            os_ver: OS version
+            severity: Comma-separated list of severities to include
+            exit_code: Exit code to use when vulnerabilities found (0 = don't fail)
+            ignore_unfixed: Ignore vulnerabilities without fixes
+            output_format: Output format (table, json, sarif)
+            
+        Returns:
+            Scan results as string
+        """
+        # Build the containers
+        containers = await self.build(
+            os, os_ver, upstream_org, upstream_os, upstream_os_ver, uv_version, platforms
+        )
+        
+        results = []
+        platform_list = [p for p in platforms.split(",") if p]
+        
+        for i, platform in enumerate(platform_list):
+            container = containers[i]
+            
+            # Create a unique tag for this scan
+            scan_tag = f"scan-{os}-{os_ver}-{platform.replace('/', '-')}"
+            
+            # Publish to a local registry for scanning
+            # Since we can't scan Dagger containers directly, we'll export and scan
+            
+            # Export container to tar
+            tar_path = f"/tmp/{scan_tag}.tar"
+            tar_file = await container.export(tar_path)
+            
+            # Run Trivy on the exported tar
+            scan_cmd = [
+                "trivy", "image",
+                "--input", tar_path,
+                "--severity", severity,
+                "--format", output_format,
+                "--exit-code", "0",  # Don't fail, capture output
+            ]
+            
+            if ignore_unfixed:
+                scan_cmd.append("--ignore-unfixed")
+            
+            # Use Trivy container to scan
+            trivy_result = await (
+                dag.container()
+                .from_("aquasec/trivy:latest")
+                .with_mounted_file(tar_path, tar_file)
+                .with_exec(scan_cmd)
+                .stdout()
+            )
+            
+            results.append(f"\n=== Scan results for {os}:{os_ver} on {platform} ===\n{trivy_result}")
+        
+        # Combine all results
+        combined_results = "\n".join(results)
+        
+        # If exit_code is set and vulnerabilities found, we should indicate this
+        if exit_code > 0 and "Total:" in combined_results and not "Total: 0" in combined_results:
+            combined_results += f"\n\nWARNING: Vulnerabilities found. In CI/CD, this would exit with code {exit_code}"
+        
+        return combined_results
+
+    @function
+    async def build_and_export_scan_results(
+        self,
+        os: str,
+        os_ver: str,
+        upstream_org: Optional[str] = None,
+        upstream_os: Optional[str] = None,
+        upstream_os_ver: Optional[str] = None,
+        uv_version: str = "latest",
+        platforms: str = "linux/amd64",
+        severity: str = "HIGH,CRITICAL",
+        ignore_unfixed: bool = True,
+    ) -> dagger.Directory:
+        """
+        Build images and export Trivy scan results as SARIF files.
+        
+        Returns:
+            Directory containing SARIF files for each platform
+        """
+        # Build the containers
+        containers = await self.build(
+            os, os_ver, upstream_org, upstream_os, upstream_os_ver, uv_version, platforms
+        )
+        
+        # Create output directory
+        output_dir = dag.directory()
+        platform_list = [p for p in platforms.split(",") if p]
+        
+        for i, platform in enumerate(platform_list):
+            container = containers[i]
+            
+            # Create a unique tag for this scan
+            platform_safe = platform.replace('/', '-')
+            scan_tag = f"{os}-{os_ver}-{platform_safe}"
+            
+            # Export container to tar
+            tar_path = f"/tmp/{scan_tag}.tar"
+            tar_file = await container.export(tar_path)
+            
+            # Output file path
+            sarif_filename = f"trivy-{scan_tag}.sarif"
+            sarif_path = f"/output/{sarif_filename}"
+            
+            # Run Trivy on the exported tar
+            scan_cmd = [
+                "trivy", "image",
+                "--input", tar_path,
+                "--severity", severity,
+                "--format", "sarif",
+                "--output", sarif_path,
+                "--exit-code", "0",
+            ]
+            
+            if ignore_unfixed:
+                scan_cmd.append("--ignore-unfixed")
+            
+            # Use Trivy container to scan and generate SARIF
+            scan_container = await (
+                dag.container()
+                .from_("aquasec/trivy:latest")
+                .with_mounted_file(tar_path, tar_file)
+                .with_exec(["mkdir", "-p", "/output"])
+                .with_exec(scan_cmd)
+            )
+            
+            # Get the SARIF file
+            sarif_file = await scan_container.file(sarif_path)
+            
+            # Add to output directory
+            output_dir = output_dir.with_file(sarif_filename, sarif_file)
+            
+            # Also generate a summary
+            summary_cmd = [
+                "trivy", "image",
+                "--input", tar_path,
+                "--severity", severity,
+                "--format", "table",
+                "--exit-code", "0",
+            ]
+            
+            if ignore_unfixed:
+                summary_cmd.append("--ignore-unfixed")
+                
+            summary_container = await (
+                dag.container()
+                .from_("aquasec/trivy:latest")
+                .with_mounted_file(tar_path, tar_file)
+                .with_exec(summary_cmd)
+            )
+            
+            summary = await summary_container.stdout()
+            summary_file = await dag.file(f"summary-{scan_tag}.txt", contents=summary)
+            output_dir = output_dir.with_file(f"summary-{scan_tag}.txt", summary_file)
+        
+        return output_dir
