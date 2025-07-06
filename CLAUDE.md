@@ -107,6 +107,9 @@ dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble
 # Test on multiple platforms
 dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --platforms=linux/amd64,linux/arm64
 
+# Use latest docker-ansible version
+dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --target-image-semver=latest
+
 # Use specific docker-ansible version
 dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --target-image-semver=1.2.3
 ```
