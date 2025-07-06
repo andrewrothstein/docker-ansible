@@ -153,7 +153,7 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
         ghcr_org: str = "andrewrothstein",
         ghcr_repo: str = "docker-ansible",
         platforms: str = "linux/amd64",
-    ) -> None:
+    ) -> List[str]:
         # Compose image tags
         v = Tag(
             target_image_semver=target_image_semver,
@@ -183,7 +183,7 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
             platforms=platforms,
         )
 
-        image_pushes = []
+        image_pushes: List[str] = []
         # tag and publish images
         if dockerhub_username and dockerhub_password:
             image_pushes.append(
@@ -199,5 +199,4 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
                 .with_registry_auth(ghcr_registry, ghcr_username, ghcr_password)
                 .publish(f"{ghcr}:{v}", platform_variants=ctr)
             )
-        if len(image_pushes) > 0:
-            await asyncio.gather(*image_pushes)
+        return await asyncio.gather(*image_pushes) if len(image_pushes) > 0 else []
