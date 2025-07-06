@@ -43,12 +43,30 @@ jobs:
       - name: Extract image URLs
         id: images
         run: |
-          # The output from build-and-publish-temp is a JSON array of image URLs
-          echo "Image URLs published:"
+          # Debug: Show raw output
+          echo "=== Raw Dagger output ==="
           echo '${{ steps.build.outputs.stdout }}'
+          echo "=== End raw output ==="
 
-          # Parse the first image URL for scanning (they all have same content, different platforms)
-          IMAGE_URL=$(echo '${{ steps.build.outputs.stdout }}' | jq -r '.[0]')
+          # Save to file for easier processing
+          echo '${{ steps.build.outputs.stdout }}' > dagger-output.txt
+
+          # Try to parse as JSON
+          if jq -e . dagger-output.txt > /dev/null 2>&1; then
+            echo "Output is valid JSON"
+            IMAGE_URL=$(jq -r '.[0]' dagger-output.txt)
+          else
+            echo "Output is not valid JSON, trying to extract URL pattern"
+            # Look for ttl.sh URLs
+            IMAGE_URL=$(grep -o 'ttl\.sh/[^"]*' dagger-output.txt | head -n1 || echo "")
+          fi
+
+          if [ -z "$IMAGE_URL" ]; then
+            echo "ERROR: Could not extract image URL"
+            exit 1
+          fi
+
+          echo "Extracted image URL: ${IMAGE_URL}"
           echo "image_url=${IMAGE_URL}" >> $GITHUB_OUTPUT
 
       - name: Run Trivy vulnerability scanner
@@ -61,9 +79,18 @@ jobs:
           ignore-unfixed: true
         continue-on-error: true
 
+      - name: Check SARIF file
+        if: always()
+        run: |
+          echo "Checking for SARIF file..."
+          ls -la trivy-results.sarif || echo "SARIF file not found"
+          pwd
+          ls -la
+
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true
         with:
           sarif_file: 'trivy-results.sarif'
           category: 'build-${{ matrix.distro.OS }}-${{ matrix.distro.OS_VER }}'

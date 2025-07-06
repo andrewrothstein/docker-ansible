@@ -332,7 +332,7 @@ ansible --version \
         uv_version: str = "latest",
         platforms: str = "linux/amd64",
         ttl: str = "1h",
-    ) -> List[str]:
+    ) -> str:
         """
         Build and publish images to ttl.sh for temporary scanning.
 
@@ -340,7 +340,7 @@ ansible --version \
             ttl: Time to live for images on ttl.sh (e.g., "1h", "30m")
 
         Returns:
-            List of published image URLs
+            JSON string containing list of published image URLs
         """
         import uuid
 
@@ -375,4 +375,7 @@ ansible --version \
             )
             published_images.append(published)
 
-        return published_images
+        # Return as JSON string for easier parsing in GitHub Actions
+        import json
+
+        return json.dumps(published_images)
