@@ -183,9 +183,10 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
             platforms=platforms,
         )
 
+        image_pushes = []
         # tag and publish images
         if dockerhub_username and dockerhub_password:
-            await (
+            image_pushes.append(
                 dag.container()
                 .with_registry_auth(
                     dockerhub_registry, dockerhub_username, dockerhub_password
@@ -193,8 +194,10 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
                 .publish(f"{dockerhub}:{v}", platform_variants=ctr)
             )
         if ghcr_username and ghcr_password:
-            await (
+            image_pushes.append(
                 dag.container()
                 .with_registry_auth(ghcr_registry, ghcr_username, ghcr_password)
                 .publish(f"{ghcr}:{v}", platform_variants=ctr)
             )
+        if len(image_pushes) > 0:
+            await asyncio.gather(*image_pushes)
