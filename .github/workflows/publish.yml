@@ -31,11 +31,11 @@ jobs:
       - name: publish to docker.io and ghcr.io
         uses: dagger/dagger-for-github@8.0.0
         env:
-          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
           GITHUB_TOKEN: ${{ github.token }}
         with:
           verb: call
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-
             publish
             --os=${{ matrix.distro.OS }}
