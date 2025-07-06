@@ -3,6 +3,7 @@ from typing import Optional, List
 import dagger
 from dagger import dag, function, object_type
 import asyncio
+import textwrap
 
 
 @dataclass
@@ -31,12 +32,14 @@ class DockerAnsible:
         # Updated for Dagger Python SDK: use dag.client().file(name, contents=...)
         return await dag.file(
             "ansible.cfg",
-            contents="""
-[defaults]
-inventory = /etc/ansible/inventories
-transport = local
-callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
-                """,
+            contents=textwrap.dedent(
+                """
+                [defaults]
+                inventory = /etc/ansible/inventories
+                transport = local
+                callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
+                """
+            ),
         )
 
     async def localhost_inventory(self) -> dagger.File:
@@ -55,27 +58,29 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
     async def requirements_yml(self) -> dagger.File:
         return await dag.file(
             "requirements.yml",
-            contents="""
----
-collections:
-  - name: ansible.posix
-  - name: ansible.utils
-  - name: community.general
-  - name: community.windows
-roles:
-  - name: andrewrothstein.unarchivedeps
-            """,
+            contents=textwrap.dedent(
+                """
+                ---
+                collections:
+                  - name: ansible.posix
+                  - name: community.general
+                roles:
+                  - name: andrewrothstein.unarchivedeps
+                """
+            ),
         )
 
     async def playbook_yml(self) -> dagger.File:
         return await dag.file(
             "playbook.yml",
-            contents="""
----
-- hosts: all
-  roles:
-    - andrewrothstein.unarchivedeps
-            """,
+            contents=textwrap.dedent(
+                """
+                ---
+                - hosts: all
+                roles:
+                    - andrewrothstein.unarchivedeps
+                """
+            ),
         )
 
     async def build_one(
@@ -119,17 +124,6 @@ roles:
                 "/etc/ansible/inventories/localhost",
                 await self.localhost_inventory(),
             )
-            .with_exec(
-                [
-                    "sh",
-                    "-lc",
-                    """
-ansible --version \
-    && ansible all --list-hosts \
-    && ansible localhost -m ping
-                    """,
-                ]
-            )
             .with_workdir("/root")
             .with_file("requirements.yml", await self.requirements_yml())
             .with_file("playbook.yml", await self.playbook_yml())
@@ -137,10 +131,15 @@ ansible --version \
                 [
                     "sh",
                     "-lc",
-                    """
-ansible-galaxy install -r requirements.yml \
-ansible-playbook playbook.yml
-                        """,
+                    textwrap.dedent(
+                        """
+                        ansible-galaxy install -r requirements.yml;
+                        ansible-playbook playbook.yml;
+                        ansible --version \
+                            && ansible all --list-hosts \
+                            && ansible localhost -m ping
+                        """
+                    ),
                 ]
             )
         )
