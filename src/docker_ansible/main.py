@@ -52,6 +52,32 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
             "local-bin-path.sh", await self.local_bin_path_sh()
         )
 
+    async def requirements_yml(self) -> dagger.File:
+        return await dag.file(
+            "requirements.yml",
+            contents="""
+---
+collections:
+  - name: ansible.posix
+  - name: ansible.utils
+  - name: community.general
+  - name: community.windows
+roles:
+  - name: andrewrothstein.unarchivedeps
+            """,
+        )
+
+    async def playbook_yml(self) -> dagger.File:
+        return await dag.file(
+            "playbook.yml",
+            contents="""
+---
+- hosts: all
+  roles:
+    - andrewrothstein.unarchivedeps
+            """,
+        )
+
     async def build_one(
         self,
         os: str,
@@ -98,31 +124,25 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
                     "sh",
                     "-lc",
                     """
-    ansible --version \
-        && ansible all --list-hosts \
-        && ansible localhost -m ping
+ansible --version \
+    && ansible all --list-hosts \
+    && ansible localhost -m ping
                     """,
                 ]
             )
-                .with_workdir("/root")
-                .with_file(
-                    "requirements.yml",
-                    await wdir.file("requirements.yml")
-                )
-                .with_file(
-                    "playbook.yml",
-                    await wdir.file("playbook.yml")
-                )
-                .with_exec(
-                    [
-                        "sh",
-                        "-lc",
-                        """
-                        ansible-galaxy install -r requirements.yml \
-                        ansible-playbook playbook.yml
+            .with_workdir("/root")
+            .with_file("requirements.yml", await self.requirements_yml())
+            .with_file("playbook.yml", await self.playbook_yml())
+            .with_exec(
+                [
+                    "sh",
+                    "-lc",
+                    """
+ansible-galaxy install -r requirements.yml \
+ansible-playbook playbook.yml
                         """,
-                    ]
-                )
+                ]
+            )
         )
 
     @function
