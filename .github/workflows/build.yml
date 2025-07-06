@@ -24,59 +24,62 @@ jobs:
       security-events: write  # Required for uploading SARIF reports
     steps:
       - uses: actions/checkout@v4
-      - name: build and scan images
+      - name: build and publish to ttl.sh
+        id: build
         uses: dagger/dagger-for-github@8.0.0
         with:
           verb: call
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-
-            build-and-export-scan-results
+            build-and-publish-temp
             --os=${{ matrix.distro.OS }}
             --os-ver=${{ matrix.distro.OS_VER }}
             --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
             --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
             --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
             --platforms=${{ matrix.distro.platforms }}
-            export
-            --path=./scan-results
+            --ttl=1h
 
-      - name: Process scan results
-        if: always()
+      - name: Extract image URLs
+        id: images
         run: |
-          # List all SARIF files
-          echo "Scan results:"
-          ls -la ./scan-results/
+          # The output from build-and-publish-temp is a JSON array of image URLs
+          echo "Image URLs published:"
+          echo '${{ steps.build.outputs.stdout }}'
           
-          # Generate summary from text files
-          echo "## Build Vulnerability Scan for ${{ matrix.distro.OS }}:${{ matrix.distro.OS_VER }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Display all summaries
-          for summary in ./scan-results/summary-*.txt; do
-            if [ -f "$summary" ]; then
-              echo "### $(basename $summary .txt)" >> $GITHUB_STEP_SUMMARY
-              echo '```' >> $GITHUB_STEP_SUMMARY
-              cat "$summary" >> $GITHUB_STEP_SUMMARY
-              echo '```' >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
-          done
+          # Parse the first image URL for scanning (they all have same content, different platforms)
+          IMAGE_URL=$(echo '${{ steps.build.outputs.stdout }}' | jq -r '.[0]')
+          echo "image_url=${IMAGE_URL}" >> $GITHUB_OUTPUT
 
-      - name: Upload SARIF files
-        if: always()
-        run: |
-          # Upload each SARIF file separately with unique categories
-          for sarif in ./scan-results/trivy-*.sarif; do
-            if [ -f "$sarif" ]; then
-              # Extract platform from filename (e.g., trivy-ubuntu-noble-linux-amd64.sarif)
-              platform=$(basename "$sarif" .sarif | sed 's/trivy-//')
-              echo "Uploading $sarif as category: build-$platform"
-            fi
-          done
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.images.outputs.image_url }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+        continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: './scan-results/'
+          sarif_file: 'trivy-results.sarif'
           category: 'build-${{ matrix.distro.OS }}-${{ matrix.distro.OS_VER }}'
+
+      - name: Generate scan summary
+        if: always()
+        run: |
+          echo "## Build Vulnerability Scan for ${{ matrix.distro.OS }}:${{ matrix.distro.OS_VER }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Scanned image:** \`${{ steps.images.outputs.image_url }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Run a table format scan for the summary
+          docker run --rm aquasec/trivy:latest image \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --format table \
+            --no-progress \
+            ${{ steps.images.outputs.image_url }} >> $GITHUB_STEP_SUMMARY || echo "No vulnerabilities found" >> $GITHUB_STEP_SUMMARY
