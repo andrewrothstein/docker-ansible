@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 import dagger
 from dagger import dag, function, object_type
 import asyncio
-import json
 
 
 @dataclass
@@ -322,9 +321,6 @@ ansible --version \
         ]
         return await asyncio.gather(*tasks)
 
-
-
-
     @function
     async def build_and_publish_temp(
         self,
@@ -339,37 +335,44 @@ ansible --version \
     ) -> List[str]:
         """
         Build and publish images to ttl.sh for temporary scanning.
-        
+
         Args:
             ttl: Time to live for images on ttl.sh (e.g., "1h", "30m")
-            
+
         Returns:
             List of published image URLs
         """
         import uuid
-        
+
         # Build the containers
         containers = await self.build(
-            os, os_ver, upstream_org, upstream_os, upstream_os_ver, uv_version, platforms
+            os,
+            os_ver,
+            upstream_org,
+            upstream_os,
+            upstream_os_ver,
+            uv_version,
+            platforms,
         )
-        
+
         # Generate a unique ID for this build
         build_id = str(uuid.uuid4())[:8]
-        
+
         # Publish each platform to ttl.sh
         published_images = []
         platform_list = [p for p in platforms.split(",") if p]
-        
+
         for i, platform in enumerate(platform_list):
             platform_tag = platform.replace("/", "-")
             # ttl.sh format: ttl.sh/[IMAGE]:[TAG]-[TTL]
-            image_ref = f"ttl.sh/docker-ansible-{build_id}/{os}-{os_ver}-{platform_tag}:{ttl}"
-            
+            image_ref = (
+                f"ttl.sh/docker-ansible-{build_id}/{os}-{os_ver}-{platform_tag}:{ttl}"
+            )
+
             # Publish without auth (ttl.sh is public)
             published = await dag.container().publish(
-                image_ref,
-                platform_variants=[containers[i]]
+                image_ref, platform_variants=[containers[i]]
             )
             published_images.append(published)
-        
+
         return published_images

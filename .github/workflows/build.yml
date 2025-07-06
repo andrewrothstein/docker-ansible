@@ -46,7 +46,7 @@ jobs:
           # The output from build-and-publish-temp is a JSON array of image URLs
           echo "Image URLs published:"
           echo '${{ steps.build.outputs.stdout }}'
-          
+
           # Parse the first image URL for scanning (they all have same content, different platforms)
           IMAGE_URL=$(echo '${{ steps.build.outputs.stdout }}' | jq -r '.[0]')
           echo "image_url=${IMAGE_URL}" >> $GITHUB_OUTPUT
@@ -75,7 +75,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Scanned image:** \`${{ steps.images.outputs.image_url }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           # Run a table format scan for the summary
           docker run --rm aquasec/trivy:latest image \
             --severity HIGH,CRITICAL \
