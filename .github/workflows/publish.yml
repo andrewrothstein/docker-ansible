@@ -53,9 +53,9 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/andrewrothstein/docker-ansible:latest-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          image-ref: ghcr.io/andrewrothstein/docker-ansible:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}
+          format: sarif
+          output: trivy-results.sarif
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
 
@@ -63,5 +63,5 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: trivy-results.sarif
           category: 'trivy-${{ matrix.distro.OS }}-${{ matrix.distro.OS_VER }}'
