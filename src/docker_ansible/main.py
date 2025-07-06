@@ -98,9 +98,9 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
                     "sh",
                     "-lc",
                     """
-                ansible --version \
-                    && ansible all --list-hosts \
-                    && ansible localhost -m ping
+ansible --version \
+    && ansible all --list-hosts \
+    && ansible localhost -m ping
                 """,
                 ]
             )
@@ -200,3 +200,123 @@ callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
                 .publish(f"{ghcr}:{v}", platform_variants=ctr)
             )
         return await asyncio.gather(*image_pushes) if len(image_pushes) > 0 else []
+
+    async def test_role_one(
+        self,
+        role_dir: dagger.Directory,
+        os: str,
+        os_ver: str,
+        base_image: str,
+        p: str = "linux/amd64",
+    ) -> dagger.Container:
+        """Test a single platform."""
+        plat = dagger.Platform(p)
+
+        # Start from the pre-built docker-ansible image
+        return (
+            dag.container(platform=plat)
+            .from_(base_image)
+            .with_directory("/ansible-role", role_dir)
+            .with_workdir("/ansible-role")
+            .with_exec(
+                [
+                    "sh",
+                    "-lc",
+                    "if [ -f meta/requirements.yml ]; then ansible-galaxy install -r meta/requirements.yml; fi",
+                ]
+            )
+            .with_exec(
+                [
+                    "sh",
+                    "-lc",
+                    "if [ -f test-requirements.yml ]; then ansible-galaxy install -r test-requirements.yml; fi",
+                ]
+            )
+            .with_exec(
+                [
+                    "sh",
+                    "-lc",
+                    """
+                    if [ -f test-inventory.ini ]; then
+                        ansible-playbook -i test-inventory.ini test.yml
+                    else
+                        ansible-playbook test.yml
+                    fi
+                    """,
+                ]
+            )
+        )
+
+    @function
+    async def test_role(
+        self,
+        role_dir: dagger.Directory,
+        os: str,
+        os_ver: str,
+        upstream_org: Optional[str] = None,
+        upstream_os: Optional[str] = None,
+        upstream_os_ver: Optional[str] = None,
+        target_image_semver: str = "0.0.0",
+        dockerhub_registry: str = "docker.io",
+        dockerhub_org: str = "andrewrothstein",
+        dockerhub_repo: str = "docker-ansible",
+        ghcr_registry: str = "ghcr.io",
+        ghcr_org: str = "andrewrothstein",
+        ghcr_repo: str = "docker-ansible",
+        use_ghcr: bool = True,
+        platforms: str = "linux/amd64",
+    ) -> List[dagger.Container]:
+        """
+        Test an Ansible role using the pre-built docker-ansible base images.
+
+        Expects the role directory structure:
+        - test.yml at the root (the test playbook)
+        - meta/requirements.yml (optional Galaxy dependencies)
+        - Standard Ansible role structure (tasks/, vars/, defaults/, etc.)
+
+        Args:
+            role_dir: Directory containing the Ansible role to test
+            os: Operating system (e.g., ubuntu, debian, alpine)
+            os_ver: OS version (e.g., noble, bookworm, 3.20)
+            upstream_org: Override upstream organization (for special cases like kali)
+            upstream_os: Override upstream OS name
+            upstream_os_ver: Override upstream OS version
+            target_image_semver: Version of docker-ansible image to use (default: latest)
+            dockerhub_registry: Docker Hub registry URL
+            dockerhub_org: Docker Hub organization
+            dockerhub_repo: Docker Hub repository name
+            ghcr_registry: GitHub Container Registry URL
+            ghcr_org: GHCR organization
+            ghcr_repo: GHCR repository name
+            use_ghcr: Use GHCR instead of Docker Hub for base image (default: True)
+            platforms: Comma-separated list of platforms to test
+
+        Returns:
+            List of containers with test results
+        """
+        # Construct the base image tag
+        tag = Tag(
+            target_image_semver=target_image_semver,
+            os=os,
+            os_ver=os_ver,
+        )
+
+        # Use GHCR by default
+        if use_ghcr:
+            base_image = f"{ghcr_registry}/{ghcr_org}/{ghcr_repo}:{tag}"
+        else:
+            base_image = f"{dockerhub_registry}/{dockerhub_org}/{dockerhub_repo}:{tag}"
+
+        # Test on each platform
+        tasks = [
+            self.test_role_one(
+                role_dir=role_dir,
+                os=os,
+                os_ver=os_ver,
+                base_image=base_image,
+                p=p,
+            )
+            for p in platforms.split(",")
+            if p
+        ]
+        return await asyncio.gather(*tasks)
