@@ -8,12 +8,12 @@ import textwrap
 
 @dataclass
 class Tag:
-    target_image_semver: str
+    semver: str
     os: str
     os_ver: str
 
     def __str__(self) -> str:
-        return f"{self.target_image_semver}-{self.os}.{self.os_ver}"
+        return f"{self.semver}-{self.os}.{self.os_ver}"
 
 
 @dataclass
@@ -207,6 +207,7 @@ class DockerAnsible:
                   - name: ansible.utils
                   - name: community.general
                 roles:
+                  - name: andrewrothstein.pkg_upgrade
                   - name: andrewrothstein.unarchivedeps
                 """
             ),
@@ -220,13 +221,14 @@ class DockerAnsible:
                 ---
                 - hosts: all
                   roles:
+                    - andrewrothstein.pkg_upgrade
                     - andrewrothstein.unarchivedeps
                 """
             ),
         )
 
     def login_sh(self, cmd: str) -> List[str]:
-        return  ["/bin/sh", "-lec", cmd]
+        return ["/bin/sh", "-lec", cmd]
 
     async def build_one(
         self,
@@ -344,7 +346,7 @@ class DockerAnsible:
     ) -> List[str]:
         # Compose image tags
         v = Tag(
-            target_image_semver=target_image_semver,
+            semver=target_image_semver,
             os=os,
             os_ver=os_ver,
         )
@@ -447,24 +449,25 @@ class DockerAnsible:
     @function
     async def test_role(
         self,
-        role_dir: dagger.Directory,
         os: str,
         os_ver: str,
-        upstream_org: Optional[str] = None,
-        upstream_os: Optional[str] = None,
-        upstream_os_ver: Optional[str] = None,
-        target_image_semver: str = "0.0.0",
-        dockerhub_registry: str = "docker.io",
-        dockerhub_org: str = "andrewrothstein",
-        dockerhub_repo: str = "docker-ansible",
-        ghcr_registry: str = "ghcr.io",
-        ghcr_org: str = "andrewrothstein",
-        ghcr_repo: str = "docker-ansible",
-        use_ghcr: bool = True,
+        role_name: str = "test-role",
+        role_dir: Optional[dagger.Directory] = None,
+        upstream_registry: str = "ghcr.io",
+        upstream_org: str = "andrewrothstein",
+        upstream_repo: str = "docker-ansible",
+        upstream_semver: str = "0.0.0",
+        target_registry: Optional[str] = None,
+        target_org: Optional[str] = None,
+        target_username: Optional[str] = None,
+        target_password: Optional[dagger.Secret] = None,
+        target_semver: str = "0.0.0",
         platforms: str = "linux/amd64",
-    ) -> List[dagger.Container]:
+        git_sha: Optional[str] = None,
+        publish_latest: bool = False,
+    ) -> List[str]:
         """
-        Test an Ansible role using the pre-built docker-ansible base images.
+        Test an Ansible role using the pre-built docker-ansible base images and optionally publish to a registry.
 
         Expects the role directory structure:
         - test.yml at the root (the test playbook)
@@ -472,37 +475,39 @@ class DockerAnsible:
         - Standard Ansible role structure (tasks/, vars/, defaults/, etc.)
 
         Args:
+            role_name: Name of the role (used in published image name)
             role_dir: Directory containing the Ansible role to test
             os: Operating system (e.g., ubuntu, debian, alpine)
             os_ver: OS version (e.g., noble, bookworm, 3.20)
-            upstream_org: Override upstream organization (for special cases like kali)
-            upstream_os: Override upstream OS name
-            upstream_os_ver: Override upstream OS version
-            target_image_semver: Version of docker-ansible image to use (default: latest)
-            dockerhub_registry: Docker Hub registry URL
-            dockerhub_org: Docker Hub organization
-            dockerhub_repo: Docker Hub repository name
-            ghcr_registry: GitHub Container Registry URL
-            ghcr_org: GHCR organization
-            ghcr_repo: GHCR repository name
-            use_ghcr: Use GHCR instead of Docker Hub for base image (default: True)
-            platforms: Comma-separated list of platforms to test
+            upstream_registry: Registry for base docker-ansible image (default: ghcr.io)
+            upstream_org: Organization for base image (default: andrewrothstein)
+            upstream_repo: Repository name for base image (default: docker-ansible)
+            upstream_semver: Version of docker-ansible base image to use (default: 0.0.0)
+            target_registry: Registry to publish tested containers (optional)
+            target_org: Organization for published images (optional)
+            target_username: Username for target registry authentication (optional)
+            target_password: Password/token for target registry authentication (optional)
+            target_semver: Version tag for published images (default: 0.0.0)
+            platforms: Comma-separated list of platforms to test (default: linux/amd64)
+            git_sha: Git SHA to append to version (for build stage)
+            publish_latest: If True, also publishes latest-{os}.{os_ver} tag
 
         Returns:
-            List of containers with test results
+            List of published image URLs
         """
         # Construct the base image tag
         tag = Tag(
-            target_image_semver=target_image_semver,
+            semver=upstream_semver,
             os=os,
             os_ver=os_ver,
         )
 
         # Use GHCR by default
-        if use_ghcr:
-            base_image = f"{ghcr_registry}/{ghcr_org}/{ghcr_repo}:{tag}"
-        else:
-            base_image = f"{dockerhub_registry}/{dockerhub_org}/{dockerhub_repo}:{tag}"
+        fq_upstream_image = f"{upstream_registry}/{upstream_org}/{upstream_repo}:{tag}"
+
+        # Default role_dir to source directory if not provided
+        if role_dir is None:
+            role_dir = dag.current_module().source()
 
         # Test on each platform
         tasks = [
@@ -510,10 +515,56 @@ class DockerAnsible:
                 role_dir=role_dir,
                 os=os,
                 os_ver=os_ver,
-                base_image=base_image,
+                base_image=fq_upstream_image,
                 p=p,
             )
             for p in platforms.split(",")
             if p
         ]
-        return await asyncio.gather(*tasks)
+        containers = await asyncio.gather(*tasks)
+
+        published_images = []
+
+        # Only publish if all required parameters are provided
+        if target_registry and target_org and target_username and target_password:
+            # Build list of tags to publish
+            tags_to_publish = []
+
+            # Primary tag with git SHA if provided, otherwise just semver
+            if git_sha:
+                # During build stage: publish with SHA
+                primary_tag = f"{target_semver}-{os}.{os_ver}.{git_sha}"
+                tags_to_publish.append(primary_tag)
+            else:
+                # During final publish stage: publish clean semver tag
+                primary_tag = Tag(
+                    semver=target_semver,
+                    os=os,
+                    os_ver=os_ver,
+                )
+                tags_to_publish.append(str(primary_tag))
+
+                # Also publish latest tag if requested
+                if publish_latest:
+                    latest_tag = Tag(
+                        semver="latest",
+                        os=os,
+                        os_ver=os_ver,
+                    )
+                    tags_to_publish.append(str(latest_tag))
+
+            # Publish to all tags
+            for tag_str in tags_to_publish:
+                image_ref = f"{target_registry}/{target_org}/{role_name}:{tag_str}"
+
+                published = (
+                    await dag.container()
+                    .with_registry_auth(
+                        target_registry, target_username, target_password
+                    )
+                    .publish(image_ref, platform_variants=containers)
+                )
+
+                published_images.append(published)
+
+        return published_images
