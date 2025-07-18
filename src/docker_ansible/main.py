@@ -163,8 +163,12 @@ class DockerAnsible:
                             pkg_install python3 python3-apt
                             ;;
                         dnf)
-                            # Fedora/RHEL 9+: Install python3-dnf
-                            pkg_install python3 python3-dnf
+                            # Fedora/RHEL 9+: Install python3-dnf or python3-libdnf5 for newer versions
+                            pkg_install python3
+                            # Try to install both packages - dnf will ignore already satisfied dependencies
+                            # python3-libdnf5 is for Fedora 41+ and newer systems using DNF5
+                            # python3-dnf is for older systems still using DNF4
+                            pkg_install python3-libdnf5 python3-dnf || pkg_install python3-dnf
                             ;;
                         yum)
                             # RHEL 7/8: Install python3 and python3-dnf
