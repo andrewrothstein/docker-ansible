@@ -38,6 +38,10 @@ class DockerAnsible:
                 inventory = /etc/ansible/inventories
                 transport = local
                 callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
+                # Enable interpreter discovery to find the right Python for each module
+                interpreter_python = auto_silent
+                # Allow Ansible to use system Python for package modules
+                ansible_python_interpreter = /root/.local/share/uv/tools/ansible-core/bin/python3
                 """
             ),
         )
@@ -146,29 +150,34 @@ class DockerAnsible:
                     esac
                 }
 
-                # Install Ansible dependencies for each distro
+                # Install minimal Python packages for package management modules
                 install_ansible_deps() {
                     PKG_MGR=$(detect_pkg_manager)
                     case "$PKG_MGR" in
                         apk)
-                            # Alpine minimal deps
-                            :
+                            # Alpine: Install Python and py3-pip for package management
+                            pkg_install python3 py3-pip
                             ;;
                         apt)
-                            # Debian/Ubuntu minimal deps
-                            :
+                            # Debian/Ubuntu: Install python3-apt for apt module
+                            pkg_install python3 python3-apt
                             ;;
                         dnf)
-                            # Fedora needs python3-libdnf5 for ansible dnf module
-                            pkg_install python3-libdnf5
+                            # Fedora/RHEL 9+: Install python3-dnf
+                            pkg_install python3 python3-dnf
                             ;;
                         yum)
-                            # RHEL/Rocky needs python3-dnf for ansible dnf module
-                            pkg_install python3-dnf
+                            # RHEL 7/8: Install python3 and python3-dnf
+                            if command -v python3 >/dev/null 2>&1; then
+                                pkg_install python3-dnf
+                            else
+                                # RHEL 7 might need python2
+                                pkg_install python python-dnf
+                            fi
                             ;;
                         pacman)
-                            # Arch minimal deps
-                            :
+                            # Arch: Python is usually already installed
+                            pkg_install python
                             ;;
                         *)
                             echo "Unknown package manager"
@@ -247,7 +256,13 @@ class DockerAnsible:
             .from_(upstream_image)
             .with_directory("/etc/profile.d", await self.etc_profiled())
             .with_env_variable("SHELL", "/bin/sh -lc")
-            .with_exec(["sh", "-lc", "pkg_update && install_ca_certificates && install_ansible_deps"])
+            .with_exec(
+                [
+                    "sh",
+                    "-lc",
+                    "pkg_update && install_ca_certificates && install_ansible_deps",
+                ]
+            )
             .with_file("/usr/local/bin/uv", await uv_bin)
             .with_exec(["uv", "tool", "install", "ansible-core"])
             .with_env_variable(
@@ -366,23 +381,32 @@ class DockerAnsible:
             platforms=platforms,
         )
 
-        image_pushes: List = []
-        # tag and publish images
+        # Collect publish operations without awaiting
+        publish_tasks = []
+
+        # Create publish task for Docker Hub
         if dockerhub_username and dockerhub_password:
-            image_pushes.append(
-                await dag.container()
+            publish_tasks.append(
+                dag.container()
                 .with_registry_auth(
                     dockerhub_registry, dockerhub_username, dockerhub_password
                 )
                 .publish(f"{dockerhub}:{v}", platform_variants=ctr)
             )
+
+        # Create publish task for GHCR
         if ghcr_username and ghcr_password:
-            image_pushes.append(
-                await dag.container()
+            publish_tasks.append(
+                dag.container()
                 .with_registry_auth(ghcr_registry, ghcr_username, ghcr_password)
                 .publish(f"{ghcr}:{v}", platform_variants=ctr)
             )
-        return image_pushes
+
+        # Execute all publish operations in parallel
+        if publish_tasks:
+            return await asyncio.gather(*publish_tasks)
+        else:
+            return []
 
     async def test_role_one(
         self,
