@@ -40,8 +40,6 @@ class DockerAnsible:
                 callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
                 # Enable interpreter discovery to find the right Python for each module
                 interpreter_python = auto_silent
-                # Allow Ansible to use system Python for package modules
-                ansible_python_interpreter = /root/.local/share/uv/tools/ansible-core/bin/python3
                 """
             ),
         )
@@ -163,7 +161,8 @@ class DockerAnsible:
                             pkg_install python3 python3-apt
                             ;;
                         dnf)
-                            # Fedora/RHEL 9+: Install python3-dnf or python3-libdnf5 for newer versions
+                            # DNF-based systems: RHEL 9+, Fedora, etc.
+                            # First ensure Python 3 is installed
                             pkg_install python3
                             # Try to install both packages - dnf will ignore already satisfied dependencies
                             # python3-libdnf5 is for Fedora 41+ and newer systems using DNF5
@@ -171,13 +170,8 @@ class DockerAnsible:
                             pkg_install python3-libdnf5 python3-dnf || pkg_install python3-dnf
                             ;;
                         yum)
-                            # RHEL 7/8: Install python3 and python3-dnf
-                            if command -v python3 >/dev/null 2>&1; then
-                                pkg_install python3-dnf
-                            else
-                                # RHEL 7 might need python2
-                                pkg_install python python-dnf
-                            fi
+                            # YUM-based systems: older RHEL/CentOS
+                            pkg_install python3 python3-dnf
                             ;;
                         pacman)
                             # Arch: Python is usually already installed
@@ -269,10 +263,6 @@ class DockerAnsible:
             )
             .with_file("/usr/local/bin/uv", await uv_bin)
             .with_exec(["uv", "tool", "install", "ansible-core"])
-            .with_env_variable(
-                "ANSIBLE_PYTHON_INTERPRETER",
-                "/root/.local/share/uv/tools/ansible-core/bin/python3",
-            )
             .with_file("/etc/ansible/ansible.cfg", await self.ansible_cfg())
             .with_file(
                 "/etc/ansible/inventories/localhost",
