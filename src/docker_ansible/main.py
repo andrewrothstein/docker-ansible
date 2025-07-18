@@ -274,19 +274,6 @@ class DockerAnsible:
                 "/etc/ansible/inventories/localhost",
                 await self.localhost_inventory(),
             )
-            .with_exec(
-                [
-                    "sh",
-                    "-lc",
-                    textwrap.dedent(
-                        """
-                        ansible --version \
-                            && ansible all --list-hosts \
-                            && ansible localhost -m ping
-                        """
-                    ),
-                ]
-            )
             .with_workdir("/root")
             .with_file("requirements.yml", await self.requirements_yml())
             .with_file("playbook.yml", await self.playbook_yml())
@@ -296,7 +283,10 @@ class DockerAnsible:
                     "-lc",
                     textwrap.dedent(
                         """
-                        ansible-galaxy install -r requirements.yml \
+                        ansible --version \
+                            && ansible-galaxy install -r requirements.yml \
+                            && ansible all --list-hosts \
+                            && ansible localhost -m ping \
                             && ansible-playbook playbook.yml
                         """
                     ),
