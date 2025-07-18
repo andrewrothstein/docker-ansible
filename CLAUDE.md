@@ -15,9 +15,11 @@ dagger call build --os=ubuntu --os-ver=noble --platforms=linux/amd64,linux/arm64
 # Common OS/version combinations:
 # Ubuntu: jammy, noble
 # Debian: bullseye, bookworm
-# Alpine: 3.20.x, 3.21.x
-# Fedora: 40, 41
-# Rocky: 8, 9
+# Alpine: 3.20, 3.21
+# Fedora: 41, 42
+# RockyLinux: 9
+# Arch Linux: latest
+# RedHat Universal Base Image: 9, 10
 ```
 
 ### Publishing Images

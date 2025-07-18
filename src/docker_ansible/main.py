@@ -38,6 +38,8 @@ class DockerAnsible:
                 inventory = /etc/ansible/inventories
                 transport = local
                 callbacks_enabled = ansible.posix.timer,ansible.posix.profile_tasks
+                # Enable interpreter discovery to find the right Python for each module
+                interpreter_python = auto_silent
                 """
             ),
         )
@@ -50,9 +52,146 @@ class DockerAnsible:
             "local-bin-path.sh", contents="export PATH=$HOME/.local/bin:$PATH"
         )
 
+    async def pkg_manager_sh(self) -> dagger.File:
+        return await dag.file(
+            "pkg-manager.sh",
+            contents=textwrap.dedent(
+                """
+                #!/bin/sh
+
+                # Package manager detection and helper functions
+
+                detect_pkg_manager() {
+                    if command -v apk >/dev/null 2>&1; then
+                        echo "apk"
+                    elif command -v apt-get >/dev/null 2>&1; then
+                        echo "apt"
+                    elif command -v dnf >/dev/null 2>&1; then
+                        echo "dnf"
+                    elif command -v yum >/dev/null 2>&1; then
+                        echo "yum"
+                    elif command -v pacman >/dev/null 2>&1; then
+                        echo "pacman"
+                    else
+                        echo "unknown"
+                    fi
+                }
+
+                pkg_update() {
+                    PKG_MGR=$(detect_pkg_manager)
+                    case "$PKG_MGR" in
+                        apk)
+                            apk update
+                            ;;
+                        apt)
+                            apt-get update
+                            ;;
+                        dnf|yum)
+                            # dnf/yum don't need explicit update
+                            :
+                            ;;
+                        pacman)
+                            pacman -Sy
+                            ;;
+                        *)
+                            echo "Unknown package manager"
+                            return 1
+                            ;;
+                    esac
+                }
+
+                pkg_install() {
+                    PKG_MGR=$(detect_pkg_manager)
+                    case "$PKG_MGR" in
+                        apk)
+                            apk add --no-cache "$@"
+                            ;;
+                        apt)
+                            apt-get install -y "$@"
+                            ;;
+                        dnf)
+                            dnf install -y "$@"
+                            ;;
+                        yum)
+                            yum install -y "$@"
+                            ;;
+                        pacman)
+                            pacman -S --noconfirm "$@"
+                            ;;
+                        *)
+                            echo "Unknown package manager"
+                            return 1
+                            ;;
+                    esac
+                }
+
+                # Install CA certificates using the appropriate package name for each distro
+                install_ca_certificates() {
+                    PKG_MGR=$(detect_pkg_manager)
+                    case "$PKG_MGR" in
+                        apk)
+                            pkg_install ca-certificates
+                            ;;
+                        apt)
+                            pkg_install ca-certificates
+                            ;;
+                        dnf|yum)
+                            pkg_install ca-certificates
+                            ;;
+                        pacman)
+                            pkg_install ca-certificates
+                            ;;
+                        *)
+                            echo "Unknown package manager"
+                            return 1
+                            ;;
+                    esac
+                }
+
+                # Install minimal Python packages for package management modules
+                install_ansible_deps() {
+                    PKG_MGR=$(detect_pkg_manager)
+                    case "$PKG_MGR" in
+                        apk)
+                            # Alpine: Install Python and py3-pip for package management
+                            pkg_install python3 py3-pip
+                            ;;
+                        apt)
+                            # Debian/Ubuntu: Install python3-apt for apt module
+                            pkg_install python3 python3-apt
+                            ;;
+                        dnf)
+                            # DNF-based systems: RHEL 9+, Fedora, etc.
+                            # First ensure Python 3 is installed
+                            pkg_install python3
+                            # Try to install both packages - dnf will ignore already satisfied dependencies
+                            # python3-libdnf5 is for Fedora 41+ and newer systems using DNF5
+                            # python3-dnf is for older systems still using DNF4
+                            pkg_install python3-libdnf5 python3-dnf || pkg_install python3-dnf
+                            ;;
+                        yum)
+                            # YUM-based systems: older RHEL/CentOS
+                            pkg_install python3 python3-dnf
+                            ;;
+                        pacman)
+                            # Arch: Python is usually already installed
+                            pkg_install python
+                            ;;
+                        *)
+                            echo "Unknown package manager"
+                            return 1
+                            ;;
+                    esac
+                }
+                """
+            ),
+        )
+
     async def etc_profiled(self) -> dagger.Directory:
-        return dag.directory().with_file(
-            "local-bin-path.sh", await self.local_bin_path_sh()
+        return (
+            dag.directory()
+            .with_file("local-bin-path.sh", await self.local_bin_path_sh())
+            .with_file("pkg-manager.sh", await self.pkg_manager_sh())
         )
 
     async def requirements_yml(self) -> dagger.File:
@@ -63,6 +202,7 @@ class DockerAnsible:
                 ---
                 collections:
                   - name: ansible.posix
+                  - name: ansible.utils
                   - name: community.general
                 roles:
                   - name: andrewrothstein.unarchivedeps
@@ -112,13 +252,17 @@ class DockerAnsible:
         return (
             dag.container(platform=plat)
             .from_(upstream_image)
+            .with_directory("/etc/profile.d", await self.etc_profiled())
+            .with_env_variable("SHELL", "/bin/sh -lc")
+            .with_exec(
+                [
+                    "sh",
+                    "-lc",
+                    "pkg_update && install_ca_certificates && install_ansible_deps",
+                ]
+            )
             .with_file("/usr/local/bin/uv", await uv_bin)
             .with_exec(["uv", "tool", "install", "ansible-core"])
-            .with_directory("/etc/profile.d", await self.etc_profiled())
-            .with_env_variable(
-                "ANSIBLE_PYTHON_INTERPRETER",
-                "/root/.local/share/uv/tools/ansible-core/bin/python3",
-            )
             .with_file("/etc/ansible/ansible.cfg", await self.ansible_cfg())
             .with_file(
                 "/etc/ansible/inventories/localhost",
@@ -133,11 +277,11 @@ class DockerAnsible:
                     "-lc",
                     textwrap.dedent(
                         """
-                        ansible-galaxy install -r requirements.yml;
-                        ansible-playbook playbook.yml;
                         ansible --version \
+                            && ansible-galaxy install -r requirements.yml \
                             && ansible all --list-hosts \
-                            && ansible localhost -m ping
+                            && ansible localhost -m ping \
+                            && ansible-playbook playbook.yml
                         """
                     ),
                 ]
@@ -221,23 +365,32 @@ class DockerAnsible:
             platforms=platforms,
         )
 
-        image_pushes: List[str] = []
-        # tag and publish images
+        # Collect publish operations without awaiting
+        publish_tasks = []
+
+        # Create publish task for Docker Hub
         if dockerhub_username and dockerhub_password:
-            image_pushes.append(
+            publish_tasks.append(
                 dag.container()
                 .with_registry_auth(
                     dockerhub_registry, dockerhub_username, dockerhub_password
                 )
                 .publish(f"{dockerhub}:{v}", platform_variants=ctr)
             )
+
+        # Create publish task for GHCR
         if ghcr_username and ghcr_password:
-            image_pushes.append(
+            publish_tasks.append(
                 dag.container()
                 .with_registry_auth(ghcr_registry, ghcr_username, ghcr_password)
                 .publish(f"{ghcr}:{v}", platform_variants=ctr)
             )
-        return await asyncio.gather(*image_pushes) if len(image_pushes) > 0 else []
+
+        # Execute all publish operations in parallel
+        if publish_tasks:
+            return await asyncio.gather(*publish_tasks)
+        else:
+            return []
 
     async def test_role_one(
         self,
