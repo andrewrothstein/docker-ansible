@@ -223,6 +223,9 @@ class DockerAnsible:
             ),
         )
 
+    def login_sh(self, cmd: str) -> List[str]:
+        return  ["/bin/sh", "-lec", cmd]
+
     async def build_one(
         self,
         os: str,
@@ -253,13 +256,16 @@ class DockerAnsible:
             dag.container(platform=plat)
             .from_(upstream_image)
             .with_directory("/etc/profile.d", await self.etc_profiled())
-            .with_env_variable("SHELL", "/bin/sh -lc")
             .with_exec(
-                [
-                    "sh",
-                    "-lc",
-                    "pkg_update && install_ca_certificates && install_ansible_deps",
-                ]
+                self.login_sh(
+                    textwrap.dedent(
+                        """
+                        pkg_update \
+                            && install_ca_certificates \
+                            && install_ansible_deps
+                        """
+                    )
+                )
             )
             .with_file("/usr/local/bin/uv", await uv_bin)
             .with_exec(["uv", "tool", "install", "ansible-core"])
@@ -272,9 +278,7 @@ class DockerAnsible:
             .with_file("requirements.yml", await self.requirements_yml())
             .with_file("playbook.yml", await self.playbook_yml())
             .with_exec(
-                [
-                    "sh",
-                    "-lc",
+                self.login_sh(
                     textwrap.dedent(
                         """
                         ansible --version \
@@ -284,7 +288,7 @@ class DockerAnsible:
                             && ansible-playbook playbook.yml
                         """
                     ),
-                ]
+                )
             )
         )
 
@@ -410,31 +414,31 @@ class DockerAnsible:
             .with_directory("/ansible-role", role_dir)
             .with_workdir("/ansible-role")
             .with_exec(
-                [
-                    "sh",
-                    "-lc",
-                    "if [ -f meta/requirements.yml ]; then ansible-galaxy install -r meta/requirements.yml; fi",
-                ]
-            )
-            .with_exec(
-                [
-                    "sh",
-                    "-lc",
-                    "if [ -f test-requirements.yml ]; then ansible-galaxy install -r test-requirements.yml; fi",
-                ]
-            )
-            .with_exec(
-                [
-                    "sh",
-                    "-lc",
-                    """
-                    if [ -f test-inventory.ini ]; then
-                        ansible-playbook -i test-inventory.ini test.yml
-                    else
-                        ansible-playbook test.yml
-                    fi
-                    """,
-                ]
+                self.login_sh(
+                    textwrap.dedent(
+                        """
+                        if [ -f meta/requirements.yml ];
+                        then
+                            ansible-galaxy install \
+                                -r meta/requirements.yml;
+                        fi
+                        if [ -f test-requirements.yml ];
+                        then
+                            ansible-galaxy install \
+                                -r test-requirements.yml;
+                        fi
+                        if [ -f test-inventory.ini ];
+                        then
+                            ansible-playbook \
+                                -i test-inventory.ini \
+                                test.yml;
+                        else
+                            ansible-playbook \
+                                test.yml;
+                        fi
+                        """
+                    )
+                )
             )
         )
 
