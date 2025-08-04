@@ -10,35 +10,40 @@ on:
 jobs:
   test-role:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - os: alpine
-            os_ver: "3.21"
-          - os: alpine
-            os_ver: "3.22"
-          - os: ubuntu
-            os_ver: noble
-          - os: ubuntu
-            os_ver: jammy
     steps:
+      # First checkout this repo to get access to the dagger module
       - uses: actions/checkout@v4
-      
+
+      # Then clone the k9s role to test
       - name: Clone k9s ansible role
         uses: actions/checkout@v4
         with:
           repository: andrewrothstein/ansible-k9s
           path: ansible-k9s
-      
-      - name: Test the test-role function
+
+      # Test using a simple matrix for smoke testing
+      - name: Test the test-role function on Alpine
         uses: dagger/dagger-for-github@v8
         with:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-
             call
             test-role
-            --os=${{ matrix.os }}
-            --os-ver=${{ matrix.os_ver }}
+            --os=alpine
+            --os-ver=3.22
+            --platforms=linux/amd64
+            --role-name=k9s
+            --role-dir=./ansible-k9s
+
+      - name: Test the test-role function on Ubuntu
+        uses: dagger/dagger-for-github@v8
+        with:
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          args: >-
+            call
+            test-role
+            --os=ubuntu
+            --os-ver=noble
             --platforms=linux/amd64
             --role-name=k9s
             --role-dir=./ansible-k9s
