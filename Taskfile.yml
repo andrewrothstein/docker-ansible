@@ -44,16 +44,17 @@ tasks:
       role_name: '{{ .role_name | default "" }}'
       role_dir: '{{ .role_dir | default "" }}'
     desc: Test an Ansible role locally (requires role_dir)
+    preconditions:
+      - sh: '[ -n "{{ .role_dir }}" ]'
+        msg: "Error: role_dir is required. Example: task test-role role_dir=./my-ansible-role"
     cmds:
-      - cmd: |
-          if [ -z "{{ .role_dir }}" ]; then
-            echo "Error: role_dir is required. Example: task test-role role_dir=./my-ansible-role"
-            exit 1
-          fi
-          args="--os={{ .os | quote }} --os-ver={{ .os_ver | quote }} --platforms={{ .platforms | quote }}"
-          [ -n "{{ .role_name }}" ] && args="$args --role-name={{ .role_name | quote }}"
-          args="$args --role-dir={{ .role_dir | quote }}"
-          dagger call test-role $args
+      - >-
+        dagger call test-role
+        --os={{ .os | quote }}
+        --os-ver={{ .os_ver | quote }}
+        --platforms={{ .platforms | quote }}
+        {{ if .role_name }}--role-name={{ .role_name | quote }}{{ end }}
+        --role-dir={{ .role_dir | quote }}
   test-role-publish:
     vars:
       os: '{{ .os | default "ubuntu" }}'
@@ -66,16 +67,25 @@ tasks:
       target_username: '{{ .target_username | default "${GITHUB_ACTOR}" }}'
       target_password: '{{ .target_password | default "env:GITHUB_TOKEN" }}'
     desc: Test an Ansible role and publish to registry
+    preconditions:
+      - sh: '[ -n "{{ .role_dir }}" ]'
+        msg: "Error: role_dir is required. Example: task test-role-publish role_dir=./my-ansible-role"
     cmds:
-      - cmd: |
-          args="--os={{ .os | quote }} --os-ver={{ .os_ver | quote }} --platforms={{ .platforms | quote }}"
-          args="$args --target-registry={{ .target_registry | quote }}"
-          args="$args --target-org={{ .target_org | quote }}"
-          args="$args --target-username={{ .target_username | quote }}"
-          args="$args --target-password={{ .target_password | quote }}"
-          [ -n "{{ .role_name }}" ] && args="$args --role-name={{ .role_name | quote }}"
-          [ -n "{{ .role_dir }}" ] && args="$args --role-dir={{ .role_dir | quote }}"
-          dagger call test-role $args
+      - >-
+        dagger call test-role
+        --os={{ .os | quote }}
+        --os-ver={{ .os_ver | quote }}
+        --platforms={{ .platforms | quote }}
+        --target-registry={{ .target_registry | quote }}
+        --target-org={{ .target_org | quote }}
+        --target-username={{ .target_username | quote }}
+        --target-password={{ .target_password | quote }}
+        {{- if .role_name }} \
+        --role-name={{ .role_name | quote }}
+        {{- end }}
+        {{- if .role_dir }} \
+          --role-dir={{ .role_dir | quote }}
+        {{- end }}
   test:
     desc: Test core Dagger functions
     cmds:
