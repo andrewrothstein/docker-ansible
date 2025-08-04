@@ -164,6 +164,8 @@ class DockerAnsible:
                             # DNF-based systems: RHEL 9+, Fedora, etc.
                             # First ensure Python 3 is installed
                             pkg_install python3
+                            # Install development tools needed for building Python packages with C extensions
+                            pkg_install gcc python3-devel libffi-devel
                             # Try to install both packages - dnf will ignore already satisfied dependencies
                             # python3-libdnf5 is for Fedora 41+ and newer systems using DNF5
                             # python3-dnf is for older systems still using DNF4
