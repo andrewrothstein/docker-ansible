@@ -48,13 +48,17 @@ tasks:
       - sh: '[ -n "{{ .role_dir }}" ]'
         msg: "Error: role_dir is required. Example: task test-role role_dir=./my-ansible-role"
     cmds:
-      - >-
-        dagger call test-role
-        --os={{ .os | quote }}
-        --os-ver={{ .os_ver | quote }}
-        --platforms={{ .platforms | quote }}
-        {{ if .role_name }}--role-name={{ .role_name | quote }}{{ end }}
-        --role-dir={{ .role_dir | quote }}
+      - |-
+        dagger call test-role \
+          --os={{ .os | quote }} \
+          --os-ver={{ .os_ver | quote }} \
+          --platforms={{ .platforms | quote }}
+        {{- if .role_name }} \
+          --role-name={{ .role_name | quote }}
+        {{- end }}
+        {{- if .role_dir }} \
+          --role-dir={{ .role_dir | quote }}
+        {{- end }}
   test-role-publish:
     vars:
       os: '{{ .os | default "ubuntu" }}'
@@ -71,17 +75,17 @@ tasks:
       - sh: '[ -n "{{ .role_dir }}" ]'
         msg: "Error: role_dir is required. Example: task test-role-publish role_dir=./my-ansible-role"
     cmds:
-      - >-
-        dagger call test-role
-        --os={{ .os | quote }}
-        --os-ver={{ .os_ver | quote }}
-        --platforms={{ .platforms | quote }}
-        --target-registry={{ .target_registry | quote }}
-        --target-org={{ .target_org | quote }}
-        --target-username={{ .target_username | quote }}
-        --target-password={{ .target_password | quote }}
+      - |-
+        dagger call test-role \
+          --os={{ .os | quote }} \
+          --os-ver={{ .os_ver | quote }} \
+          --platforms={{ .platforms | quote }} \
+          --target-registry={{ .target_registry | quote }} \
+          --target-org={{ .target_org | quote }} \
+          --target-username={{ .target_username | quote }} \
+          --target-password={{ .target_password | quote }}
         {{- if .role_name }} \
-        --role-name={{ .role_name | quote }}
+          --role-name={{ .role_name | quote }}
         {{- end }}
         {{- if .role_dir }} \
           --role-dir={{ .role_dir | quote }}
