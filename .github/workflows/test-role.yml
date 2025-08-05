@@ -20,7 +20,7 @@ jobs:
           path: ansible-k9s
 
       - name: Test the test-role function on Ubuntu AMD64
-        uses: dagger/dagger-for-github@v8
+        uses: dagger/dagger-for-github@8.0.0
         with:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-
@@ -44,7 +44,7 @@ jobs:
           path: ansible-k9s
 
       - name: Test the test-role function on Ubuntu ARM64
-        uses: dagger/dagger-for-github@v8
+        uses: dagger/dagger-for-github@8.0.0
         with:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-

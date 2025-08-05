@@ -281,7 +281,7 @@ jobs:
         include: ${{ fromJson(needs.matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dagger/dagger-for-github@v8
+      - uses: dagger/dagger-for-github@8.0.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
