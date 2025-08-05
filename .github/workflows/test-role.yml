@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - develop
-      - main
-      - 'feature/**'
   pull_request:
 jobs:
   test-role-amd64:
