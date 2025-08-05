@@ -37,9 +37,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          verb: call
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: >-
+          call: >-
             test-role
             --role-name=${{ github.event.repository.name }}
             --role-dir=.
@@ -51,6 +49,8 @@ jobs:
             --target-password=env:GITHUB_TOKEN
             --platforms=${{ matrix.distro.platforms }}
             --git-sha=${{ github.sha }}
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest
 
       # Step 2: Scan the SHA-tagged image
       - name: Scan image for vulnerabilities
@@ -79,9 +79,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          verb: call
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: >-
+          call: >-
             test-role
             --role-name=${{ github.event.repository.name }}
             --role-dir=.
@@ -93,3 +91,5 @@ jobs:
             --target-password=env:GITHUB_TOKEN
             --platforms=${{ matrix.distro.platforms }}
             --publish-latest=true
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest

@@ -35,9 +35,7 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          verb: call
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: >-
+          call: >-
             publish
             --os=${{ matrix.distro.OS }}
             --os-ver=${{ matrix.distro.OS_VER }}
@@ -49,6 +47,8 @@ jobs:
             --dockerhub-password=env:DOCKERHUB_PASSWORD
             --ghcr-username=${{ github.actor }}
             --ghcr-password=env:GITHUB_TOKEN
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
