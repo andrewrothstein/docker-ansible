@@ -24,6 +24,7 @@ jobs:
       - name: build images
         uses: dagger/dagger-for-github@8.0.0
         with:
+          module: .
           call: >-
             build
             --os=${{ matrix.distro.OS }}

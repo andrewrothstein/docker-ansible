@@ -22,6 +22,7 @@ jobs:
       - name: Test the test-role function on Ubuntu AMD64
         uses: dagger/dagger-for-github@8.0.0
         with:
+          module: .
           call: >-
             test-role
             --os=ubuntu
@@ -46,6 +47,7 @@ jobs:
       - name: Test the test-role function on Ubuntu ARM64
         uses: dagger/dagger-for-github@8.0.0
         with:
+          module: .
           call: >-
             test-role
             --os=ubuntu

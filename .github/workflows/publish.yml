@@ -35,6 +35,7 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
           GITHUB_TOKEN: ${{ github.token }}
         with:
+          module: .
           call: >-
             publish
             --os=${{ matrix.distro.OS }}
