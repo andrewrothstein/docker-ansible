@@ -8,34 +8,18 @@ on:
       - 'feature/**'
   pull_request:
 jobs:
-  test-role:
-    runs-on: ubuntu-latest
+  test-role-amd64:
+    runs-on: ubuntu-24.04
     steps:
-      # First checkout this repo to get access to the dagger module
       - uses: actions/checkout@v4
 
-      # Then clone the k9s role to test
       - name: Clone k9s ansible role
         uses: actions/checkout@v4
         with:
           repository: andrewrothstein/ansible-k9s
           path: ansible-k9s
 
-      # Test using a simple matrix for smoke testing
-      - name: Test the test-role function on Alpine
-        uses: dagger/dagger-for-github@v8
-        with:
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: >-
-            call
-            test-role
-            --os=alpine
-            --os-ver=3.22
-            --platforms=linux/amd64
-            --role-name=k9s
-            --role-dir=./ansible-k9s
-
-      - name: Test the test-role function on Ubuntu
+      - name: Test the test-role function on Ubuntu AMD64
         uses: dagger/dagger-for-github@v8
         with:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
@@ -45,5 +29,29 @@ jobs:
             --os=ubuntu
             --os-ver=noble
             --platforms=linux/amd64
+            --role-name=k9s
+            --role-dir=./ansible-k9s
+
+  test-role-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone k9s ansible role
+        uses: actions/checkout@v4
+        with:
+          repository: andrewrothstein/ansible-k9s
+          path: ansible-k9s
+
+      - name: Test the test-role function on Ubuntu ARM64
+        uses: dagger/dagger-for-github@v8
+        with:
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          args: >-
+            call
+            test-role
+            --os=ubuntu
+            --os-ver=noble
+            --platforms=linux/arm64
             --role-name=k9s
             --role-dir=./ansible-k9s
