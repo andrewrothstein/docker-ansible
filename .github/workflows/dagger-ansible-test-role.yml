@@ -37,9 +37,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
+          verb: call
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-
-            call
             test-role
             --role-name=${{ github.event.repository.name }}
             --role-dir=.
@@ -79,9 +79,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
+          verb: call
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-
-            call
             test-role
             --role-name=${{ github.event.repository.name }}
             --role-dir=.
