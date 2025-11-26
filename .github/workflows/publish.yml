@@ -13,7 +13,7 @@ jobs:
       distro: ${{ steps.read-matrix.outputs.distro }}
       build-matrix: ${{ steps.expand-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: read platform-matrix-v1.json
         id: read-matrix
         run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
@@ -52,7 +52,7 @@ jobs:
         include: ${{ fromJSON(needs.prepare-matrix.outputs.build-matrix) }}
     runs-on: ${{ matrix.RUNNER }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: publish arch-specific image to ghcr.io
         uses: dagger/dagger-for-github@v8.2.0
         env:
@@ -81,7 +81,7 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -156,7 +156,7 @@ jobs:
       matrix:
         distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.33.1
         with:

@@ -8,7 +8,7 @@ jobs:
     outputs:
       build-matrix: ${{ steps.expand-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: expand matrix for per-arch builds
         id: expand-matrix
         run: |
@@ -41,7 +41,7 @@ jobs:
         include: ${{ fromJSON(needs.prepare-matrix.outputs.build-matrix) }}
     runs-on: ${{ matrix.RUNNER }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: build image
         uses: dagger/dagger-for-github@v8.2.0
         with:
