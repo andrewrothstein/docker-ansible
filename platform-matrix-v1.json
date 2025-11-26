@@ -45,6 +45,11 @@
     "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
+    "OS": "fedora",
+    "OS_VER": "44",
+    "PLATFORMS": "linux/amd64,linux/arm64"
+  },
+  {
     "OS": "kali",
     "OS_VER": "latest",
     "UPSTREAM_ORG": "kalilinux",
