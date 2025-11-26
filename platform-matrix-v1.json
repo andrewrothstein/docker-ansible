@@ -35,6 +35,11 @@
     "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
+    "OS": "debian",
+    "OS_VER": "trixie",
+    "PLATFORMS": "linux/amd64,linux/arm64"
+  },
+  {
     "OS": "fedora",
     "OS_VER": "42",
     "PLATFORMS": "linux/amd64,linux/arm64"
