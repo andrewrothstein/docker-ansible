@@ -110,7 +110,7 @@ class DockerAnsible:
                             apt-get install -y "$@"
                             ;;
                         dnf)
-                            dnf install -y "$@"
+                            dnf install -y --nobest --skip-broken "$@"
                             ;;
                         yum)
                             yum install -y "$@"
