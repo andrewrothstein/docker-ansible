@@ -5,7 +5,7 @@ jobs:
   ansible-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: ansible-lint
         uses: ansible/ansible-lint@v25
   prepare-matrix:
@@ -13,7 +13,7 @@ jobs:
     outputs:
       distro: ${{ steps.read-matrix.outputs.distro }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: read platform-matrix-v1.json
         id: read-matrix
         run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
@@ -29,7 +29,7 @@ jobs:
       matrix:
         distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Step 1: Build and test, publish with git SHA
       - name: Build and test role

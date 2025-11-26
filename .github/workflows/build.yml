@@ -6,32 +6,53 @@ jobs:
   prepare-matrix:
     runs-on: ubuntu-latest
     outputs:
-      distro: ${{ steps.read-matrix.outputs.distro }}
+      build-matrix: ${{ steps.expand-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
-      - name: read platform-matrix-v1.json
-        id: read-matrix
-        run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v6
+      - name: expand matrix for per-arch builds
+        id: expand-matrix
+        run: |
+          # Expand the distro matrix to create per-architecture jobs
+          # Each distro with multiple platforms becomes multiple jobs
+          matrix=$(jq -c '
+            [.[] |
+              . as $distro |
+              ($distro.PLATFORMS // "linux/amd64" | split(",")) |
+              .[] |
+              {
+                OS: $distro.OS,
+                OS_VER: $distro.OS_VER,
+                UPSTREAM_ORG: $distro.UPSTREAM_ORG,
+                UPSTREAM_OS: $distro.UPSTREAM_OS,
+                UPSTREAM_OS_VER: $distro.UPSTREAM_OS_VER,
+                PLATFORM: .,
+                ARCH: (if . == "linux/amd64" then "amd64" else "arm64" end),
+                RUNNER: (if . == "linux/amd64" then "ubuntu-latest" else "ubuntu-24.04-arm" end)
+              }
+            ]
+          ' < platform-matrix-v1.json)
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
   build:
-    runs-on: ubuntu-latest
     needs: [prepare-matrix]
     strategy:
       fail-fast: false
       matrix:
-        distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
+        include: ${{ fromJSON(needs.prepare-matrix.outputs.build-matrix) }}
+    runs-on: ${{ matrix.RUNNER }}
     steps:
-      - uses: actions/checkout@v4
-      - name: build images
+      - uses: actions/checkout@v6
+      - name: build image
         uses: dagger/dagger-for-github@v8.2.0
         with:
           module: .
           call: >-
             build
-            --os=${{ matrix.distro.OS }}
-            --os-ver=${{ matrix.distro.OS_VER }}
-            --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
-            --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
-            --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
-            --platforms=${{ matrix.distro.platforms }}
+            --os=${{ matrix.OS }}
+            --os-ver=${{ matrix.OS_VER }}
+            --upstream-org=${{ matrix.UPSTREAM_ORG || 'library' }}
+            --upstream-os=${{ matrix.UPSTREAM_OS || matrix.OS }}
+            --upstream-os-ver=${{ matrix.UPSTREAM_OS_VER || matrix.OS_VER }}
+            --platforms=${{ matrix.PLATFORM }}
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           version: latest

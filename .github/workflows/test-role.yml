@@ -9,10 +9,10 @@ jobs:
   test-role-amd64:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Clone k9s ansible role
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: andrewrothstein/ansible-k9s
           path: ansible-k9s
@@ -34,10 +34,10 @@ jobs:
   test-role-arm64:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Clone k9s ansible role
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: andrewrothstein/ansible-k9s
           path: ansible-k9s
