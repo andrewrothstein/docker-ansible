@@ -5,56 +5,162 @@ on:
     branches:
       - develop
   schedule:
-    - cron:  '0 0 * * *'
+    - cron: '0 0 * * *'
 jobs:
   prepare-matrix:
     runs-on: ubuntu-latest
     outputs:
       distro: ${{ steps.read-matrix.outputs.distro }}
+      build-matrix: ${{ steps.expand-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
       - name: read platform-matrix-v1.json
         id: read-matrix
         run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
-  publish:
+      - name: expand matrix for per-arch builds
+        id: expand-matrix
+        run: |
+          # Expand the distro matrix to create per-architecture jobs
+          # Each distro with multiple platforms becomes multiple jobs
+          matrix=$(jq -c '
+            [.[] |
+              . as $distro |
+              ($distro.PLATFORMS // "linux/amd64" | split(",")) |
+              .[] |
+              {
+                OS: $distro.OS,
+                OS_VER: $distro.OS_VER,
+                UPSTREAM_ORG: $distro.UPSTREAM_ORG,
+                UPSTREAM_OS: $distro.UPSTREAM_OS,
+                UPSTREAM_OS_VER: $distro.UPSTREAM_OS_VER,
+                PLATFORM: .,
+                ARCH: (if . == "linux/amd64" then "amd64" else "arm64" end),
+                RUNNER: (if . == "linux/amd64" then "ubuntu-latest" else "ubuntu-24.04-arm" end)
+              }
+            ]
+          ' < platform-matrix-v1.json)
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  publish-arch:
     permissions:
       contents: read
       packages: write
-      security-events: write  # Required for uploading SARIF reports
-    runs-on: ubuntu-latest
     needs: [prepare-matrix]
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.prepare-matrix.outputs.build-matrix) }}
+    runs-on: ${{ matrix.RUNNER }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: publish arch-specific image to ghcr.io
+        uses: dagger/dagger-for-github@v8.2.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          module: .
+          call: >-
+            publish
+            --os=${{ matrix.OS }}
+            --os-ver=${{ matrix.OS_VER }}
+            --upstream-org=${{ matrix.UPSTREAM_ORG || 'library' }}
+            --upstream-os=${{ matrix.UPSTREAM_OS || matrix.OS }}
+            --upstream-os-ver=${{ matrix.UPSTREAM_OS_VER || matrix.OS_VER }}
+            --platforms=${{ matrix.PLATFORM }}
+            --ghcr-username=${{ github.actor }}
+            --ghcr-password=env:GITHUB_TOKEN
+            --ghcr-org=${{ github.repository_owner }}
+            --target-image-semver=0.0.0-${{ matrix.ARCH }}
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest
+
+  merge-manifests:
+    needs: [prepare-matrix, publish-arch]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Create and push manifest lists
+        env:
+          DISTRO_MATRIX: ${{ needs.prepare-matrix.outputs.distro }}
+        run: |
+          echo "$DISTRO_MATRIX" | jq -c '.[]' | while read -r distro; do
+            OS=$(echo "$distro" | jq -r '.OS')
+            OS_VER=$(echo "$distro" | jq -r '.OS_VER')
+            PLATFORMS=$(echo "$distro" | jq -r '.PLATFORMS // "linux/amd64"')
+
+            TAG="0.0.0-${OS}.${OS_VER}"
+            LATEST_TAG="latest-${OS}.${OS_VER}"
+
+            GHCR_IMAGE="ghcr.io/${{ github.repository_owner }}/docker-ansible"
+            DOCKERHUB_IMAGE="docker.io/${{ vars.DOCKERHUB_USERNAME }}/docker-ansible"
+
+            # Build the list of source images based on platforms
+            SOURCE_IMAGES=""
+            if [[ "$PLATFORMS" == *"linux/amd64"* ]]; then
+              SOURCE_IMAGES="${SOURCE_IMAGES} ${GHCR_IMAGE}:0.0.0-amd64-${OS}.${OS_VER}"
+            fi
+            if [[ "$PLATFORMS" == *"linux/arm64"* ]]; then
+              SOURCE_IMAGES="${SOURCE_IMAGES} ${GHCR_IMAGE}:0.0.0-arm64-${OS}.${OS_VER}"
+            fi
+
+            echo "Creating manifest for ${OS}.${OS_VER} from:${SOURCE_IMAGES}"
+
+            # Create manifest for GHCR (versioned tag)
+            docker buildx imagetools create \
+              -t "${GHCR_IMAGE}:${TAG}" \
+              ${SOURCE_IMAGES}
+
+            # Create manifest for GHCR (latest tag)
+            docker buildx imagetools create \
+              -t "${GHCR_IMAGE}:${LATEST_TAG}" \
+              ${SOURCE_IMAGES}
+
+            # Create manifest for Docker Hub (versioned tag)
+            docker buildx imagetools create \
+              -t "${DOCKERHUB_IMAGE}:${TAG}" \
+              ${SOURCE_IMAGES}
+
+            # Create manifest for Docker Hub (latest tag)
+            docker buildx imagetools create \
+              -t "${DOCKERHUB_IMAGE}:${LATEST_TAG}" \
+              ${SOURCE_IMAGES}
+
+            echo "Created manifests for ${OS}.${OS_VER}"
+          done
+
+  scan-images:
+    needs: [prepare-matrix, merge-manifests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
     strategy:
       fail-fast: false
       matrix:
         distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
     steps:
       - uses: actions/checkout@v4
-      - name: publish to docker.io and ghcr.io
-        uses: dagger/dagger-for-github@v8.2.0
-        env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          module: .
-          call: >-
-            publish
-            --os=${{ matrix.distro.OS }}
-            --os-ver=${{ matrix.distro.OS_VER }}
-            --upstream-org=${{ matrix.distro.UPSTREAM_ORG || 'library' }}
-            --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
-            --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
-            --platforms=${{ matrix.distro.platforms }}
-            --dockerhub-username=${{ vars.DOCKERHUB_USERNAME }}
-            --dockerhub-password=env:DOCKERHUB_PASSWORD
-            --ghcr-username=${{ github.actor }}
-            --ghcr-password=env:GITHUB_TOKEN
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          version: latest
-
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: ghcr.io/andrewrothstein/docker-ansible:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/docker-ansible:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}
           format: sarif
           output: trivy-results.sarif
           severity: 'CRITICAL,HIGH'
