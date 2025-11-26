@@ -54,7 +54,7 @@
     "OS_VER": "latest",
     "UPSTREAM_ORG": "kalilinux",
     "UPSTREAM_OS": "kali-rolling",
-    "PLATFORMS": "linux/amd64"
+    "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
     "OS": "rockylinux",
