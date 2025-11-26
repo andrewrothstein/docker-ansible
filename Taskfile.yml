@@ -36,3 +36,64 @@ tasks:
         --ghcr-username={{ .ghcr_username | quote }}
         --ghcr-password={{ .ghcr_password | quote }}
         --platforms={{ .platforms | quote }}
+  test-role:
+    vars:
+      os: '{{ .os | default "alpine" }}'
+      os_ver: '{{ .os_ver | default "3.20" }}'
+      platforms: '{{ .platforms | default "linux/amd64" }}'
+      role_name: '{{ .role_name | default "" }}'
+      role_dir: '{{ .role_dir | default "" }}'
+    desc: Test an Ansible role locally (requires role_dir)
+    preconditions:
+      - sh: '[ -n "{{ .role_dir }}" ]'
+        msg: "Error: role_dir is required. Example: task test-role role_dir=./my-ansible-role"
+    cmds:
+      - |-
+        dagger call test-role \
+          --os={{ .os | quote }} \
+          --os-ver={{ .os_ver | quote }} \
+          --platforms={{ .platforms | quote }}
+        {{- if .role_name }} \
+          --role-name={{ .role_name | quote }}
+        {{- end }}
+        {{- if .role_dir }} \
+          --role-dir={{ .role_dir | quote }}
+        {{- end }}
+  test-role-publish:
+    vars:
+      os: '{{ .os | default "ubuntu" }}'
+      os_ver: '{{ .os_ver | default "noble" }}'
+      platforms: '{{ .platforms | default "linux/amd64" }}'
+      role_name: '{{ .role_name | default "" }}'
+      role_dir: '{{ .role_dir | default "" }}'
+      target_registry: '{{ .target_registry | default "ghcr.io" }}'
+      target_org: '{{ .target_org | default "${GITHUB_REPOSITORY_OWNER:-andrewrothstein}" }}'
+      target_username: '{{ .target_username | default "${GITHUB_ACTOR}" }}'
+      target_password: '{{ .target_password | default "env:GITHUB_TOKEN" }}'
+    desc: Test an Ansible role and publish to registry
+    preconditions:
+      - sh: '[ -n "{{ .role_dir }}" ]'
+        msg: "Error: role_dir is required. Example: task test-role-publish role_dir=./my-ansible-role"
+    cmds:
+      - |-
+        dagger call test-role \
+          --os={{ .os | quote }} \
+          --os-ver={{ .os_ver | quote }} \
+          --platforms={{ .platforms | quote }} \
+          --target-registry={{ .target_registry | quote }} \
+          --target-org={{ .target_org | quote }} \
+          --target-username={{ .target_username | quote }} \
+          --target-password={{ .target_password | quote }}
+        {{- if .role_name }} \
+          --role-name={{ .role_name | quote }}
+        {{- end }}
+        {{- if .role_dir }} \
+          --role-dir={{ .role_dir | quote }}
+        {{- end }}
+  test:
+    desc: Test core Dagger functions
+    cmds:
+      - dagger call ansible-cfg contents
+      - dagger call localhost-inventory contents
+      - dagger call requirements-yml contents
+      - dagger call build-one --os=alpine --os-ver=3.20 --p=linux/amd64 with-exec --args='["ansible", "--version"]' stdout

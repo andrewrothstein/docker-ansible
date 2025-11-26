@@ -22,11 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: build images
-        uses: dagger/dagger-for-github@8.0.0
+        uses: dagger/dagger-for-github@v8.2.0
         with:
-          verb: call
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: >-
+          module: .
+          call: >-
             build
             --os=${{ matrix.distro.OS }}
             --os-ver=${{ matrix.distro.OS_VER }}
@@ -34,3 +33,5 @@ jobs:
             --upstream-os=${{ matrix.distro.UPSTREAM_OS || matrix.distro.OS }}
             --upstream-os-ver=${{ matrix.distro.UPSTREAM_OS_VER || matrix.distro.OS_VER }}
             --platforms=${{ matrix.distro.platforms }}
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest

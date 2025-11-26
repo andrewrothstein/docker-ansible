@@ -69,7 +69,7 @@ This project creates multi-platform Docker container images with Ansible pre-ins
      - `build_one()`: Builds a single OS/platform combination
      - `build()`: Builds for all platforms (parallel)
      - `publish()`: Pushes to registries
-     - `test_role()`: Tests Ansible roles using pre-built images
+     - `test_role()`: Tests Ansible roles and publishes results to registry
      - `test_role_one()`: Tests a role on a single platform
    - Embeds Ansible configuration and inventory files into images
    - Uses uv for efficient Ansible installation
@@ -104,7 +104,14 @@ This project creates multi-platform Docker container images with Ansible pre-ins
 
 ## Testing Ansible Roles
 
-The `test_role` function tests Ansible roles using the pre-built docker-ansible base images from ghcr.io.
+The `test_role` function tests Ansible roles using pre-built docker-ansible base images and optionally publishes the tested containers to a registry.
+
+**Key features:**
+- Tests roles against docker-ansible base images
+- Optionally publishes tested containers to specified registry
+- Follows the same naming convention as docker-ansible images: `{version}-{os}.{os_ver}`
+- Supports multi-platform testing
+- Publishing is optional - omit registry parameters for local testing only
 
 Expected role structure:
 - `test.yml` - Test playbook at the repository root
@@ -113,42 +120,141 @@ Expected role structure:
 - `test-inventory.ini` - Custom inventory for tests (optional)
 - Standard Ansible role directories: `tasks/`, `vars/`, `defaults/`, etc.
 
-### Local Testing (from this repository)
+### Testing Your Ansible Role
+
+When you're in your own Ansible role repository and want to test it:
+
 ```bash
-# Test a role on Ubuntu Noble (uses version 0.0.0 by default)
-dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble
+# From your ansible role directory (e.g., ansible-sudoers)
+cd ~/git/github.com/andrewrothstein/ansible-sudoers
+
+# Test locally without publishing (defaults to current directory)
+dagger call --mod github.com/andrewrothstein/docker-ansible test-role \
+  --os=ubuntu \
+  --os-ver=noble
+
+# Test on Alpine (role-name defaults to "test-role" for container name)
+dagger call --mod github.com/andrewrothstein/docker-ansible test-role \
+  --os=alpine \
+  --os-ver=3.22
 
 # Test on multiple platforms
-dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --platforms=linux/amd64,linux/arm64
+dagger call --mod github.com/andrewrothstein/docker-ansible test-role \
+  --os=ubuntu \
+  --os-ver=noble \
+  --platforms=linux/amd64,linux/arm64
 
-# Use latest docker-ansible version
-dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --target-image-semver=latest
-
-# Use specific docker-ansible version
-dagger call test-role --role-dir=. --os=ubuntu --os-ver=noble --target-image-semver=1.2.3
+# Test and publish to GHCR with custom role name
+dagger call --mod github.com/andrewrothstein/docker-ansible test-role \
+  --os=ubuntu \
+  --os-ver=noble \
+  --role-name=ansible-sudoers \
+  --target-registry=ghcr.io \
+  --target-org=$GITHUB_REPOSITORY_OWNER \
+  --target-username=$GITHUB_ACTOR \
+  --target-password=env:GITHUB_TOKEN
 ```
 
-### Remote Usage (from other repositories)
+### Local Testing (from this repository)
+```bash
+# Test a role locally without publishing
+dagger call test-role \
+  --role-name=my-role \
+  --role-dir=. \
+  --os=ubuntu \
+  --os-ver=noble
 
-When using this module from another repository, you need to specify the module reference:
+# Test and publish to GHCR
+dagger call test-role \
+  --role-name=my-role \
+  --role-dir=. \
+  --os=ubuntu \
+  --os-ver=noble \
+  --target-registry=ghcr.io \
+  --target-org=$GITHUB_REPOSITORY_OWNER \
+  --target-username=$GITHUB_ACTOR \
+  --target-password=env:GITHUB_TOKEN
+
+# Test on multiple platforms without publishing
+dagger call test-role \
+  --role-name=my-role \
+  --role-dir=. \
+  --os=ubuntu \
+  --os-ver=noble \
+  --platforms=linux/amd64,linux/arm64
+
+# Use specific docker-ansible base image version
+dagger call test-role \
+  --role-name=my-role \
+  --role-dir=. \
+  --os=ubuntu \
+  --os-ver=noble \
+  --upstream-semver=1.2.3
+
+# Publish with specific version tag
+dagger call test-role \
+  --role-name=ansible-sudoers \
+  --role-dir=. \
+  --os=ubuntu \
+  --os-ver=noble \
+  --target-registry=ghcr.io \
+  --target-org=$GITHUB_REPOSITORY_OWNER \
+  --target-username=$GITHUB_ACTOR \
+  --target-password=env:GITHUB_TOKEN \
+  --target-semver=v1.0.0
+```
+
+### Advanced Examples
+
+These examples show different ways to reference the docker-ansible module:
 
 ```bash
-# Use from default branch
-dagger call --mod github.com/andrewrothstein/docker-ansible test-role --role-dir=. --os=ubuntu --os-ver=noble
+# Test locally without publishing (from default branch)
+dagger call --mod github.com/andrewrothstein/docker-ansible test-role \
+  --os=ubuntu \
+  --os-ver=noble
 
-# Use from specific branch
-dagger call --mod github.com/andrewrothstein/docker-ansible@develop test-role --role-dir=. --os=ubuntu --os-ver=noble
+# Test and publish to GHCR (from specific branch)
+dagger call --mod github.com/andrewrothstein/docker-ansible@develop test-role \
+  --os=ubuntu \
+  --os-ver=noble \
+  --role-name=my-role \
+  --target-registry=ghcr.io \
+  --target-org=$GITHUB_REPOSITORY_OWNER \
+  --target-username=$GITHUB_ACTOR \
+  --target-password=env:GITHUB_TOKEN
 
-# Use from specific tag
-dagger call --mod github.com/andrewrothstein/docker-ansible@v1.0.0 test-role --role-dir=. --os=ubuntu --os-ver=noble
+# Test without publishing (from specific tag)
+dagger call --mod github.com/andrewrothstein/docker-ansible@v1.0.0 test-role \
+  --os=ubuntu \
+  --os-ver=noble
 
-# Use from specific commit
-dagger call --mod github.com/andrewrothstein/docker-ansible@abc123def test-role --role-dir=. --os=ubuntu --os-ver=noble
+# Test and publish (from specific commit SHA)
+dagger call --mod github.com/andrewrothstein/docker-ansible@a1b2c3d4 test-role \
+  --os=ubuntu \
+  --os-ver=noble \
+  --role-name=my-role \
+  --target-registry=ghcr.io \
+  --target-org=$GITHUB_REPOSITORY_OWNER \
+  --target-username=$GITHUB_ACTOR \
+  --target-password=env:GITHUB_TOKEN
 ```
 
 ### GitHub Actions Integration
 
-Create `.github/workflows/test.yml` in your Ansible role repository:
+For testing with publishing, use the reusable workflow:
+
+```yaml
+name: Test Ansible Role
+on: [push, pull_request]
+
+jobs:
+  test:
+    uses: andrewrothstein/docker-ansible/.github/workflows/dagger-ansible-test-role.yml@develop
+    secrets: inherit
+```
+
+Or create your own workflow for custom testing:
 
 ```yaml
 name: Test Ansible Role
@@ -167,21 +273,32 @@ jobs:
   test:
     needs: matrix
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # Required if publishing to GHCR
     strategy:
       matrix:
         include: ${{ fromJson(needs.matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dagger/dagger-for-github@v8
+      - uses: dagger/dagger-for-github@8.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: >-
             call --mod github.com/andrewrothstein/docker-ansible@develop
             test-role
+            --role-name=${{ github.event.repository.name }}
             --role-dir=.
             --os=${{ matrix.OS }}
             --os-ver=${{ matrix.OS_VER }}
             --platforms=${{ matrix.PLATFORMS }}
+            --target-registry=ghcr.io
+            --target-org=${{ github.repository_owner }}
+            --target-username=${{ github.actor }}
+            --target-password=env:GITHUB_TOKEN
+            --target-semver=${{ github.sha }}
 ```
 
 Note: The `--mod` parameter specifies the remote module reference:
@@ -189,3 +306,21 @@ Note: The `--mod` parameter specifies the remote module reference:
 - `github.com/{owner}/{repo}@{ref}` - where ref can be a branch, tag, or commit SHA
 
 This enables matrix testing across all supported OS/platform combinations using the same `platform-matrix-v1.json` format.
+
+### Security Scanning and Tagging Strategy
+
+The reusable workflow uses a three-step process to ensure only secure images are published:
+
+1. **Build & Test**: Builds the role container and publishes with SHA tag (`0.0.0-{os}.{os_ver}.{sha}`)
+2. **Security Scan**: Scans the SHA-tagged image with Trivy, failing if vulnerabilities are found
+3. **Final Publish**: Only if the scan passes, publishes to clean semver tags:
+   - `0.0.0-{os}.{os_ver}` - Version-specific tag
+   - `latest-{os}.{os_ver}` - Latest tag for easy consumption
+
+This approach ensures:
+- Every build is traceable via its SHA tag
+- Only secure images get the clean version tags
+- The SHA-tagged images serve as an audit trail
+- Re-tagging is fast since layers are already in the registry
+
+**Note**: SHA-tagged images (e.g., `0.0.0-ubuntu.noble.a1b2c3d4`) can be retained for audit purposes or cleaned up periodically using your container registry's retention policies.

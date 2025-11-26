@@ -2,22 +2,22 @@
   {
     "OS": "alpine",
     "OS_VER": "3.20",
-    "PLATFORMS": "linux/amd64"
+    "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
     "OS": "alpine",
     "OS_VER": "3.21",
-    "PLATFORMS": "linux/amd64"
+    "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
     "OS": "alpine",
     "OS_VER": "3.22",
-    "PLATFORMS": "linux/amd64"
+    "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
     "OS": "alpine",
     "OS_VER": "edge",
-    "PLATFORMS": "linux/amd64"
+    "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
     "OS": "archlinux",
@@ -35,6 +35,11 @@
     "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {
+    "OS": "debian",
+    "OS_VER": "trixie",
+    "PLATFORMS": "linux/amd64,linux/arm64"
+  },
+  {
     "OS": "fedora",
     "OS_VER": "42",
     "PLATFORMS": "linux/amd64,linux/arm64"
@@ -42,6 +47,11 @@
   {
     "OS": "fedora",
     "OS_VER": "43",
+    "PLATFORMS": "linux/amd64,linux/arm64"
+  },
+  {
+    "OS": "fedora",
+    "OS_VER": "44",
     "PLATFORMS": "linux/amd64,linux/arm64"
   },
   {

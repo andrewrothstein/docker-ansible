@@ -30,14 +30,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: publish to docker.io and ghcr.io
-        uses: dagger/dagger-for-github@8.0.0
+        uses: dagger/dagger-for-github@v8.2.0
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          verb: call
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: >-
+          module: .
+          call: >-
             publish
             --os=${{ matrix.distro.OS }}
             --os-ver=${{ matrix.distro.OS_VER }}
@@ -49,9 +48,11 @@ jobs:
             --dockerhub-password=env:DOCKERHUB_PASSWORD
             --ghcr-username=${{ github.actor }}
             --ghcr-password=env:GITHUB_TOKEN
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ghcr.io/andrewrothstein/docker-ansible:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}
           format: sarif
@@ -60,7 +61,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: trivy-results.sarif

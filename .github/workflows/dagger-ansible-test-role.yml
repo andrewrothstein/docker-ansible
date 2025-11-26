@@ -1,0 +1,97 @@
+---
+name: dagger-ansible-test-role
+'on': workflow_call
+jobs:
+  ansible-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ansible-lint
+        uses: ansible/ansible-lint@v25
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      distro: ${{ steps.read-matrix.outputs.distro }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: read platform-matrix-v1.json
+        id: read-matrix
+        run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
+  test:
+    runs-on: ubuntu-latest
+    needs: [prepare-matrix]
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Step 1: Build and test, publish with git SHA
+      - name: Build and test role
+        uses: dagger/dagger-for-github@v8.2.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          module: github.com/andrewrothstein/docker-ansible@develop
+          call: >-
+            test-role
+            --role-name=${{ github.event.repository.name }}
+            --role-dir=.
+            --os=${{ matrix.distro.OS }}
+            --os-ver=${{ matrix.distro.OS_VER }}
+            --target-registry=ghcr.io
+            --target-org=${{ github.repository_owner }}
+            --target-username=${{ github.actor }}
+            --target-password=env:GITHUB_TOKEN
+            --platforms=${{ matrix.distro.platforms }}
+            --git-sha=${{ github.sha }}
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest
+
+      # Step 2: Scan the SHA-tagged image
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: "ghcr.io/${{ github.repository }}:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}.${{ github.sha }}"
+          severity: 'CRITICAL,HIGH'
+          format: sarif
+          output: trivy-results.sarif
+          timeout: '15m0s'
+          github-pat: "${{ github.token }}"
+          exit-code: '1'  # Fail if vulnerabilities found
+
+      # Upload scan results regardless of scan outcome
+      - name: Upload scan results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: 'trivy-${{ matrix.distro.OS }}-${{ matrix.distro.OS_VER }}'
+
+      # Step 3: If scan passed, publish to final tags (0.0.0 and latest)
+      - name: Publish to final tags
+        if: success()
+        uses: dagger/dagger-for-github@v8.2.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          module: github.com/andrewrothstein/docker-ansible@develop
+          call: >-
+            test-role
+            --role-name=${{ github.event.repository.name }}
+            --role-dir=.
+            --os=${{ matrix.distro.OS }}
+            --os-ver=${{ matrix.distro.OS_VER }}
+            --target-registry=ghcr.io
+            --target-org=${{ github.repository_owner }}
+            --target-username=${{ github.actor }}
+            --target-password=env:GITHUB_TOKEN
+            --platforms=${{ matrix.distro.platforms }}
+            --publish-latest=true
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest
