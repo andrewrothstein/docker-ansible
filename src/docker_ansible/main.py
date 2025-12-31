@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional, List
 import dagger
 from dagger import dag, function, object_type
 import asyncio
@@ -28,9 +27,8 @@ class Image:
 
 @object_type
 class DockerAnsible:
-    async def ansible_cfg(self) -> dagger.File:
-        # Updated for Dagger Python SDK: use dag.client().file(name, contents=...)
-        return await dag.file(
+    def ansible_cfg(self) -> dagger.File:
+        return dag.file(
             "ansible.cfg",
             contents=textwrap.dedent(
                 """
@@ -44,16 +42,16 @@ class DockerAnsible:
             ),
         )
 
-    async def localhost_inventory(self) -> dagger.File:
-        return await dag.file("localhost", contents="localhost")
+    def localhost_inventory(self) -> dagger.File:
+        return dag.file("localhost", contents="localhost")
 
-    async def local_bin_path_sh(self) -> dagger.File:
-        return await dag.file(
+    def local_bin_path_sh(self) -> dagger.File:
+        return dag.file(
             "local-bin-path.sh", contents="export PATH=$HOME/.local/bin:$PATH"
         )
 
-    async def pkg_manager_sh(self) -> dagger.File:
-        return await dag.file(
+    def pkg_manager_sh(self) -> dagger.File:
+        return dag.file(
             "pkg-manager.sh",
             contents=textwrap.dedent(
                 """
@@ -189,15 +187,15 @@ class DockerAnsible:
             ),
         )
 
-    async def etc_profiled(self) -> dagger.Directory:
+    def etc_profiled(self) -> dagger.Directory:
         return (
             dag.directory()
-            .with_file("local-bin-path.sh", await self.local_bin_path_sh())
-            .with_file("pkg-manager.sh", await self.pkg_manager_sh())
+            .with_file("local-bin-path.sh", self.local_bin_path_sh())
+            .with_file("pkg-manager.sh", self.pkg_manager_sh())
         )
 
-    async def requirements_yml(self) -> dagger.File:
-        return await dag.file(
+    def requirements_yml(self) -> dagger.File:
+        return dag.file(
             "requirements.yml",
             contents=textwrap.dedent(
                 """
@@ -213,8 +211,8 @@ class DockerAnsible:
             ),
         )
 
-    async def playbook_yml(self) -> dagger.File:
-        return await dag.file(
+    def playbook_yml(self) -> dagger.File:
+        return dag.file(
             "playbook.yml",
             contents=textwrap.dedent(
                 """
@@ -227,16 +225,16 @@ class DockerAnsible:
             ),
         )
 
-    def login_sh(self, cmd: str) -> List[str]:
+    def login_sh(self, cmd: str) -> list[str]:
         return ["/bin/sh", "-lec", cmd]
 
-    async def build_one(
+    def build_one(
         self,
         os: str,
         os_ver: str,
-        upstream_org: Optional[str] = None,
-        upstream_os: Optional[str] = None,
-        upstream_os_ver: Optional[str] = None,
+        upstream_org: str | None = None,
+        upstream_os: str | None = None,
+        upstream_os_ver: str | None = None,
         uv_version: str = "latest",
         p: str = "linux/amd64",
     ) -> dagger.Container:
@@ -259,7 +257,7 @@ class DockerAnsible:
         return (
             dag.container(platform=plat)
             .from_(upstream_image)
-            .with_directory("/etc/profile.d", await self.etc_profiled())
+            .with_directory("/etc/profile.d", self.etc_profiled())
             .with_exec(
                 self.login_sh(
                     textwrap.dedent(
@@ -271,16 +269,16 @@ class DockerAnsible:
                     )
                 )
             )
-            .with_file("/usr/local/bin/uv", await uv_bin)
+            .with_file("/usr/local/bin/uv", uv_bin)
             .with_exec(["uv", "tool", "install", "ansible-core"])
-            .with_file("/etc/ansible/ansible.cfg", await self.ansible_cfg())
+            .with_file("/etc/ansible/ansible.cfg", self.ansible_cfg())
             .with_file(
                 "/etc/ansible/inventories/localhost",
-                await self.localhost_inventory(),
+                self.localhost_inventory(),
             )
             .with_workdir("/root")
-            .with_file("requirements.yml", await self.requirements_yml())
-            .with_file("playbook.yml", await self.playbook_yml())
+            .with_file("requirements.yml", self.requirements_yml())
+            .with_file("playbook.yml", self.playbook_yml())
             .with_exec(
                 self.login_sh(
                     textwrap.dedent(
@@ -296,18 +294,18 @@ class DockerAnsible:
             )
         )
 
-    @function
-    async def build(
+    @function(doc="Build docker-ansible images for specified OS and platforms")
+    def build(
         self,
         os: str,
         os_ver: str,
-        upstream_org: Optional[str] = None,
-        upstream_os: Optional[str] = None,
-        upstream_os_ver: Optional[str] = None,
+        upstream_org: str | None = None,
+        upstream_os: str | None = None,
+        upstream_os_ver: str | None = None,
         uv_version: str = "latest",
         platforms: str = "linux/amd64",
-    ) -> List[dagger.Container]:
-        tasks = [
+    ) -> list[dagger.Container]:
+        return [
             self.build_one(
                 os=os,
                 os_ver=os_ver,
@@ -320,20 +318,19 @@ class DockerAnsible:
             for p in platforms.split(",")
             if p
         ]
-        return await asyncio.gather(*tasks)
 
-    @function
+    @function(doc="Build and publish docker-ansible images to Docker Hub and GHCR")
     async def publish(
         self,
         os: str,
         os_ver: str,
-        dockerhub_username: Optional[str] = None,
-        dockerhub_password: Optional[dagger.Secret] = None,
-        ghcr_username: Optional[str] = None,
-        ghcr_password: Optional[dagger.Secret] = None,
-        upstream_org: Optional[str] = None,
-        upstream_os: Optional[str] = None,
-        upstream_os_ver: Optional[str] = None,
+        dockerhub_username: str | None = None,
+        dockerhub_password: dagger.Secret | None = None,
+        ghcr_username: str | None = None,
+        ghcr_password: dagger.Secret | None = None,
+        upstream_org: str | None = None,
+        upstream_os: str | None = None,
+        upstream_os_ver: str | None = None,
         target_image_semver: str = "0.0.0",
         uv_version: str = "latest",
         dockerhub_registry: str = "docker.io",
@@ -343,7 +340,7 @@ class DockerAnsible:
         ghcr_org: str = "andrewrothstein",
         ghcr_repo: str = "docker-ansible",
         platforms: str = "linux/amd64",
-    ) -> List[str]:
+    ) -> list[str]:
         # Compose image tags
         v = Tag(
             semver=target_image_semver,
@@ -363,7 +360,7 @@ class DockerAnsible:
             repo=ghcr_repo,
         )
 
-        ctr = await self.build(
+        ctr = self.build(
             os,
             os_ver,
             upstream_org,
@@ -400,7 +397,7 @@ class DockerAnsible:
         else:
             return []
 
-    async def test_role_one(
+    def test_role_one(
         self,
         role_dir: dagger.Directory,
         os: str,
@@ -446,55 +443,26 @@ class DockerAnsible:
             )
         )
 
-    @function
+    @function(doc="Test an Ansible role and optionally publish to a registry")
     async def test_role(
         self,
         os: str,
         os_ver: str,
         role_name: str = "test-role",
-        role_dir: Optional[dagger.Directory] = None,
+        role_dir: dagger.Directory | None = None,
         upstream_registry: str = "ghcr.io",
         upstream_org: str = "andrewrothstein",
         upstream_repo: str = "docker-ansible",
         upstream_semver: str = "0.0.0",
-        target_registry: Optional[str] = None,
-        target_org: Optional[str] = None,
-        target_username: Optional[str] = None,
-        target_password: Optional[dagger.Secret] = None,
+        target_registry: str | None = None,
+        target_org: str | None = None,
+        target_username: str | None = None,
+        target_password: dagger.Secret | None = None,
         target_semver: str = "0.0.0",
         platforms: str = "linux/amd64",
-        git_sha: Optional[str] = None,
+        git_sha: str | None = None,
         publish_latest: bool = False,
-    ) -> List[str]:
-        """
-        Test an Ansible role using the pre-built docker-ansible base images and optionally publish to a registry.
-
-        Expects the role directory structure:
-        - test.yml at the root (the test playbook)
-        - meta/requirements.yml (optional Galaxy dependencies)
-        - Standard Ansible role structure (tasks/, vars/, defaults/, etc.)
-
-        Args:
-            role_name: Name of the role (used in published image name)
-            role_dir: Directory containing the Ansible role to test
-            os: Operating system (e.g., ubuntu, debian, alpine)
-            os_ver: OS version (e.g., noble, bookworm, 3.20)
-            upstream_registry: Registry for base docker-ansible image (default: ghcr.io)
-            upstream_org: Organization for base image (default: andrewrothstein)
-            upstream_repo: Repository name for base image (default: docker-ansible)
-            upstream_semver: Version of docker-ansible base image to use (default: 0.0.0)
-            target_registry: Registry to publish tested containers (optional)
-            target_org: Organization for published images (optional)
-            target_username: Username for target registry authentication (optional)
-            target_password: Password/token for target registry authentication (optional)
-            target_semver: Version tag for published images (default: 0.0.0)
-            platforms: Comma-separated list of platforms to test (default: linux/amd64)
-            git_sha: Git SHA to append to version (for build stage)
-            publish_latest: If True, also publishes latest-{os}.{os_ver} tag
-
-        Returns:
-            List of published image URLs
-        """
+    ) -> list[str]:
         # Construct the base image tag
         tag = Tag(
             semver=upstream_semver,
@@ -510,7 +478,7 @@ class DockerAnsible:
             role_dir = dag.current_module().source()
 
         # Test on each platform
-        tasks = [
+        containers = [
             self.test_role_one(
                 role_dir=role_dir,
                 os=os,
@@ -521,7 +489,6 @@ class DockerAnsible:
             for p in platforms.split(",")
             if p
         ]
-        containers = await asyncio.gather(*tasks)
 
         published_images = []
 
