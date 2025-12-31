@@ -82,7 +82,8 @@ class DockerAnsible:
                             apk update
                             ;;
                         apt)
-                            apt-get update
+                            export DEBIAN_FRONTEND=noninteractive
+                            apt-get update -qq
                             ;;
                         dnf|yum)
                             # dnf/yum don't need explicit update
@@ -105,7 +106,7 @@ class DockerAnsible:
                             apk add --no-cache "$@"
                             ;;
                         apt)
-                            apt-get install -y "$@"
+                            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "$@"
                             ;;
                         dnf)
                             dnf install -y --nobest --skip-broken "$@"
