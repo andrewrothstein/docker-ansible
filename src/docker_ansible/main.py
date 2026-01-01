@@ -24,6 +24,29 @@ GALAXY_OS_NAME = {
 GALAXY_ALL_VERSIONS = {"alpine", "archlinux", "kali"}
 
 
+class IndentedDumper(yaml.SafeDumper):
+    """Custom YAML dumper that properly indents list items under their parent keys."""
+    pass
+
+
+def _str_representer(dumper: yaml.Dumper, data: str) -> yaml.Node:
+    """Represent strings, using literal style for multi-line strings."""
+    if "\n" in data:
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
+
+IndentedDumper.add_representer(str, _str_representer)
+
+
+def _increase_indent(self, flow: bool = False, indentless: bool = False) -> None:  # type: ignore
+    """Override to ensure proper indentation of list items."""
+    return super(IndentedDumper, self).increase_indent(flow, False)
+
+
+IndentedDumper.increase_indent = _increase_indent  # type: ignore
+
+
 @dataclass
 class Tag:
     semver: str
@@ -689,7 +712,7 @@ class DockerAnsible:
                 }
             },
         }
-        return yaml.dump(workflow, explicit_start=True, default_flow_style=False, sort_keys=False)
+        return yaml.dump(workflow, Dumper=IndentedDumper, explicit_start=True, default_flow_style=False, sort_keys=False)
 
     def _render_gitignore(self) -> str:
         """Generate .gitignore content."""
@@ -806,6 +829,6 @@ class DockerAnsible:
             )
             .with_new_file(
                 "meta/main.yml",
-                yaml.dump(updated_meta, explicit_start=True, default_flow_style=False, sort_keys=False),
+                yaml.dump(updated_meta, Dumper=IndentedDumper, explicit_start=True, default_flow_style=False, sort_keys=False),
             )
         )
