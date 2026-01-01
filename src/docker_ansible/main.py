@@ -21,7 +21,8 @@ GALAXY_OS_NAME = {
 }
 
 # OS types that use "all" for versions in Galaxy metadata
-GALAXY_ALL_VERSIONS = {"alpine", "archlinux", "kali"}
+# (Galaxy only accepts limited version strings for some distros)
+GALAXY_ALL_VERSIONS = {"alpine", "archlinux", "fedora", "kali"}
 
 
 class IndentedDumper(yaml.SafeDumper):
