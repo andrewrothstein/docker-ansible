@@ -128,7 +128,7 @@ jobs:
 
   scan-images:
     needs: [prepare-matrix, merge-manifests]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.RUNNER }}
     permissions:
       contents: read
       packages: read
@@ -136,14 +136,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
+        include: ${{ fromJSON(needs.prepare-matrix.outputs.build-matrix) }}
     steps:
       - uses: actions/checkout@v6
 
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: "ghcr.io/${{ github.repository }}:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}.${{ github.sha }}"
+          image-ref: "ghcr.io/${{ github.repository }}:0.0.0-${{ matrix.ARCH }}-${{ matrix.OS }}.${{ matrix.OS_VER }}.${{ github.sha }}"
           severity: 'CRITICAL,HIGH'
           format: sarif
           output: trivy-results.sarif
@@ -156,7 +156,7 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-results.sarif
-          category: 'trivy-${{ matrix.distro.OS }}-${{ matrix.distro.OS_VER }}'
+          category: 'trivy-${{ matrix.ARCH }}-${{ matrix.OS }}-${{ matrix.OS_VER }}'
 
   publish-final:
     needs: [prepare-matrix, scan-images]

@@ -144,7 +144,7 @@ jobs:
 
   scan-images:
     needs: [prepare-matrix, merge-manifests]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.RUNNER }}
     permissions:
       contents: read
       packages: read
@@ -152,13 +152,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
+        include: ${{ fromJSON(needs.prepare-matrix.outputs.build-matrix) }}
     steps:
       - uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/docker-ansible:0.0.0-${{ matrix.distro.OS }}.${{ matrix.distro.OS_VER }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/docker-ansible:0.0.0-${{ matrix.ARCH }}-${{ matrix.OS }}.${{ matrix.OS_VER }}
           format: sarif
           output: trivy-results.sarif
           severity: 'CRITICAL,HIGH'
@@ -169,4 +169,4 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-results.sarif
-          category: 'trivy-${{ matrix.distro.OS }}-${{ matrix.distro.OS_VER }}'
+          category: 'trivy-${{ matrix.ARCH }}-${{ matrix.OS }}-${{ matrix.OS_VER }}'
