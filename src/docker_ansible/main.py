@@ -474,8 +474,12 @@ class DockerAnsible:
                     textwrap.dedent(
                         """
                         if [ -f /etc/nsswitch.conf ]; then
+                            echo "=== nsswitch.conf BEFORE fix ==="
+                            grep -E '^(passwd|group):' /etc/nsswitch.conf || true
                             sed -i '/^passwd:/s/sss //' /etc/nsswitch.conf
                             sed -i '/^group:/s/sss //' /etc/nsswitch.conf
+                            echo "=== nsswitch.conf AFTER fix ==="
+                            grep -E '^(passwd|group):' /etc/nsswitch.conf || true
                         fi
                         if [ -f meta/requirements.yml ];
                         then
