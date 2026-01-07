@@ -42,6 +42,11 @@ name: test-role-single
         required: false
         default: 'develop'
         type: string
+      publish:
+        description: 'Include publishing params (to test full CI behavior)'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   test-single:
@@ -56,7 +61,8 @@ jobs:
           repository: ${{ inputs.role_repo }}
           ref: ${{ inputs.role_ref }}
 
-      - name: Test role
+      - name: Test role (without publishing)
+        if: ${{ inputs.publish != true }}
         uses: dagger/dagger-for-github@v8.2.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -69,5 +75,28 @@ jobs:
             --os=${{ inputs.os }}
             --os-ver=${{ inputs.os_ver }}
             --platforms=${{ inputs.platform }}
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest
+
+      - name: Test role (with publishing)
+        if: ${{ inputs.publish == true }}
+        uses: dagger/dagger-for-github@v8.2.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          module: github.com/andrewrothstein/docker-ansible@${{ inputs.module_ref }}
+          call: >-
+            test-role
+            --role-name=${{ github.event.inputs.role_repo }}
+            --role-dir=.
+            --os=${{ inputs.os }}
+            --os-ver=${{ inputs.os_ver }}
+            --platforms=${{ inputs.platform }}
+            --target-registry=ghcr.io
+            --target-org=${{ github.repository_owner }}
+            --target-username=${{ github.actor }}
+            --target-password=env:GITHUB_TOKEN
+            --target-semver=0.0.0-test
+            --git-sha=${{ github.sha }}
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           version: latest
