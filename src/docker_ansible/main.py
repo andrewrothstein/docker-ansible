@@ -546,6 +546,11 @@ class DockerAnsible:
             if p
         ]
 
+        # Force execution of all containers to ensure tests actually run
+        # Without this, Dagger's lazy evaluation would skip the tests
+        # when not publishing
+        await asyncio.gather(*[c.sync() for c in containers])
+
         published_images = []
 
         # Only publish if all required parameters are provided
