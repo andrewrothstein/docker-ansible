@@ -1,0 +1,73 @@
+---
+name: test-role-single
+'on':
+  workflow_dispatch:
+    inputs:
+      role_repo:
+        description: 'Role repository (e.g., andrewrothstein/ansible-sudoers)'
+        required: true
+        type: string
+      role_ref:
+        description: 'Role branch/tag/sha to test'
+        required: false
+        default: 'main'
+        type: string
+      os:
+        description: 'OS to test'
+        required: true
+        type: choice
+        options:
+          - alpine
+          - archlinux
+          - debian
+          - fedora
+          - kali
+          - rockylinux
+          - ubi
+          - ubuntu
+      os_ver:
+        description: 'OS version (e.g., noble, 9, 3.22)'
+        required: true
+        type: string
+      platform:
+        description: 'Platform architecture'
+        required: true
+        type: choice
+        default: 'linux/amd64'
+        options:
+          - linux/amd64
+          - linux/arm64
+      module_ref:
+        description: 'docker-ansible module ref (branch/tag/sha)'
+        required: false
+        default: 'develop'
+        type: string
+
+jobs:
+  test-single:
+    runs-on: ${{ inputs.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout role
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.role_repo }}
+          ref: ${{ inputs.role_ref }}
+
+      - name: Test role
+        uses: dagger/dagger-for-github@v8.2.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          module: github.com/andrewrothstein/docker-ansible@${{ inputs.module_ref }}
+          call: >-
+            test-role
+            --role-name=${{ github.event.inputs.role_repo }}
+            --role-dir=.
+            --os=${{ inputs.os }}
+            --os-ver=${{ inputs.os_ver }}
+            --platforms=${{ inputs.platform }}
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: latest

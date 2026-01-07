@@ -473,21 +473,6 @@ class DockerAnsible:
                 self.login_sh(
                     textwrap.dedent(
                         """
-                        echo "=== DEBUG: whoami and id ==="
-                        whoami
-                        id
-                        echo "=== DEBUG: /etc/passwd root entry ==="
-                        getent passwd root || echo "getent failed"
-                        if [ -f /etc/nsswitch.conf ]; then
-                            echo "=== nsswitch.conf BEFORE fix ==="
-                            grep -E '^(passwd|group):' /etc/nsswitch.conf || true
-                            sed -i '/^passwd:/s/sss //' /etc/nsswitch.conf
-                            sed -i '/^group:/s/sss //' /etc/nsswitch.conf
-                            echo "=== nsswitch.conf AFTER fix ==="
-                            grep -E '^(passwd|group):' /etc/nsswitch.conf || true
-                        fi
-                        echo "=== DEBUG: getent after fix ==="
-                        getent passwd root || echo "getent failed after fix"
                         if [ -f meta/requirements.yml ];
                         then
                             ansible-galaxy install \
