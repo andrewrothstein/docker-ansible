@@ -227,6 +227,16 @@ class DockerAnsible:
                             ;;
                     esac
                 }
+
+                # Fix nsswitch.conf for containers
+                # RHEL 9+/Rocky 9+/UBI 9+ have sss before files which fails without sssd
+                fix_nsswitch_for_containers() {
+                    if [ -f /etc/nsswitch.conf ]; then
+                        # Remove sss from passwd and group lines - not needed in containers
+                        sed -i '/^passwd:/s/sss //' /etc/nsswitch.conf
+                        sed -i '/^group:/s/sss //' /etc/nsswitch.conf
+                    fi
+                }
                 """
             ),
         )
@@ -308,7 +318,8 @@ class DockerAnsible:
                         """
                         pkg_update \
                             && install_ca_certificates \
-                            && install_ansible_deps
+                            && install_ansible_deps \
+                            && fix_nsswitch_for_containers
                         """
                     )
                 )
@@ -483,7 +494,8 @@ class DockerAnsible:
                         fi
                         """
                     )
-                )
+                ),
+                insecure_root_capabilities=True,
             )
         )
 
