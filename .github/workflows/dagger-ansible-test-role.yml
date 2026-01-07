@@ -58,7 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          module: github.com/andrewrothstein/docker-ansible@feature/insecure-root-caps
+          module: github.com/andrewrothstein/docker-ansible@develop
           call: >-
             test-role
             --role-name=${{ github.event.repository.name }}
