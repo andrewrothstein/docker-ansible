@@ -156,7 +156,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.34.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: ghcr.io/${{ github.repository_owner }}/docker-ansible:0.0.0-${{ matrix.ARCH }}-${{ matrix.OS }}.${{ matrix.OS_VER }}
           format: sarif

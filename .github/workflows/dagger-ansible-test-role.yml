@@ -141,7 +141,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.34.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: "ghcr.io/${{ github.repository }}:0.0.0-${{ matrix.ARCH }}-${{ matrix.OS }}.${{ matrix.OS_VER }}.${{ github.sha }}"
           severity: 'CRITICAL,HIGH'
