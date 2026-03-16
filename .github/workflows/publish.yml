@@ -54,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: publish arch-specific image to ghcr.io
-        uses: dagger/dagger-for-github@v8.2.0
+        uses: dagger/dagger-for-github@v8.4.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -156,7 +156,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.34.0
         with:
           image-ref: ghcr.io/${{ github.repository_owner }}/docker-ansible:0.0.0-${{ matrix.ARCH }}-${{ matrix.OS }}.${{ matrix.OS_VER }}
           format: sarif
