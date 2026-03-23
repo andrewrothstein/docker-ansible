@@ -63,7 +63,7 @@ jobs:
 
       - name: Test role (without publishing)
         if: ${{ inputs.publish != true }}
-        uses: dagger/dagger-for-github@v8.4.0
+        uses: dagger/dagger-for-github@v8.4.1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -80,7 +80,7 @@ jobs:
 
       - name: Test role (with publishing)
         if: ${{ inputs.publish == true }}
-        uses: dagger/dagger-for-github@v8.4.0
+        uses: dagger/dagger-for-github@v8.4.1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
