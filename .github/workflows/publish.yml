@@ -13,7 +13,7 @@ jobs:
       distro: ${{ steps.read-matrix.outputs.distro }}
       build-matrix: ${{ steps.expand-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
       - name: read platform-matrix-v1.json
         id: read-matrix
         run: echo "distro=$(jq -cr '@json' < platform-matrix-v1.json)" >> $GITHUB_OUTPUT
@@ -52,9 +52,9 @@ jobs:
         include: ${{ fromJSON(needs.prepare-matrix.outputs.build-matrix) }}
     runs-on: ${{ matrix.RUNNER }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
       - name: publish arch-specific image to ghcr.io
-        uses: dagger/dagger-for-github@v8.4.1
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # ratchet:dagger/dagger-for-github@v8.4.1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -86,18 +86,18 @@ jobs:
         distro: ${{ fromJSON(needs.prepare-matrix.outputs.distro) }}
     steps:
       - name: Log in to GHCR
-        uses: docker/login-action@v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # ratchet:docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
       - name: Log in to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # ratchet:docker/login-action@v4
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # ratchet:docker/setup-buildx-action@v4
       - name: Create and push manifest list
         env:
           OS: ${{ matrix.distro.OS }}
@@ -154,9 +154,9 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.prepare-matrix.outputs.build-matrix) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # ratchet:actions/checkout@v6
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # ratchet:aquasecurity/trivy-action@0.35.0
         with:
           image-ref: ghcr.io/${{ github.repository_owner }}/docker-ansible:0.0.0-${{ matrix.ARCH }}-${{ matrix.OS }}.${{ matrix.OS_VER }}
           format: sarif
@@ -165,7 +165,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # ratchet:github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: trivy-results.sarif
