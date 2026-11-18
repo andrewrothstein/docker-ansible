@@ -96,4 +96,4 @@ tasks:
       - dagger call ansible-cfg contents
       - dagger call localhost-inventory contents
       - dagger call requirements-yml contents
-      - dagger call build-one --os=alpine --os-ver=3.20 --p=linux/amd64 with-exec --args='["ansible", "--version"]' stdout
+      - dagger call build-one --os=alpine --os-ver=3.24 --p=linux/amd64 with-exec --args='["ansible", "--version"]' stdout
