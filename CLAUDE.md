@@ -13,10 +13,10 @@ task build os=ubuntu os_ver=noble platforms=linux/amd64,linux/arm64
 dagger call build --os=ubuntu --os-ver=noble --platforms=linux/amd64,linux/arm64
 
 # Common OS/version combinations:
-# Ubuntu: jammy, noble
-# Debian: bullseye, bookworm
-# Alpine: 3.20, 3.21
-# Fedora: 41, 42
+# Ubuntu: jammy, noble, resolute
+# Debian: bookworm, trixie
+# Alpine: 3.22, 3.23, 3.24
+# Fedora: 44, 45
 # RockyLinux: 9
 # Arch Linux: latest
 # RedHat Universal Base Image: 9, 10
