@@ -133,7 +133,7 @@ class DockerAnsible:
                             :
                             ;;
                         pacman)
-                            pacman -Sy
+                            pacman -Syu --noconfirm
                             ;;
                         *)
                             echo "Unknown package manager"
